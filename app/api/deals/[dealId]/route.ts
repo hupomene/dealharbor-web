@@ -7,6 +7,42 @@ type RouteContext = {
   }>;
 };
 
+function normalizeString(value: unknown) {
+  return typeof value === "string" ? value.trim() || null : null;
+}
+
+function normalizeNumber(value: unknown) {
+  return typeof value === "number" && !Number.isNaN(value) ? value : null;
+}
+
+export async function GET(_request: Request, { params }: RouteContext) {
+  const { dealId } = await params;
+  const supabase = await createServerSupabaseClient();
+
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
+
+  if (userError || !user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { data, error } = await supabase
+    .from("deals")
+    .select("*")
+    .eq("id", dealId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (error || !data) {
+    console.error("[deal][GET] error:", error);
+    return NextResponse.json({ error: "Deal not found." }, { status: 404 });
+  }
+
+  return NextResponse.json({ deal: data });
+}
+
 export async function PATCH(request: Request, { params }: RouteContext) {
   const { dealId } = await params;
   const supabase = await createServerSupabaseClient();
@@ -20,7 +56,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let body: any;
+  let body: Record<string, unknown> = {};
 
   try {
     body = await request.json();
@@ -28,172 +64,146 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
 
-  console.log("[deals][PATCH] incoming body:", JSON.stringify(body, null, 2));
-
-  const updates = {
+  const updatePayload = {
     business_name:
-      typeof body.business_name === "string" ? body.business_name : null,
+      typeof body.business_name === "string"
+        ? body.business_name.trim() || null
+        : undefined,
     purchase_price:
-      typeof body.purchase_price === "number" ? body.purchase_price : null,
+      body.purchase_price === null
+        ? null
+        : body.purchase_price !== undefined
+        ? normalizeNumber(body.purchase_price)
+        : undefined,
     down_payment:
-      typeof body.down_payment === "number" ? body.down_payment : null,
+      body.down_payment === null
+        ? null
+        : body.down_payment !== undefined
+        ? normalizeNumber(body.down_payment)
+        : undefined,
     seller_financing:
-      typeof body.seller_financing === "boolean" ? body.seller_financing : false,
+      typeof body.seller_financing === "boolean"
+        ? body.seller_financing
+        : undefined,
 
     seller_name:
-      typeof body.seller_name === "string" && body.seller_name.trim() !== ""
-        ? body.seller_name
-        : null,
+      body.seller_name !== undefined ? normalizeString(body.seller_name) : undefined,
     seller_address:
-      typeof body.seller_address === "string" && body.seller_address.trim() !== ""
-        ? body.seller_address
-        : null,
+      body.seller_address !== undefined
+        ? normalizeString(body.seller_address)
+        : undefined,
     buyer_name:
-      typeof body.buyer_name === "string" && body.buyer_name.trim() !== ""
-        ? body.buyer_name
-        : null,
+      body.buyer_name !== undefined ? normalizeString(body.buyer_name) : undefined,
     buyer_address:
-      typeof body.buyer_address === "string" && body.buyer_address.trim() !== ""
-        ? body.buyer_address
-        : null,
-
+      body.buyer_address !== undefined
+        ? normalizeString(body.buyer_address)
+        : undefined,
     agreement_date:
-      typeof body.agreement_date === "string" && body.agreement_date.trim() !== ""
-        ? body.agreement_date
-        : null,
+      body.agreement_date !== undefined
+        ? normalizeString(body.agreement_date)
+        : undefined,
     closing_date:
-      typeof body.closing_date === "string" && body.closing_date.trim() !== ""
-        ? body.closing_date
-        : null,
+      body.closing_date !== undefined
+        ? normalizeString(body.closing_date)
+        : undefined,
 
     included_assets_text:
-      typeof body.included_assets_text === "string" &&
-      body.included_assets_text.trim() !== ""
-        ? body.included_assets_text
-        : null,
+      body.included_assets_text !== undefined
+        ? normalizeString(body.included_assets_text)
+        : undefined,
     excluded_assets_text:
-      typeof body.excluded_assets_text === "string" &&
-      body.excluded_assets_text.trim() !== ""
-        ? body.excluded_assets_text
-        : null,
-
+      body.excluded_assets_text !== undefined
+        ? normalizeString(body.excluded_assets_text)
+        : undefined,
     deposit_amount:
-      typeof body.deposit_amount === "number" && !Number.isNaN(body.deposit_amount)
-        ? body.deposit_amount
-        : null,
+      body.deposit_amount === null
+        ? null
+        : body.deposit_amount !== undefined
+        ? normalizeNumber(body.deposit_amount)
+        : undefined,
     cash_at_closing:
-      typeof body.cash_at_closing === "number" && !Number.isNaN(body.cash_at_closing)
-        ? body.cash_at_closing
-        : null,
+      body.cash_at_closing === null
+        ? null
+        : body.cash_at_closing !== undefined
+        ? normalizeNumber(body.cash_at_closing)
+        : undefined,
     seller_financing_amount:
-      typeof body.seller_financing_amount === "number" &&
-      !Number.isNaN(body.seller_financing_amount)
-        ? body.seller_financing_amount
-        : null,
-
+      body.seller_financing_amount === null
+        ? null
+        : body.seller_financing_amount !== undefined
+        ? normalizeNumber(body.seller_financing_amount)
+        : undefined,
     seller_financing_clause:
-      typeof body.seller_financing_clause === "string" &&
-      body.seller_financing_clause.trim() !== ""
-        ? body.seller_financing_clause
-        : null,
-
+      body.seller_financing_clause !== undefined
+        ? normalizeString(body.seller_financing_clause)
+        : undefined,
     allocated_inventory:
-      typeof body.allocated_inventory === "number" &&
-      !Number.isNaN(body.allocated_inventory)
-        ? body.allocated_inventory
-        : null,
+      body.allocated_inventory === null
+        ? null
+        : body.allocated_inventory !== undefined
+        ? normalizeNumber(body.allocated_inventory)
+        : undefined,
     allocated_ffe:
-      typeof body.allocated_ffe === "number" && !Number.isNaN(body.allocated_ffe)
-        ? body.allocated_ffe
-        : null,
+      body.allocated_ffe === null
+        ? null
+        : body.allocated_ffe !== undefined
+        ? normalizeNumber(body.allocated_ffe)
+        : undefined,
     allocated_goodwill:
-      typeof body.allocated_goodwill === "number" &&
-      !Number.isNaN(body.allocated_goodwill)
-        ? body.allocated_goodwill
-        : null,
+      body.allocated_goodwill === null
+        ? null
+        : body.allocated_goodwill !== undefined
+        ? normalizeNumber(body.allocated_goodwill)
+        : undefined,
     allocation_total:
-      typeof body.allocation_total === "number" &&
-      !Number.isNaN(body.allocation_total)
-        ? body.allocation_total
-        : null,
-
-    state:
-      typeof body.state === "string" && body.state.trim() !== ""
-        ? body.state
-        : null,
+      body.allocation_total === null
+        ? null
+        : body.allocation_total !== undefined
+        ? normalizeNumber(body.allocation_total)
+        : undefined,
+    state: body.state !== undefined ? normalizeString(body.state) : undefined,
     non_compete_years:
-      typeof body.non_compete_years === "number" &&
-      !Number.isNaN(body.non_compete_years)
-        ? body.non_compete_years
-        : null,
+      body.non_compete_years === null
+        ? null
+        : body.non_compete_years !== undefined
+        ? normalizeNumber(body.non_compete_years)
+        : undefined,
     non_compete_miles:
-      typeof body.non_compete_miles === "number" &&
-      !Number.isNaN(body.non_compete_miles)
-        ? body.non_compete_miles
-        : null,
+      body.non_compete_miles === null
+        ? null
+        : body.non_compete_miles !== undefined
+        ? normalizeNumber(body.non_compete_miles)
+        : undefined,
 
     equipment_items_text:
-      typeof body.equipment_items_text === "string" &&
-      body.equipment_items_text.trim() !== ""
-        ? body.equipment_items_text
-        : null,
+      body.equipment_items_text !== undefined
+        ? normalizeString(body.equipment_items_text)
+        : undefined,
     closing_checklist_text:
-      typeof body.closing_checklist_text === "string" &&
-      body.closing_checklist_text.trim() !== ""
-        ? body.closing_checklist_text
-        : null,
+      body.closing_checklist_text !== undefined
+        ? normalizeString(body.closing_checklist_text)
+        : undefined,
   };
 
-  console.log("[deals][PATCH] updates:", JSON.stringify(updates, null, 2));
+  const cleanPayload = Object.fromEntries(
+    Object.entries(updatePayload).filter(([, value]) => value !== undefined)
+  );
 
   const { data, error } = await supabase
     .from("deals")
-    .update(updates)
+    .update(cleanPayload)
     .eq("id", dealId)
     .eq("user_id", user.id)
-    .select(
-      `
-        id,
-        user_id,
-        business_name,
-        purchase_price,
-        down_payment,
-        seller_financing,
-        created_at,
-        seller_name,
-        seller_address,
-        buyer_name,
-        buyer_address,
-        agreement_date,
-        closing_date,
-        included_assets_text,
-        excluded_assets_text,
-        deposit_amount,
-        cash_at_closing,
-        seller_financing_amount,
-        seller_financing_clause,
-        allocated_inventory,
-        allocated_ffe,
-        allocated_goodwill,
-        allocation_total,
-        state,
-        non_compete_years,
-        non_compete_miles,
-        equipment_items_text,
-        closing_checklist_text
-      `
-    )
+    .select("*")
     .single();
 
-  if (error) {
-    console.error("[deals][PATCH] supabase error:", error);
+  if (error || !data) {
+    console.error("[deal][PATCH] error:", error);
     return NextResponse.json(
-      { error: error.message || "Failed to update deal." },
+      { error: error?.message || "Failed to update deal." },
       { status: 500 }
     );
   }
-
-  console.log("[deals][PATCH] saved row:", JSON.stringify(data, null, 2));
 
   return NextResponse.json({ deal: data });
 }
