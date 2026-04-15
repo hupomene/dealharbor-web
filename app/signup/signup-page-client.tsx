@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createBrowserSupabaseClient } from "@/lib/supabase/browser-client";
 
-export default function LoginPageClient() {
+export default function SignupPageClient() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -14,24 +14,31 @@ export default function LoginPageClient() {
     return next && next.startsWith("/") ? next : "/deals";
   }, [searchParams]);
 
-  const initialError = useMemo(() => {
-    return searchParams.get("error") || "";
-  }, [searchParams]);
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState(initialError);
+  const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
 
-  async function handleLogin(event: FormEvent<HTMLFormElement>) {
+  async function handleSignup(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSubmitting(true);
     setError("");
+    setMessage("");
 
     try {
+      if (password.length < 6) {
+        throw new Error("Password must be at least 6 characters.");
+      }
+
+      if (password !== confirmPassword) {
+        throw new Error("Passwords do not match.");
+      }
+
       const supabase = createBrowserSupabaseClient();
 
-      const { error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
       });
@@ -40,10 +47,23 @@ export default function LoginPageClient() {
         throw error;
       }
 
+      setMessage("Account created successfully. Signing you in...");
+
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) {
+        router.push("/login");
+        router.refresh();
+        return;
+      }
+
       router.push(redirectTo);
       router.refresh();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed.");
+      setError(err instanceof Error ? err.message : "Failed to create account.");
     } finally {
       setSubmitting(false);
     }
@@ -56,14 +76,14 @@ export default function LoginPageClient() {
           <div className="mb-6">
             <p className="text-sm text-slate-500">Dealharbor</p>
             <h1 className="mt-2 text-2xl font-semibold text-slate-900">
-              Log in
+              Create your account
             </h1>
             <p className="mt-2 text-sm text-slate-600">
-              Existing users can sign in to access deals and generate contract packages.
+              Start your free account and begin generating business sale contract packages.
             </p>
           </div>
 
-          <form onSubmit={handleLogin} className="grid gap-4">
+          <form onSubmit={handleSignup} className="grid gap-4">
             <div>
               <label className="mb-2 block text-sm font-medium text-slate-700">
                 Email
@@ -87,7 +107,21 @@ export default function LoginPageClient() {
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                placeholder="Your password"
+                placeholder="Create a password"
+                required
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-sm font-medium text-slate-700">
+                Confirm Password
+              </label>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={(event) => setConfirmPassword(event.target.value)}
+                className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                placeholder="Confirm your password"
                 required
               />
             </div>
@@ -98,19 +132,25 @@ export default function LoginPageClient() {
               </div>
             ) : null}
 
+            {message ? (
+              <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+                {message}
+              </div>
+            ) : null}
+
             <button
               type="submit"
               disabled={submitting}
               className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {submitting ? "Please wait..." : "Log in"}
+              {submitting ? "Please wait..." : "Create account"}
             </button>
           </form>
 
           <div className="mt-6 border-t border-slate-200 pt-4 text-sm text-slate-600">
-            New to PactAnchor?{" "}
-            <Link href="/signup" className="font-medium text-slate-900 underline">
-              Create an account
+            Already have an account?{" "}
+            <Link href="/login" className="font-medium text-slate-900 underline">
+              Log in
             </Link>
           </div>
         </div>

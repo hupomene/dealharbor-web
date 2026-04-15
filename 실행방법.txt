@@ -1,0 +1,4 @@
+Python server 가동
+contract-engine> uvicorn app.api:app --reload --port 8001
+
+PS C:\Users\heekw\dealharbor> npm run dev
