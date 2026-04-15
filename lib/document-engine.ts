@@ -1,18 +1,13 @@
-import fs from "node:fs/promises";
-import path from "node:path";
-import crypto from "node:crypto";
-
 export type GeneratedArtifact = {
   file_name: string;
   file_type: "docx" | "pdf" | "zip";
-  file_url: string;
+  content_base64: string;
 };
 
 type OutputFormat = "docx" | "pdf" | "zip";
 
 type RunDocumentGeneratorArgs = {
   dealId: string;
-  userId: string;
   dealData: Record<string, unknown>;
   templates?: string[];
   outputFormat?: OutputFormat;
@@ -45,10 +40,6 @@ const TEMPLATE_METADATA: Record<
     outputFilename: "non_compete.docx",
   },
 };
-
-function getOutputRoot(): string {
-  return path.join(process.cwd(), "generated");
-}
 
 function ensureSupportedFileType(value: string): value is "docx" | "pdf" | "zip" {
   return value === "docx" || value === "pdf" || value === "zip";
@@ -96,16 +87,10 @@ function formatValidationErrors(
 
 export async function runDocumentGenerator({
   dealId,
-  userId,
   dealData,
   templates = ["asset_purchase_agreement"],
   outputFormat = "docx",
 }: RunDocumentGeneratorArgs): Promise<GeneratedArtifact[]> {
-  const jobId = crypto.randomUUID();
-  const outputDir = path.join(getOutputRoot(), userId, dealId, jobId);
-
-  await fs.mkdir(outputDir, { recursive: true });
-
   const payloads = buildPayloads(dealId, dealData, templates);
   const requestUrl = `${DOCUMENT_ENGINE_URL}/generate`;
 
@@ -124,9 +109,7 @@ export async function runDocumentGenerator({
     });
   } catch (error) {
     console.error("[document-engine] fetch error:", error);
-    throw new Error(
-      `Failed to reach document engine at ${DOCUMENT_ENGINE_URL}.`
-    );
+    throw new Error(`Failed to reach document engine at ${DOCUMENT_ENGINE_URL}.`);
   }
 
   const rawText = await response.text();
@@ -136,10 +119,7 @@ export async function runDocumentGenerator({
     body = rawText ? JSON.parse(rawText) : null;
   } catch {
     throw new Error(
-      `Document engine returned a non-JSON response. Preview: ${rawText.slice(
-        0,
-        300
-      )}`
+      `Document engine returned a non-JSON response. Preview: ${rawText.slice(0, 300)}`
     );
   }
 
@@ -181,15 +161,10 @@ export async function runDocumentGenerator({
       throw new Error(`Unsupported file type: ${file.file_type}`);
     }
 
-    const absolutePath = path.join(outputDir, file.file_name);
-    const buffer = Buffer.from(file.content_base64, "base64");
-
-    await fs.writeFile(absolutePath, buffer);
-
     artifacts.push({
       file_name: file.file_name,
       file_type: file.file_type,
-      file_url: path.relative(process.cwd(), absolutePath).replace(/\\/g, "/"),
+      content_base64: file.content_base64,
     });
   }
 

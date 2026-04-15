@@ -1,29 +1,21 @@
-import fs from "node:fs/promises";
-import path from "node:path";
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server-client";
 
 type RouteContext = {
-  params: Promise<{
-    documentId: string;
-  }>;
+  params: Promise<{ documentId: string }>;
 };
 
-function getContentType(fileType: string): string {
-  switch (fileType) {
-    case "docx":
-      return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-    case "pdf":
-      return "application/pdf";
-    case "zip":
-      return "application/zip";
-    default:
-      return "application/octet-stream";
-  }
+const STORAGE_BUCKET = "documents";
+
+function mimeType(fileType: string) {
+  if (fileType === "pdf") return "application/pdf";
+  if (fileType === "zip") return "application/zip";
+  return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 }
 
-export async function GET(_request: Request, { params }: RouteContext) {
+export async function GET(_req: Request, { params }: RouteContext) {
   const { documentId } = await params;
+
   const supabase = await createServerSupabaseClient();
 
   const {
@@ -34,41 +26,34 @@ export async function GET(_request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data: document, error } = await supabase
+  // DB에서 문서 조회
+  const { data: doc, error } = await supabase
     .from("documents")
-    .select("id, user_id, file_name, file_type, file_url")
+    .select("*")
     .eq("id", documentId)
     .eq("user_id", user.id)
     .single();
 
-  if (error || !document) {
-    return NextResponse.json({ error: "Document not found." }, { status: 404 });
+  if (error || !doc) {
+    return NextResponse.json({ error: "Document not found" }, { status: 404 });
   }
 
-  const absolutePath = path.resolve(process.cwd(), document.file_url);
-  const projectRoot = path.resolve(process.cwd());
+  // Storage에서 다운로드
+  const { data, error: downloadError } = await supabase.storage
+    .from(STORAGE_BUCKET)
+    .download(doc.file_url);
 
-  if (!absolutePath.startsWith(projectRoot)) {
-    return NextResponse.json({ error: "Invalid file path." }, { status: 400 });
-  }
-
-  try {
-    const fileBuffer = await fs.readFile(absolutePath);
-
-    return new NextResponse(fileBuffer, {
-      status: 200,
-      headers: {
-        "Content-Type": getContentType(document.file_type),
-        "Content-Disposition": `attachment; filename="${encodeURIComponent(
-          document.file_name
-        )}"`,
-        "Cache-Control": "private, no-store, max-age=0",
-      },
-    });
-  } catch {
+  if (downloadError || !data) {
     return NextResponse.json(
-      { error: "Generated file not found on disk." },
-      { status: 404 }
+      { error: "Download failed" },
+      { status: 500 }
     );
   }
+
+  return new NextResponse(data, {
+    headers: {
+      "Content-Type": mimeType(doc.file_type),
+      "Content-Disposition": `attachment; filename="${doc.file_name}"`,
+    },
+  });
 }
