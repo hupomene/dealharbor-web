@@ -7,7 +7,7 @@ TEMPLATE_REGISTRY = {
     "asset_purchase_agreement": TEMPLATES_DIR / "asset_purchase_agreement.docx",
     "bill_of_sale": TEMPLATES_DIR / "bill_of_sale.docx",
     "promissory_note": TEMPLATES_DIR / "promissory_note.docx",
-    "non_compete": TEMPLATES_DIR / "non_compete_agreement.docx",
+    "non_compete": TEMPLATES_DIR / "non_compete.docx",
 }
 
 
