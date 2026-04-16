@@ -3,18 +3,22 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
 TEMPLATES_DIR = BASE_DIR / "templates"
 
-TEMPLATE_FILE_MAP = {
-    "asset_purchase_agreement": "asset_purchase_agreement.docx",
-    "promissory_note": "promissory_note.docx",
-    "bill_of_sale": "bill_of_sale.docx",
-    "non_compete_agreement": "non_compete_agreement.docx",
-    "equipment_list": "equipment_list.docx",
-    "closing_checklist": "closing_checklist.docx",
+TEMPLATE_REGISTRY = {
+    "asset_purchase_agreement": TEMPLATES_DIR / "asset_purchase_agreement.docx",
+    "bill_of_sale": TEMPLATES_DIR / "bill_of_sale.docx",
+    "promissory_note": TEMPLATES_DIR / "promissory_note.docx",
+    "non_compete": TEMPLATES_DIR / "non_compete_agreement.docx",
 }
 
 
-def get_template_path(template_key: str) -> Path | None:
-    filename = TEMPLATE_FILE_MAP.get(template_key)
-    if not filename:
-        return None
-    return TEMPLATES_DIR / filename
+def get_template_path(template_key: str) -> Path:
+    template_path = TEMPLATE_REGISTRY.get(template_key)
+    if template_path is None:
+        raise KeyError(f"Unknown template key: {template_key}")
+
+    if not template_path.exists():
+        raise FileNotFoundError(
+            f"Template file not found for key '{template_key}': {template_path}"
+        )
+
+    return template_path

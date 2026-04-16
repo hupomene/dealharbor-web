@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from copy import deepcopy
 from pathlib import Path
 from typing import Any, Dict
 
@@ -15,7 +14,13 @@ def render_docxtpl_template(
     payload: DocumentPreviewPayload,
 ) -> bytes:
     doc = DocxTemplate(str(template_path))
-    context = build_template_context(payload)
+
+    # 🔥 핵심 수정: payload.data를 그대로 쓰지 말고 mapper 결과만 사용
+    context = build_template_specific_context(
+        payload.templateKey,
+        payload.data,
+    )
+
     doc.render(context)
 
     from io import BytesIO
@@ -23,20 +28,3 @@ def render_docxtpl_template(
     buffer = BytesIO()
     doc.save(buffer)
     return buffer.getvalue()
-
-
-def build_template_context(payload: DocumentPreviewPayload) -> Dict[str, Any]:
-    base = deepcopy(payload.data)
-
-    mapped = build_template_specific_context(payload.templateKey, base)
-
-    return {
-        "template_key": payload.templateKey,
-        "document_name": payload.documentName,
-        "output_filename": payload.outputFilename,
-        "generated_at": payload.generatedAt,
-        "deal_id": payload.dealId,
-        "business_name": payload.businessName,
-        "payload": mapped,
-        **mapped,
-    }
