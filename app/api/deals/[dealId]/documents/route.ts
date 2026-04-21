@@ -104,13 +104,6 @@ export async function POST(request: Request, { params }: RouteContext) {
     body.outputFormat ?? body.output_format ?? "docx"
   ).toLowerCase() as "docx" | "pdf" | "zip";
 
-  const batchName =
-    typeof body.batchName === "string" && body.batchName.trim()
-      ? body.batchName.trim()
-      : typeof body.batch_name === "string" && body.batch_name.trim()
-      ? body.batch_name.trim()
-      : null;
-
   const { data: deal, error: dealError } = await supabase
     .from("deals")
     .select("*")
@@ -232,7 +225,6 @@ export async function POST(request: Request, { params }: RouteContext) {
         file_name: artifact.file_name,
         file_type: artifact.file_type,
         file_url: storagePath,
-        batch_name: batchName,
       })
       .select("*")
       .single();
