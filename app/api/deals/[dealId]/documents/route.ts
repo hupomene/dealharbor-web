@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { createServerSupabaseClient } from "@/lib/supabase/server-client";
-import { runDocumentGenerator } from "@/lib/document-engine";
 
 type RouteContext = {
   params: Promise<{ dealId: string }>;
@@ -9,24 +8,35 @@ type RouteContext = {
 
 const STORAGE_BUCKET = "documents";
 
+type EngineFile = {
+  file_name: string;
+  file_type: "docx" | "pdf" | "zip";
+  content_base64: string;
+};
+
+type EngineResponse = {
+  files: EngineFile[];
+};
+
 function mimeTypeFor(fileType: "docx" | "pdf" | "zip") {
   if (fileType === "pdf") return "application/pdf";
   if (fileType === "zip") return "application/zip";
   return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 }
 
-function inferFileType(
-  fileName: string,
-  rawType?: string | null
-): "docx" | "pdf" | "zip" {
-  if (rawType === "docx" || rawType === "pdf" || rawType === "zip") {
-    return rawType;
+function inferDocumentTypeFromTemplate(templateKey: string) {
+  switch (templateKey) {
+    case "asset_purchase_agreement":
+      return "asset_purchase_agreement";
+    case "bill_of_sale":
+      return "bill_of_sale";
+    case "promissory_note":
+      return "promissory_note";
+    case "non_compete":
+      return "non_compete";
+    default:
+      return templateKey;
   }
-
-  const lower = fileName.toLowerCase();
-  if (lower.endsWith(".pdf")) return "pdf";
-  if (lower.endsWith(".zip")) return "zip";
-  return "docx";
 }
 
 export async function GET(_request: Request, { params }: RouteContext) {
@@ -50,7 +60,6 @@ export async function GET(_request: Request, { params }: RouteContext) {
     .single();
 
   if (dealError || !deal) {
-    console.error("[deal-documents][GET] deal lookup error:", dealError);
     return NextResponse.json({ error: "Deal not found." }, { status: 404 });
   }
 
@@ -69,22 +78,7 @@ export async function GET(_request: Request, { params }: RouteContext) {
     );
   }
 
-  const documents = (data ?? []).map((row: any) => ({
-    id: row.id,
-    deal_id: row.deal_id,
-    user_id: row.user_id,
-    batch_id: row.batch_id ?? null,
-    file_name: row.file_name,
-    file_type: inferFileType(
-      row.file_name,
-      row.file_type ?? row.document_type ?? null
-    ),
-    document_type: row.document_type ?? null,
-    file_url: row.file_url ?? "",
-    created_at: row.created_at ?? null,
-  }));
-
-  return NextResponse.json({ documents });
+  return NextResponse.json({ documents: data ?? [] });
 }
 
 export async function POST(request: Request, { params }: RouteContext) {
@@ -101,10 +95,21 @@ export async function POST(request: Request, { params }: RouteContext) {
   }
 
   const body = await request.json();
-  const templates = Array.isArray(body.templates)
+
+  const templates: string[] = Array.isArray(body.templates)
     ? body.templates
     : ["asset_purchase_agreement"];
-  const outputFormat = body.outputFormat ?? "docx";
+
+  const requestedOutputFormat = String(
+    body.outputFormat ?? body.output_format ?? "docx"
+  ).toLowerCase() as "docx" | "pdf" | "zip";
+
+  const batchName =
+    typeof body.batchName === "string" && body.batchName.trim()
+      ? body.batchName.trim()
+      : typeof body.batch_name === "string" && body.batch_name.trim()
+      ? body.batch_name.trim()
+      : null;
 
   const { data: deal, error: dealError } = await supabase
     .from("deals")
@@ -117,30 +122,86 @@ export async function POST(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Deal not found." }, { status: 404 });
   }
 
-  let artifacts;
-  try {
-    artifacts = await runDocumentGenerator({
-      dealId,
-      dealData: deal,
-      templates,
-      outputFormat,
-    });
-  } catch (error) {
-    console.error("[deal-documents][POST] generator error:", error);
+  const documentEngineUrl = process.env.DOCUMENT_ENGINE_URL;
+  if (!documentEngineUrl) {
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "Failed to generate contract package.",
-      },
+      { error: "DOCUMENT_ENGINE_URL is not configured." },
       { status: 500 }
     );
   }
 
-  const insertedDocs = [];
+  const payloads = templates.map((templateKey) => ({
+    templateKey,
+    outputFilename: templateKey,
+    data: deal,
+  }));
 
-  for (const artifact of artifacts) {
+  let engineResponse: Response;
+  try {
+    engineResponse = await fetch(`${documentEngineUrl}/generate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        payloads,
+        output_format: requestedOutputFormat,
+      }),
+      cache: "no-store",
+    });
+  } catch (error) {
+    console.error("[deal-documents][POST] engine fetch error:", error);
+    return NextResponse.json(
+      { error: "Failed to connect to document engine." },
+      { status: 500 }
+    );
+  }
+
+  if (!engineResponse.ok) {
+    const contentType = engineResponse.headers.get("content-type") || "";
+    let detail = "Document engine request failed.";
+
+    try {
+      if (contentType.includes("application/json")) {
+        const json = await engineResponse.json();
+        detail = json?.detail || json?.error || detail;
+      } else {
+        const text = await engineResponse.text();
+        detail = `Document engine returned a non-JSON response. Preview: ${text.slice(
+          0,
+          200
+        )}`;
+      }
+    } catch {
+      // ignore
+    }
+
+    return NextResponse.json({ error: detail }, { status: 500 });
+  }
+
+  let engineData: EngineResponse;
+  try {
+    engineData = (await engineResponse.json()) as EngineResponse;
+  } catch (error) {
+    console.error("[deal-documents][POST] engine JSON parse error:", error);
+    return NextResponse.json(
+      { error: "Document engine returned invalid JSON." },
+      { status: 500 }
+    );
+  }
+
+  const files = Array.isArray(engineData.files) ? engineData.files : [];
+  if (files.length === 0) {
+    return NextResponse.json(
+      { error: "Document engine returned no files." },
+      { status: 500 }
+    );
+  }
+
+  const insertedDocs: any[] = [];
+
+  for (let index = 0; index < files.length; index += 1) {
+    const artifact = files[index];
     const buffer = Buffer.from(artifact.content_base64, "base64");
     const storagePath = `${user.id}/${dealId}/${randomUUID()}-${artifact.file_name}`;
 
@@ -159,15 +220,19 @@ export async function POST(request: Request, { params }: RouteContext) {
       );
     }
 
+    const templateKey = templates[Math.min(index, templates.length - 1)];
+    const documentType = inferDocumentTypeFromTemplate(templateKey);
+
     const { data: inserted, error: insertError } = await supabase
       .from("documents")
       .insert({
         user_id: user.id,
         deal_id: dealId,
+        document_type: documentType,
         file_name: artifact.file_name,
         file_type: artifact.file_type,
         file_url: storagePath,
-        document_type: artifact.file_type,
+        batch_name: batchName,
       })
       .select("*")
       .single();
