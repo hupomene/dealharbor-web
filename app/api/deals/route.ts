@@ -122,7 +122,7 @@ export async function POST(request: Request) {
       body.allocated_non_compete === null
         ? null
         : body.allocated_non_compete !== undefined
-        ? normalizeNumber(body.allocated_non_compete)
+        ? Number(body.allocated_non_compete)
         : undefined,
     allocated_goodwill:
       typeof body.allocated_goodwill === "number"
