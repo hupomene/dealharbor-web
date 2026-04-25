@@ -149,6 +149,12 @@ export async function PATCH(request: Request, { params }: RouteContext) {
         : body.allocated_ffe !== undefined
         ? normalizeNumber(body.allocated_ffe)
         : undefined,
+    allocated_non_compete:
+      body.allocated_non_compete === null
+        ? null
+        : body.allocated_non_compete !== undefined
+        ? normalizeNumber(body.allocated_non_compete)
+        : undefined,
     allocated_goodwill:
       body.allocated_goodwill === null
         ? null

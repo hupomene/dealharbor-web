@@ -28,6 +28,7 @@ type DealFormData = {
   seller_financing_clause?: string | null;
   allocated_inventory?: number | null;
   allocated_ffe?: number | null;
+  allocated_non_compete?: number | null;
   allocated_goodwill?: number | null;
   allocation_total?: number | null;
   state?: string | null;
@@ -39,9 +40,7 @@ type DealFormData = {
 };
 
 function formatDate(value: string | null) {
-  if (!value) {
-    return "-";
-  }
+  if (!value) return "-";
 
   return new Intl.DateTimeFormat("en-US", {
     year: "numeric",
@@ -121,12 +120,8 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
   const [sellerAddress, setSellerAddress] = useState(deal.seller_address ?? "");
   const [buyerName, setBuyerName] = useState(deal.buyer_name ?? "");
   const [buyerAddress, setBuyerAddress] = useState(deal.buyer_address ?? "");
-  const [agreementDate, setAgreementDate] = useState(
-    normalizeDate(deal.agreement_date)
-  );
-  const [closingDate, setClosingDate] = useState(
-    normalizeDate(deal.closing_date)
-  );
+  const [agreementDate, setAgreementDate] = useState(normalizeDate(deal.agreement_date));
+  const [closingDate, setClosingDate] = useState(normalizeDate(deal.closing_date));
 
   const [includedAssetsText, setIncludedAssetsText] = useState(
     deal.included_assets_text ?? ""
@@ -148,6 +143,9 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
     numberToInput(deal.allocated_inventory)
   );
   const [allocatedFfe, setAllocatedFfe] = useState(numberToInput(deal.allocated_ffe));
+  const [allocatedNonCompete, setAllocatedNonCompete] = useState(
+    numberToInput(deal.allocated_non_compete)
+  );
   const [allocatedGoodwill, setAllocatedGoodwill] = useState(
     numberToInput(deal.allocated_goodwill)
   );
@@ -183,9 +181,10 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
   const calculatedAllocationTotal = useMemo(() => {
     const inv = parseNumberOrZero(allocatedInventory);
     const ffe = parseNumberOrZero(allocatedFfe);
+    const nc = parseNumberOrZero(allocatedNonCompete);
     const goodwill = parseNumberOrZero(allocatedGoodwill);
-    return inv + ffe + goodwill;
-  }, [allocatedInventory, allocatedFfe, allocatedGoodwill]);
+    return inv + ffe + nc + goodwill;
+  }, [allocatedInventory, allocatedFfe, allocatedNonCompete, allocatedGoodwill]);
 
   const canSave = useMemo(() => {
     return businessName.trim().length > 0 && !saving;
@@ -224,6 +223,8 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
       allocated_inventory:
         allocatedInventory !== "" ? Number(allocatedInventory) : null,
       allocated_ffe: allocatedFfe !== "" ? Number(allocatedFfe) : null,
+      allocated_non_compete:
+        allocatedNonCompete !== "" ? Number(allocatedNonCompete) : null,
       allocated_goodwill:
         allocatedGoodwill !== "" ? Number(allocatedGoodwill) : null,
       allocation_total:
@@ -584,7 +585,7 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
             <section className="grid gap-5">
               <h2 className="text-lg font-semibold text-slate-900">Allocation</h2>
 
-              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-5">
                 <div>
                   <label className="mb-2 block text-sm font-medium text-slate-700">
                     Allocated Inventory
@@ -612,6 +613,21 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                     onChange={(e) => setAllocatedFfe(e.target.value)}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
                     placeholder="120000"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Allocated Non-Compete
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={allocatedNonCompete}
+                    onChange={(e) => setAllocatedNonCompete(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                    placeholder="20000"
                   />
                 </div>
 
@@ -649,7 +665,7 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
               <div className="grid gap-4 md:grid-cols-2">
                 <CalculationCard
                   title="Calculated Allocation Total"
-                  formula="Allocated Inventory + Allocated FFE + Allocated Goodwill"
+                  formula="Allocated Inventory + Allocated FFE + Allocated Non-Compete + Allocated Goodwill"
                   value={calculatedAllocationTotal}
                   onUse={() => setAllocationTotal(String(calculatedAllocationTotal))}
                 />
@@ -718,7 +734,9 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   value={equipmentItemsText}
                   onChange={(e) => setEquipmentItemsText(e.target.value)}
                   className="min-h-32 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder={"Espresso Machine | SN-1001 | Good\nPOS Terminal | POS-223 | Excellent"}
+                  placeholder={
+                    "Espresso Machine | SN-1001 | Good\nPOS Terminal | POS-223 | Excellent"
+                  }
                 />
               </div>
 
@@ -733,7 +751,9 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   value={closingChecklistText}
                   onChange={(e) => setClosingChecklistText(e.target.value)}
                   className="min-h-32 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder={"Bill of Sale executed\nAssignment of lease delivered\nInventory count completed"}
+                  placeholder={
+                    "Bill of Sale executed\nAssignment of lease delivered\nInventory count completed"
+                  }
                 />
               </div>
             </section>

@@ -1,73 +1,175 @@
 from __future__ import annotations
 
-from copy import deepcopy
-from typing import Any, Dict
+from datetime import datetime
+from typing import Any, Dict, List
 
-from .common import (
-    build_purchase_terms_text,
-    build_restrictive_covenants_text,
-    build_assets_bullets,
-    format_currency,
-    format_date_for_template,
-    parse_checklist_items,
-    parse_equipment_items,
-)
+from docxtpl import RichText
 
 
-def build_asset_purchase_agreement_context(base: Dict[str, Any]) -> Dict[str, Any]:
-    ctx = deepcopy(base)
+def _string(value: Any) -> str:
+    if value is None:
+        return ""
+    return str(value).strip()
 
-    ctx["agreement_date_long"] = format_date_for_template(ctx.get("agreement_date"))
-    ctx["closing_date_long"] = format_date_for_template(ctx.get("closing_date"))
 
-    ctx["equipment_items"] = parse_equipment_items(ctx.get("equipment_items_text"))
-    ctx["closing_checklist_items"] = parse_checklist_items(
-        ctx.get("closing_checklist_text")
-    )
+def _number(value: Any) -> float:
+    if value is None or value == "":
+        return 0.0
 
-    ctx["purchase_price"] = format_currency(ctx.get("purchase_price"))
-    ctx["deposit_amount"] = format_currency(ctx.get("deposit_amount"))
-    ctx["cash_at_closing"] = format_currency(ctx.get("cash_at_closing"))
-    ctx["seller_financing_amount"] = format_currency(
-        ctx.get("seller_financing_amount")
-    )
+    if isinstance(value, (int, float)):
+        return float(value)
 
-    ctx["included_assets_text"] = "\n".join(
-        build_assets_bullets(ctx.get("included_assets_text"))
-    )
-    ctx["excluded_assets_text"] = "\n".join(
-        build_assets_bullets(ctx.get("excluded_assets_text"))
-    )
+    text = str(value).strip().replace("$", "").replace(",", "")
+    if text == "":
+        return 0.0
 
-    ctx["allocated_inventory"] = format_currency(ctx.get("allocated_inventory"))
-    ctx["allocated_ffe"] = format_currency(ctx.get("allocated_ffe"))
-    ctx["allocated_goodwill"] = format_currency(ctx.get("allocated_goodwill"))
-    ctx["allocation_total"] = format_currency(ctx.get("allocation_total"))
+    try:
+        return float(text)
+    except ValueError:
+        return 0.0
 
-    ctx["seller_financing_clause"] = (
-        str(ctx.get("seller_financing_clause") or "").strip()
-    )
 
-    ctx["state"] = str(ctx.get("state") or "")
-    ctx["non_compete_years"] = ctx.get("non_compete_years") or ""
-    ctx["non_compete_miles"] = ctx.get("non_compete_miles") or ""
+def _format_currency(value: Any) -> str:
+    amount = _number(value)
+    return f"${amount:,.0f}"
 
-    # 보조 alias
-    ctx["purchase_terms_text"] = build_purchase_terms_text(ctx)
-    ctx["restrictive_covenants_text"] = build_restrictive_covenants_text(ctx)
 
-    # equipment loop 최소 1행 보장
-    if not ctx["equipment_items"]:
-        ctx["equipment_items"] = [
+def _format_date_long(value: Any) -> str:
+    text = _string(value)
+    if not text:
+        return ""
+
+    for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%Y/%m/%d"):
+        try:
+            dt = datetime.strptime(text, fmt)
+            return dt.strftime("%B %d, %Y")
+        except ValueError:
+            continue
+
+    return text
+
+
+def _split_text_items(value: Any) -> List[str]:
+    """
+    Supports:
+    - comma-separated text
+    - newline-separated text
+    """
+    text = _string(value)
+    if not text:
+        return []
+
+    normalized = text.replace("\r\n", "\n")
+    if "\n" in normalized:
+        parts = [p.strip() for p in normalized.split("\n")]
+    else:
+        parts = [p.strip() for p in normalized.split(",")]
+
+    return [p for p in parts if p]
+
+
+def _build_bulleted_rich_text(items: List[str]) -> RichText:
+    rt = RichText()
+    if not items:
+      rt.add("")
+      return rt
+
+    for idx, item in enumerate(items):
+        if idx > 0:
+            rt.add("\n")
+        rt.add(f"• {item}")
+    return rt
+
+
+def _parse_equipment_items(value: Any) -> List[Dict[str, str]]:
+    """
+    Expected line format:
+      description | serial | condition
+
+    Example:
+      12 wall-mounted shelving units | none | Good
+      6 gondola display racks | none | Excellent
+    """
+    lines = _split_text_items(value)
+    items: List[Dict[str, str]] = []
+
+    for line in lines:
+        parts = [p.strip() for p in line.split("|")]
+        if len(parts) >= 3:
+            description, serial_number, condition = parts[0], parts[1], parts[2]
+        elif len(parts) == 2:
+            description, serial_number = parts[0], parts[1]
+            condition = ""
+        else:
+            description = parts[0]
+            serial_number = ""
+            condition = ""
+
+        items.append(
             {
-                "description": "",
-                "serial_number": "",
-                "condition": "",
-                "line_no": "",
-                "item_name": "",
-                "quantity": "",
-                "notes": "",
+                "description": description,
+                "serial_number": serial_number or "none",
+                "condition": condition,
             }
-        ]
+        )
 
-    return ctx
+    return items
+
+
+def _parse_checklist_items(value: Any) -> List[str]:
+    return _split_text_items(value)
+
+
+def _build_seller_financing_clause(deal: Dict[str, Any]) -> str:
+    amount = _number(deal.get("seller_financing_amount"))
+    if amount <= 0:
+        return ""
+
+    return (
+        f"The Seller agrees to finance {_format_currency(amount)} of the Purchase Price "
+        f"on the terms set forth in a separate Promissory Note to be executed at Closing."
+    )
+
+
+def build_asset_purchase_agreement_context(deal: Dict[str, Any]) -> Dict[str, Any]:
+    included_assets = _split_text_items(deal.get("included_assets_text"))
+    excluded_assets = _split_text_items(deal.get("excluded_assets_text"))
+    equipment_items = _parse_equipment_items(deal.get("equipment_items_text"))
+    closing_checklist_items = _parse_checklist_items(deal.get("closing_checklist_text"))
+
+    allocated_inventory = _number(deal.get("allocated_inventory"))
+    allocated_ffe = _number(deal.get("allocated_ffe"))
+    allocated_goodwill = _number(deal.get("allocated_goodwill"))
+    allocation_total = allocated_inventory + allocated_ffe + allocated_goodwill
+
+    return {
+        "business_name": _string(deal.get("business_name")),
+        "seller_name": _string(deal.get("seller_name")),
+        "seller_address": _string(deal.get("seller_address")),
+        "buyer_name": _string(deal.get("buyer_name")),
+        "buyer_address": _string(deal.get("buyer_address")),
+
+        "agreement_date_long": _format_date_long(deal.get("agreement_date")),
+        "closing_date_long": _format_date_long(deal.get("closing_date")),
+
+        "included_assets_text": _build_bulleted_rich_text(included_assets),
+        "excluded_assets_text": _build_bulleted_rich_text(excluded_assets),
+
+        "purchase_price": _format_currency(deal.get("purchase_price")),
+        "deposit_amount": _format_currency(deal.get("deposit_amount")),
+        "cash_at_closing": _format_currency(deal.get("cash_at_closing")),
+        "seller_financing_amount": _format_currency(deal.get("seller_financing_amount")),
+        "seller_financing_clause": _build_seller_financing_clause(deal),
+
+        "allocated_inventory": _format_currency(allocated_inventory),
+        "allocated_ffe": _format_currency(allocated_ffe),
+        "allocated_goodwill": _format_currency(allocated_goodwill),
+        "allocation_total": _format_currency(allocation_total),
+
+        "non_compete_years": _string(deal.get("non_compete_years")),
+        "non_compete_miles": _string(deal.get("non_compete_miles")),
+        "state": _string(deal.get("state")),
+
+        "equipment_items": equipment_items,
+        "closing_checklist_items": closing_checklist_items,
+    }

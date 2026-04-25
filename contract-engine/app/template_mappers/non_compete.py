@@ -15,9 +15,9 @@ def _number_or_string(value: Any) -> str:
 
 def build_non_compete_context(deal: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Matches the uploaded non-compete template fields exactly.
+    Build context that matches the uploaded non-compete template exactly.
 
-    Expected template variables include:
+    Expected template variables:
       - agreement_title
       - restricted_state
       - purchase_terms.closing_date
@@ -27,7 +27,6 @@ def build_non_compete_context(deal: Dict[str, Any]) -> Dict[str, Any]:
       - restricted_term_years
       - restricted_radius_miles
     """
-
     return {
         "agreement_title": "Non-Compete Agreement",
         "restricted_state": _string(deal.get("state")),

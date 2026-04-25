@@ -118,6 +118,12 @@ export async function POST(request: Request) {
         : null,
     allocated_ffe:
       typeof body.allocated_ffe === "number" ? body.allocated_ffe : null,
+    allocated_non_compete:
+      body.allocated_non_compete === null
+        ? null
+        : body.allocated_non_compete !== undefined
+        ? normalizeNumber(body.allocated_non_compete)
+        : undefined,
     allocated_goodwill:
       typeof body.allocated_goodwill === "number"
         ? body.allocated_goodwill

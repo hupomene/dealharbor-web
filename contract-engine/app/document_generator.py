@@ -1,37 +1,25 @@
 from io import BytesIO
-from pathlib import Path
-from tempfile import TemporaryDirectory
-from typing import Any, Dict, Tuple
 from zipfile import ZIP_DEFLATED, ZipFile
+from typing import Any, Dict, Tuple, List
 
-from app.pdf_converter import convert_docx_bytes_to_pdf
-from app.template_mappers import build_template_context
 from app.template_registry import get_template_path
 from app.template_renderer import render_docxtpl_template
+from app.pdf_converter import convert_docx_bytes_to_pdf
 
 
-def build_docx_bytes(template_key: str, deal: Dict[str, Any]) -> bytes:
-    """
-    Build a rendered DOCX from a real docxtpl template.
-    No debug / payload-dump fallback is allowed in production.
-    """
+def build_docx_bytes(template_key: str, payload: Any) -> bytes:
     template_path = get_template_path(template_key)
-    context = build_template_context(template_key, deal)
-    return render_docxtpl_template(template_path, context)
+    return render_docxtpl_template(template_path, payload)
 
 
 def build_document_bytes(
-    template_key: str,
-    deal: Dict[str, Any],
+    payload: Any,
     output_format: str,
 ) -> Tuple[bytes, str, str]:
-    """
-    Returns:
-      file_bytes, media_type, output_filename
-    """
+    template_key = payload.templateKey
     output_format = (output_format or "docx").lower()
 
-    docx_bytes = build_docx_bytes(template_key, deal)
+    docx_bytes = build_docx_bytes(template_key, payload)
 
     if output_format == "docx":
         return (
@@ -52,20 +40,15 @@ def build_document_bytes(
 
 
 def build_zip_package(
-    templates: list[str],
-    deal: Dict[str, Any],
+    payloads: List[Any],
     output_format: str,
 ) -> Tuple[bytes, str, str]:
-    """
-    Creates a ZIP package of multiple rendered documents.
-    """
     zip_buffer = BytesIO()
 
     with ZipFile(zip_buffer, "w", ZIP_DEFLATED) as zip_file:
-        for template_key in templates:
+        for payload in payloads:
             file_bytes, _media_type, filename = build_document_bytes(
-                template_key=template_key,
-                deal=deal,
+                payload=payload,
                 output_format=output_format,
             )
             zip_file.writestr(filename, file_bytes)

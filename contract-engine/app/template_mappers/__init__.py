@@ -8,7 +8,10 @@ from app.template_mappers.promissory_note import build_promissory_note_context
 from app.template_mappers.non_compete import build_non_compete_context
 
 
-def build_template_context(template_key: str, deal: Dict[str, Any]) -> Dict[str, Any]:
+def build_template_specific_context(
+    template_key: str,
+    deal: Dict[str, Any],
+) -> Dict[str, Any]:
     if template_key == "asset_purchase_agreement":
         return build_asset_purchase_agreement_context(deal)
 
