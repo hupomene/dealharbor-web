@@ -2,7 +2,8 @@ export type TemplateKey =
   | "asset_purchase_agreement"
   | "bill_of_sale"
   | "promissory_note"
-  | "non_compete";
+  | "non_compete"
+  | "irs_8594";
 
 export type RequirementField = {
   field: string;
@@ -54,6 +55,21 @@ export const TEMPLATE_REQUIREMENTS: Record<TemplateKey, RequirementField[]> = {
       label: "Non-Compete Miles",
       treatZeroAsMissing: true,
     },
+  ],
+  irs_8594: [
+    { field: "business_name", label: "Business Name" },
+    { field: "seller_name", label: "Seller Name" },
+    { field: "buyer_name", label: "Buyer Name" },
+    { field: "closing_date", label: "Closing Date" },
+    { field: "purchase_price", label: "Purchase Price", treatZeroAsMissing: true },
+    { field: "allocated_inventory", label: "Allocated Inventory" },
+    { field: "allocated_ffe", label: "Allocated FFE" },
+    {
+      field: "allocated_non_compete",
+      label: "Allocated Non-Compete",
+      treatZeroAsMissing: true,
+    },
+    { field: "allocated_goodwill", label: "Allocated Goodwill" },
   ],
 };
 

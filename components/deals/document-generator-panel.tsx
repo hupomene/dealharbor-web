@@ -101,6 +101,7 @@ const TEMPLATE_OPTIONS: TemplateOption[] = [
   { key: "bill_of_sale", label: "Bill of Sale" },
   { key: "promissory_note", label: "Promissory Note" },
   { key: "non_compete", label: "Non-Compete Agreement" },
+  { key: "irs_8594", label: "IRS Form 8594 Allocation Summary" },
 ];
 
 function formatDate(value: string) {
