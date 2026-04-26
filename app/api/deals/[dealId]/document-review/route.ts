@@ -17,6 +17,7 @@ const TEMPLATE_LABELS: Record<TemplateKey, string> = {
   bill_of_sale: "Bill of Sale",
   promissory_note: "Promissory Note",
   non_compete: "Non-Compete Agreement",
+  irs_8594: "IRS Form 8594 Allocation Summary",
 };
 
 function valueOrDash(value: unknown) {
