@@ -34,6 +34,8 @@ function inferDocumentTypeFromTemplate(templateKey: string) {
       return "promissory_note";
     case "non_compete":
       return "non_compete";
+    case "irs_8594":
+      return "irs_8594";
     default:
       return templateKey;
   }
