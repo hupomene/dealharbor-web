@@ -54,7 +54,7 @@ export default function LoginPageClient() {
       <div className="mx-auto flex min-h-screen max-w-md items-center justify-center px-6 py-12">
         <div className="w-full rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
           <div className="mb-6">
-            <p className="text-sm text-slate-500">Dealharbor</p>
+            <p className="text-sm text-slate-500">PactAnchor</p>
             <h1 className="mt-2 text-2xl font-semibold text-slate-900">
               Log in
             </h1>
