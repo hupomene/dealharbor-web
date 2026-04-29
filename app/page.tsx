@@ -38,7 +38,7 @@ const features = [
 const pricing = [
   {
     name: "Starter",
-    price: "$49",
+    price: "$25",
     period: "/deal",
     items: ["Smart deal intake", "Standard document package", "DOCX/PDF export"],
   },
