@@ -196,35 +196,62 @@ export async function POST(request: Request, { params }: RouteContext) {
   }
 
   if (requestedOutputFormat === "zip") {
-    const zip = new JSZip();
+  const zip = new JSZip();
 
-    for (const artifact of files) {
-      const buffer = Buffer.from(artifact.content_base64, "base64");
-      zip.file(artifact.file_name, buffer);
-    }
+  const docxResponse = await fetch(`${documentEngineUrl}/generate`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      payloads,
+      output_format: "docx",
+    }),
+    cache: "no-store",
+  });
 
-    const zipBuffer = await zip.generateAsync({ type: "nodebuffer" });
+  if (!docxResponse.ok) {
+    return NextResponse.json(
+      { error: "Document engine failed to generate DOCX files for ZIP package." },
+      { status: 500 }
+    );
+  }
 
-    const safeBusinessName = String(deal.business_name || "deal")
-      .replace(/[^a-z0-9_-]+/gi, "_")
-      .replace(/^_+|_+$/g, "");
+  const docxData = await docxResponse.json();
+  const docxFiles = Array.isArray(docxData.files) ? docxData.files : [];
 
-    const zipFileName = `${safeBusinessName}_closing_package.zip`;
-    const storagePath = `${user.id}/${dealId}/${randomUUID()}-${zipFileName}`;
+  for (const artifact of files) {
+    const buffer = Buffer.from(artifact.content_base64, "base64");
+    zip.file(`pdf/${artifact.file_name}`, buffer);
+  }
 
-    const { error: uploadError } = await supabase.storage
-      .from(STORAGE_BUCKET)
-      .upload(storagePath, zipBuffer, {
-        contentType: "application/zip",
-        upsert: false,
-      });
+  for (const artifact of docxFiles) {
+    const buffer = Buffer.from(artifact.content_base64, "base64");
+    zip.file(`docx/${artifact.file_name}`, buffer);
+  }
 
-    if (uploadError) {
-      return NextResponse.json(
-        { error: `Storage upload failed: ${uploadError.message}` },
-        { status: 500 }
-      );
-    }
+  const zipBuffer = await zip.generateAsync({ type: "nodebuffer" });
+
+  const safeBusinessName = String(deal.business_name || "deal")
+    .replace(/[^a-z0-9_-]+/gi, "_")
+    .replace(/^_+|_+$/g, "");
+
+  const zipFileName = `${safeBusinessName}_closing_package.zip`;
+  const storagePath = `${user.id}/${dealId}/${randomUUID()}-${zipFileName}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from(STORAGE_BUCKET)
+    .upload(storagePath, zipBuffer, {
+      contentType: "application/zip",
+      upsert: false,
+    });
+
+  if (uploadError) {
+    return NextResponse.json(
+      { error: `Storage upload failed: ${uploadError.message}` },
+      { status: 500 }
+    );
+  }
 
   const { data: inserted, error: insertError } = await supabase
     .from("documents")
