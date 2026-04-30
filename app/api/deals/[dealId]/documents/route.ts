@@ -1,3 +1,4 @@
+import JSZip from "jszip";
 import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { createServerSupabaseClient } from "@/lib/supabase/server-client";
@@ -193,6 +194,63 @@ export async function POST(request: Request, { params }: RouteContext) {
       { status: 500 }
     );
   }
+
+  if (requestedOutputFormat === "zip") {
+    const zip = new JSZip();
+
+    for (const artifact of files) {
+      const buffer = Buffer.from(artifact.content_base64, "base64");
+      zip.file(artifact.file_name, buffer);
+    }
+
+    const zipBuffer = await zip.generateAsync({ type: "nodebuffer" });
+
+    const safeBusinessName = String(deal.business_name || "deal")
+      .replace(/[^a-z0-9_-]+/gi, "_")
+      .replace(/^_+|_+$/g, "");
+
+    const zipFileName = `${safeBusinessName}_closing_package.zip`;
+    const storagePath = `${user.id}/${dealId}/${randomUUID()}-${zipFileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from(STORAGE_BUCKET)
+      .upload(storagePath, zipBuffer, {
+        contentType: "application/zip",
+        upsert: false,
+      });
+
+    if (uploadError) {
+      return NextResponse.json(
+        { error: `Storage upload failed: ${uploadError.message}` },
+        { status: 500 }
+      );
+    }
+
+  const { data: inserted, error: insertError } = await supabase
+    .from("documents")
+    .insert({
+      user_id: user.id,
+      deal_id: dealId,
+      document_type: "closing_package",
+      file_name: zipFileName,
+      file_type: "zip",
+      file_url: storagePath,
+    })
+    .select("*")
+    .single();
+
+  if (insertError) {
+    return NextResponse.json(
+      { error: `Document insert failed: ${insertError.message}` },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json({
+    success: true,
+    documents: [inserted],
+  });
+}
 
   const insertedDocs: any[] = [];
 
