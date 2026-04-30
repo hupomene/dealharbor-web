@@ -16,7 +16,7 @@ export default function LogoutButton() {
         credentials: "include",
       });
 
-      router.push("/login");
+      router.push("/");
       router.refresh();
     } finally {
       setLoading(false);
