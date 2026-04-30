@@ -141,6 +141,8 @@ export async function POST(request: Request, { params }: RouteContext) {
       body: JSON.stringify({
         payloads,
         output_format: requestedOutputFormat,
+        output_format:
+          requestedOutputFormat === "zip" ? "pdf" : requestedOutputFormat,
       }),
       cache: "no-store",
     });
