@@ -26,13 +26,11 @@ type DealFormData = {
   cash_at_closing?: number | null;
   seller_financing_amount?: number | null;
   seller_financing_clause?: string | null;
-
   allocated_inventory?: number | null;
   allocated_ffe?: number | null;
-  allocated_non_compete?: number | null;
   allocated_goodwill?: number | null;
+  allocated_non_compete?: number | null;
   allocation_total?: number | null;
-
   state?: string | null;
   non_compete_years?: number | null;
   non_compete_miles?: number | null;
@@ -42,7 +40,9 @@ type DealFormData = {
 };
 
 function formatDate(value: string | null) {
-  if (!value) return "-";
+  if (!value) {
+    return "-";
+  }
 
   return new Intl.DateTimeFormat("en-US", {
     year: "numeric",
@@ -74,7 +74,6 @@ function parseNumberOrZero(value: string) {
 
 function formatCurrencyPreview(value: number | null) {
   if (value === null || Number.isNaN(value)) return "-";
-
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -115,20 +114,12 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
   const router = useRouter();
 
   const [businessName, setBusinessName] = useState(deal.business_name ?? "");
-  const [purchasePrice, setPurchasePrice] = useState(
-    numberToInput(deal.purchase_price)
-  );
-  const [downPayment, setDownPayment] = useState(
-    numberToInput(deal.down_payment)
-  );
-  const [sellerFinancing, setSellerFinancing] = useState(
-    !!deal.seller_financing
-  );
+  const [purchasePrice, setPurchasePrice] = useState(numberToInput(deal.purchase_price));
+  const [downPayment, setDownPayment] = useState(numberToInput(deal.down_payment));
+  const [sellerFinancing, setSellerFinancing] = useState(!!deal.seller_financing);
 
   const [sellerName, setSellerName] = useState(deal.seller_name ?? "");
-  const [sellerAddress, setSellerAddress] = useState(
-    deal.seller_address ?? ""
-  );
+  const [sellerAddress, setSellerAddress] = useState(deal.seller_address ?? "");
   const [buyerName, setBuyerName] = useState(deal.buyer_name ?? "");
   const [buyerAddress, setBuyerAddress] = useState(deal.buyer_address ?? "");
   const [agreementDate, setAgreementDate] = useState(
@@ -144,10 +135,7 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
   const [excludedAssetsText, setExcludedAssetsText] = useState(
     deal.excluded_assets_text ?? ""
   );
-
-  const [depositAmount, setDepositAmount] = useState(
-    numberToInput(deal.deposit_amount)
-  );
+  const [depositAmount, setDepositAmount] = useState(numberToInput(deal.deposit_amount));
   const [cashAtClosing, setCashAtClosing] = useState(
     numberToInput(deal.cash_at_closing)
   );
@@ -157,23 +145,22 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
   const [sellerFinancingClause, setSellerFinancingClause] = useState(
     deal.seller_financing_clause ?? ""
   );
-
   const [allocatedInventory, setAllocatedInventory] = useState(
     numberToInput(deal.allocated_inventory)
   );
-  const [allocatedFfe, setAllocatedFfe] = useState(
-    numberToInput(deal.allocated_ffe)
-  );
+  const [allocatedFfe, setAllocatedFfe] = useState(numberToInput(deal.allocated_ffe));
   const [allocatedNonCompete, setAllocatedNonCompete] = useState(
     numberToInput(deal.allocated_non_compete)
   );
   const [allocatedGoodwill, setAllocatedGoodwill] = useState(
     numberToInput(deal.allocated_goodwill)
   );
+  const [allocatedNonCompete, setAllocatedNonCompete] = useState(
+    numberToInput(deal.allocated_non_compete)
+  );
   const [allocationTotal, setAllocationTotal] = useState(
     numberToInput(deal.allocation_total)
   );
-
   const [stateValue, setStateValue] = useState(deal.state ?? "");
   const [nonCompeteYears, setNonCompeteYears] = useState(
     numberToInput(deal.non_compete_years)
@@ -195,75 +182,22 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
 
   const calculatedCashAtClosing = useMemo(() => {
     const pp = parseNumberOrZero(purchasePrice);
-    const da = parseNumberOrZero(depositAmount);
+    const da = parseNumberOrZero(downPayment);
     const sf = parseNumberOrZero(sellerFinancingAmount);
-
     return pp - da - sf;
-  }, [purchasePrice, depositAmount, sellerFinancingAmount]);
+  }, [purchasePrice, downPayment, sellerFinancingAmount]);
 
   const calculatedAllocationTotal = useMemo(() => {
     const inv = parseNumberOrZero(allocatedInventory);
     const ffe = parseNumberOrZero(allocatedFfe);
-    const nc = parseNumberOrZero(allocatedNonCompete);
     const goodwill = parseNumberOrZero(allocatedGoodwill);
-
-    return inv + ffe + nc + goodwill;
-  }, [
-    allocatedInventory,
-    allocatedFfe,
-    allocatedNonCompete,
-    allocatedGoodwill,
-  ]);
-
-  const allocationDiff = useMemo(() => {
-    return parseNumberOrZero(purchasePrice) - calculatedAllocationTotal;
-  }, [purchasePrice, calculatedAllocationTotal]);
-
-  const isAllocationMismatch = allocationDiff !== 0;
-
-  const dealScore = useMemo(() => {
-    let score = 0;
-
-    if (businessName.trim()) score += 10;
-    if (parseNumberOrZero(purchasePrice) > 0) score += 10;
-    if (sellerName.trim() && buyerName.trim()) score += 10;
-    if (agreementDate && closingDate) score += 10;
-    if (includedAssetsText.trim()) score += 10;
-    if (!isAllocationMismatch) score += 20;
-    if (parseNumberOrZero(allocatedNonCompete) > 0) score += 10;
-    if (parseNumberOrZero(nonCompeteYears) > 0) score += 10;
-    if (equipmentItemsText.trim()) score += 10;
-
-    return Math.min(score, 100);
-  }, [
-    businessName,
-    purchasePrice,
-    sellerName,
-    buyerName,
-    agreementDate,
-    closingDate,
-    includedAssetsText,
-    isAllocationMismatch,
-    allocatedNonCompete,
-    nonCompeteYears,
-    equipmentItemsText,
-  ]);
+    const nonCompete = parseNumberOrZero(allocatedNonCompete);
+    return inv + ffe + goodwill + nonCompete;
+  }, [allocatedInventory, allocatedFfe, allocatedGoodwill, allocatedNonCompete]);
 
   const canSave = useMemo(() => {
     return businessName.trim().length > 0 && !saving;
   }, [businessName, saving]);
-
-  function handleAutoBalanceAllocation() {
-    const pp = parseNumberOrZero(purchasePrice);
-    const inv = parseNumberOrZero(allocatedInventory);
-    const ffe = parseNumberOrZero(allocatedFfe);
-    const nc = parseNumberOrZero(allocatedNonCompete);
-
-    const newGoodwill = pp - inv - ffe - nc;
-
-    setAllocatedGoodwill(String(newGoodwill));
-    setAllocationTotal(String(pp));
-  }
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -279,8 +213,7 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
       seller_financing: sellerFinancing,
 
       seller_name: sellerName.trim() !== "" ? sellerName.trim() : null,
-      seller_address:
-        sellerAddress.trim() !== "" ? sellerAddress.trim() : null,
+      seller_address: sellerAddress.trim() !== "" ? sellerAddress.trim() : null,
       buyer_name: buyerName.trim() !== "" ? buyerName.trim() : null,
       buyer_address: buyerAddress.trim() !== "" ? buyerAddress.trim() : null,
       agreement_date: agreementDate.trim() !== "" ? agreementDate : null,
@@ -290,26 +223,21 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
         includedAssetsText.trim() !== "" ? includedAssetsText.trim() : null,
       excluded_assets_text:
         excludedAssetsText.trim() !== "" ? excludedAssetsText.trim() : null,
-
       deposit_amount: depositAmount !== "" ? Number(depositAmount) : null,
       cash_at_closing: cashAtClosing !== "" ? Number(cashAtClosing) : null,
       seller_financing_amount:
         sellerFinancingAmount !== "" ? Number(sellerFinancingAmount) : null,
       seller_financing_clause:
-        sellerFinancingClause.trim() !== ""
-          ? sellerFinancingClause.trim()
-          : null,
-
+        sellerFinancingClause.trim() !== "" ? sellerFinancingClause.trim() : null,
       allocated_inventory:
         allocatedInventory !== "" ? Number(allocatedInventory) : null,
       allocated_ffe: allocatedFfe !== "" ? Number(allocatedFfe) : null,
-      allocated_non_compete:
-        allocatedNonCompete !== "" ? Number(allocatedNonCompete) : null,
       allocated_goodwill:
         allocatedGoodwill !== "" ? Number(allocatedGoodwill) : null,
+      allocated_non_compete:
+        allocatedNonCompete !== "" ? Number(allocatedNonCompete) : null,
       allocation_total:
         allocationTotal !== "" ? Number(allocationTotal) : null,
-
       state: stateValue.trim() !== "" ? stateValue.trim() : null,
       non_compete_years:
         nonCompeteYears !== "" ? Number(nonCompeteYears) : null,
@@ -321,6 +249,8 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
       closing_checklist_text:
         closingChecklistText.trim() !== "" ? closingChecklistText.trim() : null,
     };
+
+    console.log("SUBMIT BODY:", submitBody);
 
     try {
       const response = await fetch(`/api/deals/${deal.id}`, {
@@ -336,9 +266,7 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
 
       if (!response.ok) {
         throw new Error(
-          typeof data?.error === "string"
-            ? data.error
-            : "Failed to update deal"
+          typeof data?.error === "string" ? data.error : "Failed to update deal"
         );
       }
 
@@ -381,31 +309,75 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
           </div>
         </div>
 
-        <div className="mb-6 rounded-2xl border border-blue-200 bg-blue-50 p-5 shadow-sm">
-          <div className="flex items-center justify-between gap-4">
+        <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-sm font-semibold text-blue-800">
-                Deal Score
+              <p className="text-sm font-semibold text-slate-500">
+                PactAnchor Deal Intelligence
               </p>
-              <p className="mt-1 text-xs text-blue-700">
-                Measures readiness based on required deal terms, allocation
-                balance, non-compete inputs, and schedule data.
+              <h2 className="mt-1 text-2xl font-bold text-slate-900">
+                Deal Score: {dealScore}/100
+              </h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Status: <span className="font-semibold">{scoreLabel}</span>
               </p>
             </div>
 
-            <div className="text-right">
-              <p className="text-3xl font-bold text-blue-900">
-                {dealScore}/100
-              </p>
-              <p className="text-xs text-blue-700">
-                {dealScore >= 85
-                  ? "Ready"
-                  : dealScore >= 70
-                  ? "Needs review"
-                  : "Incomplete"}
-              </p>
+            <div className="w-full md:w-72">
+              <div className="mb-2 flex justify-between text-xs text-slate-500">
+                <span>Risk</span>
+                <span>Closing Ready</span>
+              </div>
+              <div className="h-3 rounded-full bg-slate-100">
+                <div
+                  className={`h-3 rounded-full ${scoreBarColor}`}
+                  style={{ width: `${dealScore}%` }}
+                />
+              </div>
             </div>
           </div>
+
+          {riskItems.length > 0 ? (
+            <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4">
+              <p className="text-sm font-bold text-red-800">Risk Alerts</p>
+
+              <div className="mt-3 space-y-3">
+                {riskItems.map((risk, index) => (
+                  <div key={index} className="rounded-lg bg-white p-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={
+                          risk.level === "HIGH"
+                            ? "rounded-full bg-red-100 px-2 py-1 text-xs font-bold text-red-700"
+                            : risk.level === "MEDIUM"
+                            ? "rounded-full bg-amber-100 px-2 py-1 text-xs font-bold text-amber-700"
+                            : "rounded-full bg-blue-100 px-2 py-1 text-xs font-bold text-blue-700"
+                        }
+                      >
+                        {risk.level}
+                      </span>
+                      <span className="font-semibold text-slate-900">
+                        {risk.message}
+                      </span>
+                    </div>
+
+                    <p className="mt-2 text-slate-600">
+                      Recommended Action: {risk.fix}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+              <p className="text-sm font-bold text-emerald-800">
+                No major deal risks detected.
+              </p>
+              <p className="mt-1 text-sm text-emerald-700">
+                This deal appears ready for document generation.
+              </p>
+            </div>
+          )}
         </div>
 
         <form
@@ -414,9 +386,7 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
         >
           <div className="grid gap-8">
             <section className="grid gap-5">
-              <h2 className="text-lg font-semibold text-slate-900">
-                Core Deal Info
-              </h2>
+              <h2 className="text-lg font-semibold text-slate-900">Core Deal Info</h2>
 
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700">
@@ -693,9 +663,7 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
             </section>
 
             <section className="grid gap-5">
-              <h2 className="text-lg font-semibold text-slate-900">
-                Allocation
-              </h2>
+              <h2 className="text-lg font-semibold text-slate-900">Allocation</h2>
 
               <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-5">
                 <div>
@@ -760,6 +728,21 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
 
                 <div>
                   <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Allocated Non-Compete
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={allocatedNonCompete}
+                    onChange={(e) => setAllocatedNonCompete(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                    placeholder="20000"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
                     Allocation Total
                   </label>
                   <input
@@ -777,11 +760,9 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
               <div className="grid gap-4 md:grid-cols-2">
                 <CalculationCard
                   title="Calculated Allocation Total"
-                  formula="Allocated Inventory + Allocated FFE + Allocated Non-Compete + Allocated Goodwill"
+                  formula="Allocated Inventory + Allocated FFE + Allocated Goodwill + Allocated Non-Compete"
                   value={calculatedAllocationTotal}
-                  onUse={() =>
-                    setAllocationTotal(String(calculatedAllocationTotal))
-                  }
+                  onUse={() => setAllocationTotal(String(calculatedAllocationTotal))}
                 />
 
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
@@ -796,47 +777,10 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   </p>
                 </div>
               </div>
-
-              {isAllocationMismatch ? (
-                <div className="rounded-xl border border-red-300 bg-red-50 p-4">
-                  <p className="text-sm font-semibold text-red-800">
-                    Allocation mismatch detected
-                  </p>
-                  <p className="mt-1 text-sm text-red-700">
-                    Purchase Price and Allocation Total differ by{" "}
-                    <span className="font-semibold">
-                      {formatCurrencyPreview(allocationDiff)}
-                    </span>
-                    .
-                  </p>
-                  <p className="mt-1 text-xs text-red-600">
-                    Use Auto Balance to adjust Goodwill so that total allocation
-                    matches the purchase price.
-                  </p>
-                  <button
-                    type="button"
-                    onClick={handleAutoBalanceAllocation}
-                    className="mt-3 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
-                  >
-                    Auto Balance Allocation
-                  </button>
-                </div>
-              ) : (
-                <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-                  <p className="text-sm font-semibold text-emerald-800">
-                    Allocation is balanced
-                  </p>
-                  <p className="mt-1 text-xs text-emerald-700">
-                    Total allocation matches the purchase price.
-                  </p>
-                </div>
-              )}
             </section>
 
             <section className="grid gap-5">
-              <h2 className="text-lg font-semibold text-slate-900">
-                Non-Compete
-              </h2>
+              <h2 className="text-lg font-semibold text-slate-900">Non-Compete</h2>
 
               <div className="grid gap-5 md:grid-cols-2">
                 <div>
@@ -872,25 +816,20 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
             </section>
 
             <section className="grid gap-5">
-              <h2 className="text-lg font-semibold text-slate-900">
-                Schedule Data
-              </h2>
+              <h2 className="text-lg font-semibold text-slate-900">Schedule Data</h2>
 
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700">
                   Equipment Items
                 </label>
                 <p className="mb-2 text-xs text-slate-500">
-                  One item per line. Format: Description | Serial / ID |
-                  Condition
+                  One item per line. Format: Description | Serial / ID | Condition
                 </p>
                 <textarea
                   value={equipmentItemsText}
                   onChange={(e) => setEquipmentItemsText(e.target.value)}
                   className="min-h-32 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder={
-                    "Espresso Machine | SN-1001 | Good\nPOS Terminal | POS-223 | Excellent"
-                  }
+                  placeholder={"Espresso Machine | SN-1001 | Good\nPOS Terminal | POS-223 | Excellent"}
                 />
               </div>
 
@@ -905,9 +844,7 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   value={closingChecklistText}
                   onChange={(e) => setClosingChecklistText(e.target.value)}
                   className="min-h-32 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder={
-                    "Bill of Sale executed\nAssignment of lease delivered\nInventory count completed"
-                  }
+                  placeholder={"Bill of Sale executed\nAssignment of lease delivered\nInventory count completed"}
                 />
               </div>
             </section>
