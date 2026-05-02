@@ -155,9 +155,6 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
   const [allocatedGoodwill, setAllocatedGoodwill] = useState(
     numberToInput(deal.allocated_goodwill)
   );
-  const [allocatedNonCompete, setAllocatedNonCompete] = useState(
-    numberToInput(deal.allocated_non_compete)
-  );
   const [allocationTotal, setAllocationTotal] = useState(
     numberToInput(deal.allocation_total)
   );
@@ -194,6 +191,90 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
     const nonCompete = parseNumberOrZero(allocatedNonCompete);
     return inv + ffe + goodwill + nonCompete;
   }, [allocatedInventory, allocatedFfe, allocatedGoodwill, allocatedNonCompete]);
+
+  const allocationDiff = useMemo(() => {
+    return parseNumberOrZero(purchasePrice) - calculatedAllocationTotal;
+  }, [purchasePrice, calculatedAllocationTotal]);
+
+  const isAllocationMismatch = allocationDiff !== 0;
+
+  const dealScore = useMemo(() => {
+    let score = 0;
+
+    if (businessName.trim()) score += 10;
+    if (parseNumberOrZero(purchasePrice) > 0) score += 10;
+    if (sellerName.trim() && buyerName.trim()) score += 10;
+    if (agreementDate && closingDate) score += 10;
+    if (includedAssetsText.trim()) score += 10;
+    if (!isAllocationMismatch) score += 20;
+    if (parseNumberOrZero(allocatedNonCompete) > 0) score += 10;
+    if (parseNumberOrZero(nonCompeteYears) > 0) score += 10;
+    if (equipmentItemsText.trim()) score += 10;
+
+    return Math.min(score, 100);
+  }, [
+    businessName,
+    purchasePrice,
+    sellerName,
+    buyerName,
+    agreementDate,
+    closingDate,
+    includedAssetsText,
+    isAllocationMismatch,
+    allocatedNonCompete,
+    nonCompeteYears,
+    equipmentItemsText,
+  ]);
+
+  const scoreLabel =
+    dealScore >= 85 ? "Ready" : dealScore >= 70 ? "Needs Review" : "High Risk";
+
+  const scoreBarColor =
+    dealScore >= 85
+      ? "bg-emerald-500"
+      : dealScore >= 70
+      ? "bg-amber-500"
+      : "bg-red-500";
+
+  const riskItems = [
+    isAllocationMismatch
+      ? {
+          level: "HIGH",
+          message: "Allocation total does not match the purchase price.",
+          fix: "Use Auto Balance Allocation to adjust goodwill.",
+        }
+      : null,
+
+    parseNumberOrZero(sellerFinancingAmount) > 0
+      ? {
+          level: "HIGH",
+          message: "Seller financing is included.",
+          fix: "Confirm Promissory Note is generated and executed.",
+        }
+      : null,
+
+    parseNumberOrZero(allocatedNonCompete) <= 0 &&
+    (parseNumberOrZero(nonCompeteYears) > 0 ||
+      parseNumberOrZero(nonCompeteMiles) > 0)
+      ? {
+          level: "MEDIUM",
+          message: "Non-compete terms exist but allocation is missing.",
+          fix: "Add an allocated non-compete amount.",
+        }
+      : null,
+
+    !equipmentItemsText.trim()
+      ? {
+          level: "LOW",
+          message: "Equipment schedule is missing.",
+          fix: "Add equipment items if assets include fixtures or equipment.",
+        }
+      : null,
+  ].filter(Boolean) as {
+    level: "HIGH" | "MEDIUM" | "LOW";
+    message: string;
+    fix: string;
+  }[];
 
   const canSave = useMemo(() => {
     return businessName.trim().length > 0 && !saving;
