@@ -149,11 +149,11 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
     numberToInput(deal.allocated_inventory)
   );
   const [allocatedFfe, setAllocatedFfe] = useState(numberToInput(deal.allocated_ffe));
-  const [allocatedGoodwill, setAllocatedGoodwill] = useState(
-    numberToInput(deal.allocated_goodwill)
-  );
   const [allocatedNonCompete, setAllocatedNonCompete] = useState(
     numberToInput(deal.allocated_non_compete)
+  );
+  const [allocatedGoodwill, setAllocatedGoodwill] = useState(
+    numberToInput(deal.allocated_goodwill)
   );
   const [stateValue, setStateValue] = useState(deal.state ?? "");
   const [nonCompeteYears, setNonCompeteYears] = useState(
@@ -189,6 +189,98 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
 
     return inv + ffe + nonCompete + goodwill;
   }, [allocatedInventory, allocatedFfe, allocatedNonCompete, allocatedGoodwill]);
+
+  const allocationDiff = useMemo(() => {
+    return parseNumberOrZero(purchasePrice) - calculatedAllocationTotal;
+  }, [purchasePrice, calculatedAllocationTotal]);
+
+  const isAllocationMismatch = allocationDiff !== 0;
+
+  const dealScore = useMemo(() => {
+    let score = 0;
+
+    if (businessName.trim()) score += 10;
+    if (parseNumberOrZero(purchasePrice) > 0) score += 10;
+    if (sellerName.trim() && buyerName.trim()) score += 10;
+    if (agreementDate && closingDate) score += 10;
+    if (includedAssetsText.trim()) score += 10;
+    if (!isAllocationMismatch) score += 20;
+    if (parseNumberOrZero(allocatedNonCompete) > 0) score += 10;
+    if (parseNumberOrZero(nonCompeteYears) > 0) score += 10;
+    if (equipmentItemsText.trim()) score += 10;
+
+    return Math.min(score, 100);
+  }, [
+    businessName,
+    purchasePrice,
+    sellerName,
+    buyerName,
+    agreementDate,
+    closingDate,
+    includedAssetsText,
+    isAllocationMismatch,
+    allocatedNonCompete,
+    nonCompeteYears,
+    equipmentItemsText,
+  ]);
+
+  const scoreLabel =
+    dealScore >= 85 ? "Ready" : dealScore >= 70 ? "Needs Review" : "High Risk";
+
+  const scoreBarColor =
+    dealScore >= 85
+      ? "bg-emerald-500"
+      : dealScore >= 70
+      ? "bg-amber-500"
+      : "bg-red-500";
+
+  const riskItems = [
+    isAllocationMismatch
+      ? {
+          level: "HIGH",
+          message: "Allocation total does not match the purchase price.",
+          fix: "Use Auto Balance Allocation to adjust goodwill.",
+        }
+      : null,
+    parseNumberOrZero(sellerFinancingAmount) > 0
+      ? {
+          level: "HIGH",
+          message: "Seller financing is included.",
+          fix: "Confirm Promissory Note is generated and executed.",
+        }
+      : null,
+    parseNumberOrZero(allocatedNonCompete) <= 0 &&
+    (parseNumberOrZero(nonCompeteYears) > 0 ||
+      parseNumberOrZero(nonCompeteMiles) > 0)
+      ? {
+          level: "MEDIUM",
+          message: "Non-compete terms exist but allocation is missing.",
+          fix: "Add an allocated non-compete amount.",
+        }
+      : null,
+    !equipmentItemsText.trim()
+      ? {
+          level: "LOW",
+          message: "Equipment schedule is missing.",
+          fix: "Add equipment items if assets include fixtures or equipment.",
+        }
+      : null,
+  ].filter(Boolean) as {
+    level: "HIGH" | "MEDIUM" | "LOW";
+    message: string;
+    fix: string;
+  }[];
+
+  function handleAutoBalanceAllocation() {
+    const pp = parseNumberOrZero(purchasePrice);
+    const inv = parseNumberOrZero(allocatedInventory);
+    const ffe = parseNumberOrZero(allocatedFfe);
+    const nonCompete = parseNumberOrZero(allocatedNonCompete);
+
+    const newGoodwill = pp - inv - ffe - nonCompete;
+
+    setAllocatedGoodwill(String(newGoodwill));
+  }
 
   const canSave = useMemo(() => {
     return businessName.trim().length > 0 && !saving;
@@ -303,7 +395,78 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
           </div>
         </div>
 
-        <form
+        <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm font-semibold text-slate-500">
+                PactAnchor Deal Intelligence
+              </p>
+              <h2 className="mt-1 text-2xl font-bold text-slate-900">
+                Deal Score: {dealScore}/100
+              </h2>
+              <p className="mt-1 text-sm text-slate-600">
+                Status: <span className="font-semibold">{scoreLabel}</span>
+              </p>
+            </div>
+
+            <div className="w-full md:w-72">
+              <div className="mb-2 flex justify-between text-xs text-slate-500">
+                <span>Risk</span>
+                <span>Closing Ready</span>
+              </div>
+              <div className="h-3 rounded-full bg-slate-100">
+                <div
+                  className={`h-3 rounded-full ${scoreBarColor}`}
+                  style={{ width: `${dealScore}%` }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {riskItems.length > 0 ? (
+            <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4">
+              <p className="text-sm font-bold text-red-800">Risk Alerts</p>
+
+              <div className="mt-3 space-y-3">
+                {riskItems.map((risk, index) => (
+                  <div key={index} className="rounded-lg bg-white p-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className={
+                          risk.level === "HIGH"
+                            ? "rounded-full bg-red-100 px-2 py-1 text-xs font-bold text-red-700"
+                            : risk.level === "MEDIUM"
+                            ? "rounded-full bg-amber-100 px-2 py-1 text-xs font-bold text-amber-700"
+                            : "rounded-full bg-blue-100 px-2 py-1 text-xs font-bold text-blue-700"
+                        }
+                      >
+                        {risk.level}
+                      </span>
+                      <span className="font-semibold text-slate-900">
+                        {risk.message}
+                      </span>
+                    </div>
+
+                    <p className="mt-2 text-slate-600">
+                      Recommended Action: {risk.fix}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+              <p className="text-sm font-bold text-emerald-800">
+                No major deal risks detected.
+              </p>
+              <p className="mt-1 text-sm text-emerald-700">
+                This deal appears ready for document generation.
+              </p>
+            </div>
+          )}
+        </div>
+
+                <form
           onSubmit={handleSubmit}
           className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
         >
@@ -664,6 +827,41 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   This calculated amount will be saved automatically as the allocation total.
                 </p>
               </div>
+
+              {isAllocationMismatch ? (
+                <div className="rounded-xl border border-red-300 bg-red-50 p-4">
+                  <p className="text-sm font-semibold text-red-800">
+                    Allocation mismatch detected
+                  </p>
+                  <p className="mt-1 text-sm text-red-700">
+                    Purchase Price and calculated allocation total differ by{" "}
+                    <span className="font-semibold">
+                      {formatCurrencyPreview(allocationDiff)}
+                    </span>
+                    .
+                  </p>
+                  <p className="mt-1 text-xs text-red-600">
+                    Use Auto Balance to adjust Goodwill so the calculated allocation
+                    total matches the purchase price.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleAutoBalanceAllocation}
+                    className="mt-3 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                  >
+                    Auto Balance Allocation
+                  </button>
+                </div>
+              ) : (
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                  <p className="text-sm font-semibold text-emerald-800">
+                    Allocation is balanced
+                  </p>
+                  <p className="mt-1 text-xs text-emerald-700">
+                    Calculated allocation total matches the purchase price.
+                  </p>
+                </div>
+              )}
             </section>
 
             <section className="grid gap-5">
