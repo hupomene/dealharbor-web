@@ -149,6 +149,24 @@ export async function PATCH(request: Request, { params }: RouteContext) {
         : body.allocated_ffe !== undefined
         ? normalizeNumber(body.allocated_ffe)
         : undefined,
+    allocated_leasehold:
+      body.allocated_leasehold === null
+        ? null
+        : body.allocated_leasehold !== undefined
+        ? normalizeNumber(body.allocated_leasehold)
+        : undefined,
+    allocated_customer_contracts:
+      body.allocated_customer_contracts === null
+        ? null
+        : body.allocated_customer_contracts !== undefined
+        ? normalizeNumber(body.allocated_customer_contracts)
+        : undefined,
+    allocated_trade_name:
+      body.allocated_trade_name === null
+        ? null
+        : body.allocated_trade_name !== undefined
+        ? normalizeNumber(body.allocated_trade_name)
+        : undefined,
     allocated_non_compete:
       body.allocated_non_compete === null
         ? null

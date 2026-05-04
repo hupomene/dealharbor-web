@@ -28,8 +28,11 @@ type DealFormData = {
   seller_financing_clause?: string | null;
   allocated_inventory?: number | null;
   allocated_ffe?: number | null;
-  allocated_goodwill?: number | null;
+  allocated_leasehold?: number | null;
+  allocated_customer_contracts?: number | null;
+  allocated_trade_name?: number | null;
   allocated_non_compete?: number | null;
+  allocated_goodwill?: number | null;
   allocation_total?: number | null;
   state?: string | null;
   non_compete_years?: number | null;
@@ -149,11 +152,20 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
     numberToInput(deal.allocated_inventory)
   );
   const [allocatedFfe, setAllocatedFfe] = useState(numberToInput(deal.allocated_ffe));
-  const [allocatedNonCompete, setAllocatedNonCompete] = useState(
-    numberToInput(deal.allocated_non_compete)
+  const [allocatedLeasehold, setAllocatedLeasehold] = useState(
+    numberToInput(deal.allocated_leasehold)
+  );
+  const [allocatedCustomerContracts, setAllocatedCustomerContracts] = useState(
+    numberToInput(deal.allocated_customer_contracts)
+  );
+  const [allocatedTradeName, setAllocatedTradeName] = useState(
+    numberToInput(deal.allocated_trade_name)
   );
   const [allocatedGoodwill, setAllocatedGoodwill] = useState(
     numberToInput(deal.allocated_goodwill)
+  );
+  const [allocatedNonCompete, setAllocatedNonCompete] = useState(
+    numberToInput(deal.allocated_non_compete)
   );
   const [stateValue, setStateValue] = useState(deal.state ?? "");
   const [nonCompeteYears, setNonCompeteYears] = useState(
@@ -184,17 +196,114 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
   const calculatedAllocationTotal = useMemo(() => {
     const inv = parseNumberOrZero(allocatedInventory);
     const ffe = parseNumberOrZero(allocatedFfe);
+    const leasehold = parseNumberOrZero(allocatedLeasehold);
+    const customerContracts = parseNumberOrZero(allocatedCustomerContracts);
+    const tradeName = parseNumberOrZero(allocatedTradeName);
     const nonCompete = parseNumberOrZero(allocatedNonCompete);
     const goodwill = parseNumberOrZero(allocatedGoodwill);
 
-    return inv + ffe + nonCompete + goodwill;
-  }, [allocatedInventory, allocatedFfe, allocatedNonCompete, allocatedGoodwill]);
+    return inv + ffe + leasehold + customerContracts + tradeName + nonCompete + goodwill;
+  }, [
+    allocatedInventory,
+    allocatedFfe,
+    allocatedLeasehold,
+    allocatedCustomerContracts,
+    allocatedTradeName,
+    allocatedNonCompete,
+    allocatedGoodwill,
+  ]);
 
-  const allocationDiff = useMemo(() => {
-    return parseNumberOrZero(purchasePrice) - calculatedAllocationTotal;
-  }, [purchasePrice, calculatedAllocationTotal]);
+  const allocationDifference = useMemo(() => {
+    return calculatedAllocationTotal - parseNumberOrZero(purchasePrice);
+  }, [calculatedAllocationTotal, purchasePrice]);
 
-  const isAllocationMismatch = allocationDiff !== 0;
+  const allocationStatus = allocationDifference === 0 ? "Balanced" : "Mismatch";
+
+  const allocationCompletion = useMemo(() => {
+    const pp = parseNumberOrZero(purchasePrice);
+    if (pp <= 0) return 0;
+    return Math.round((calculatedAllocationTotal / pp) * 1000) / 10;
+  }, [calculatedAllocationTotal, purchasePrice]);
+
+  const percentOfPurchasePrice = (value: string) => {
+    const pp = parseNumberOrZero(purchasePrice);
+    if (pp <= 0) return "0.0%";
+    return `${((parseNumberOrZero(value) / pp) * 100).toFixed(1)}%`;
+  };
+
+  const allocationRows = [
+    { label: "Inventory", value: allocatedInventory, setter: setAllocatedInventory, placeholder: "75000" },
+    { label: "Furniture, Fixtures & Equipment", value: allocatedFfe, setter: setAllocatedFfe, placeholder: "850000" },
+    { label: "Leasehold Interest", value: allocatedLeasehold, setter: setAllocatedLeasehold, placeholder: "250000" },
+    { label: "Customer Contracts", value: allocatedCustomerContracts, setter: setAllocatedCustomerContracts, placeholder: "300000" },
+    { label: "Trade Name / Website / Phone Numbers", value: allocatedTradeName, setter: setAllocatedTradeName, placeholder: "100000" },
+    { label: "Non-Compete Covenant", value: allocatedNonCompete, setter: setAllocatedNonCompete, placeholder: "125000" },
+    { label: "Goodwill / Going Concern Value", value: allocatedGoodwill, setter: setAllocatedGoodwill, placeholder: "800000" },
+  ];
+
+  const includedAssetsLower = includedAssetsText.toLowerCase();
+  const hasIncludedAssetKeyword = (keywords: string[]) =>
+    keywords.some((keyword) => includedAssetsLower.includes(keyword));
+
+  const riskItems = [
+    allocationDifference !== 0
+      ? {
+          level: "HIGH",
+          message: "Allocation total does not equal purchase price.",
+          fix: "Adjust allocation categories or use Auto Balance to align the total.",
+        }
+      : null,
+    hasIncludedAssetKeyword(["inventory"]) && parseNumberOrZero(allocatedInventory) <= 0
+      ? {
+          level: "MEDIUM",
+          message: "Inventory is included but no allocation amount was entered.",
+          fix: "Enter an allocated inventory amount.",
+        }
+      : null,
+    hasIncludedAssetKeyword(["equipment", "fixture", "fixtures", "furniture", "pos"]) &&
+    parseNumberOrZero(allocatedFfe) <= 0
+      ? {
+          level: "MEDIUM",
+          message: "Equipment is included but FFE allocation is missing.",
+          fix: "Enter an allocated FFE amount.",
+        }
+      : null,
+    hasIncludedAssetKeyword(["contract", "contracts"]) &&
+    parseNumberOrZero(allocatedCustomerContracts) <= 0
+      ? {
+          level: "MEDIUM",
+          message: "Customer contracts are included but not allocated.",
+          fix: "Enter an allocated customer contracts amount.",
+        }
+      : null,
+    hasIncludedAssetKeyword(["trade name", "brand", "website", "phone", "logo"]) &&
+    parseNumberOrZero(allocatedTradeName) <= 0
+      ? {
+          level: "MEDIUM",
+          message: "Intangible assets are included but no trade name allocation was entered.",
+          fix: "Enter a trade name / website / phone number allocation amount.",
+        }
+      : null,
+    (parseNumberOrZero(nonCompeteYears) > 0 || parseNumberOrZero(nonCompeteMiles) > 0) &&
+    parseNumberOrZero(allocatedNonCompete) <= 0
+      ? {
+          level: "MEDIUM",
+          message: "Non-compete agreement exists but allocation is missing.",
+          fix: "Enter an allocated non-compete covenant amount.",
+        }
+      : null,
+    hasIncludedAssetKeyword(["goodwill", "going concern"]) && parseNumberOrZero(allocatedGoodwill) <= 0
+      ? {
+          level: "LOW",
+          message: "Goodwill is included but goodwill allocation is missing.",
+          fix: "Enter a goodwill / going concern value allocation.",
+        }
+      : null,
+  ].filter(Boolean) as {
+    level: "HIGH" | "MEDIUM" | "LOW";
+    message: string;
+    fix: string;
+  }[];
 
   const dealScore = useMemo(() => {
     let score = 0;
@@ -204,10 +313,10 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
     if (sellerName.trim() && buyerName.trim()) score += 10;
     if (agreementDate && closingDate) score += 10;
     if (includedAssetsText.trim()) score += 10;
-    if (!isAllocationMismatch) score += 20;
+    if (allocationDifference === 0 && parseNumberOrZero(purchasePrice) > 0) score += 25;
     if (parseNumberOrZero(allocatedNonCompete) > 0) score += 10;
-    if (parseNumberOrZero(nonCompeteYears) > 0) score += 10;
     if (equipmentItemsText.trim()) score += 10;
+    if (riskItems.length === 0) score += 15;
 
     return Math.min(score, 100);
   }, [
@@ -218,10 +327,10 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
     agreementDate,
     closingDate,
     includedAssetsText,
-    isAllocationMismatch,
+    allocationDifference,
     allocatedNonCompete,
-    nonCompeteYears,
     equipmentItemsText,
+    riskItems.length,
   ]);
 
   const scoreLabel =
@@ -234,51 +343,16 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
       ? "bg-amber-500"
       : "bg-red-500";
 
-  const riskItems = [
-    isAllocationMismatch
-      ? {
-          level: "HIGH",
-          message: "Allocation total does not match the purchase price.",
-          fix: "Use Auto Balance Allocation to adjust goodwill.",
-        }
-      : null,
-    parseNumberOrZero(sellerFinancingAmount) > 0
-      ? {
-          level: "HIGH",
-          message: "Seller financing is included.",
-          fix: "Confirm Promissory Note is generated and executed.",
-        }
-      : null,
-    parseNumberOrZero(allocatedNonCompete) <= 0 &&
-    (parseNumberOrZero(nonCompeteYears) > 0 ||
-      parseNumberOrZero(nonCompeteMiles) > 0)
-      ? {
-          level: "MEDIUM",
-          message: "Non-compete terms exist but allocation is missing.",
-          fix: "Add an allocated non-compete amount.",
-        }
-      : null,
-    !equipmentItemsText.trim()
-      ? {
-          level: "LOW",
-          message: "Equipment schedule is missing.",
-          fix: "Add equipment items if assets include fixtures or equipment.",
-        }
-      : null,
-  ].filter(Boolean) as {
-    level: "HIGH" | "MEDIUM" | "LOW";
-    message: string;
-    fix: string;
-  }[];
-
   function handleAutoBalanceAllocation() {
     const pp = parseNumberOrZero(purchasePrice);
     const inv = parseNumberOrZero(allocatedInventory);
     const ffe = parseNumberOrZero(allocatedFfe);
+    const leasehold = parseNumberOrZero(allocatedLeasehold);
+    const customerContracts = parseNumberOrZero(allocatedCustomerContracts);
+    const tradeName = parseNumberOrZero(allocatedTradeName);
     const nonCompete = parseNumberOrZero(allocatedNonCompete);
 
-    const newGoodwill = pp - inv - ffe - nonCompete;
-
+    const newGoodwill = pp - inv - ffe - leasehold - customerContracts - tradeName - nonCompete;
     setAllocatedGoodwill(String(newGoodwill));
   }
 
@@ -319,10 +393,16 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
       allocated_inventory:
         allocatedInventory !== "" ? Number(allocatedInventory) : null,
       allocated_ffe: allocatedFfe !== "" ? Number(allocatedFfe) : null,
-      allocated_goodwill:
-        allocatedGoodwill !== "" ? Number(allocatedGoodwill) : null,
+      allocated_leasehold:
+        allocatedLeasehold !== "" ? Number(allocatedLeasehold) : null,
+      allocated_customer_contracts:
+        allocatedCustomerContracts !== "" ? Number(allocatedCustomerContracts) : null,
+      allocated_trade_name:
+        allocatedTradeName !== "" ? Number(allocatedTradeName) : null,
       allocated_non_compete:
         allocatedNonCompete !== "" ? Number(allocatedNonCompete) : null,
+      allocated_goodwill:
+        allocatedGoodwill !== "" ? Number(allocatedGoodwill) : null,
       allocation_total: calculatedAllocationTotal,
       state: stateValue.trim() !== "" ? stateValue.trim() : null,
       non_compete_years:
@@ -466,7 +546,7 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
           )}
         </div>
 
-                <form
+        <form
           onSubmit={handleSubmit}
           className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
         >
@@ -749,119 +829,116 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
             </section>
 
             <section className="grid gap-5">
-              <h2 className="text-lg font-semibold text-slate-900">Allocation</h2>
-
-              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-700">
-                    Allocated Inventory
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={allocatedInventory}
-                    onChange={(e) => setAllocatedInventory(e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                    placeholder="50000"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-700">
-                    Allocated FFE
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={allocatedFfe}
-                    onChange={(e) => setAllocatedFfe(e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                    placeholder="120000"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-700">
-                    Allocated Non-Compete
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={allocatedNonCompete}
-                    onChange={(e) => setAllocatedNonCompete(e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                    placeholder="20000"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-700">
-                    Allocated Goodwill
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    step="1"
-                    value={allocatedGoodwill}
-                    onChange={(e) => setAllocatedGoodwill(e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                    placeholder="250000"
-                  />
-                </div>
-              </div>
-
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-slate-900">
-                  Calculated Allocation Total
-                </p>
-                <p className="mt-1 text-xs text-slate-500">
-                  Allocated Inventory + Allocated FFE + Allocated Non-Compete + Allocated Goodwill
-                </p>
-                <p className="mt-3 text-lg font-semibold text-slate-900">
-                  {formatCurrencyPreview(calculatedAllocationTotal)}
-                </p>
-                <p className="mt-2 text-xs text-slate-500">
-                  This calculated amount will be saved automatically as the allocation total.
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">Purchase Price Allocation</h2>
+                <p className="mt-2 border-l-4 border-slate-200 pl-4 text-sm leading-6 text-slate-600">
+                  Allocate the total purchase price across transferred asset categories.
+                  PactAnchor will use this schedule for the APA, allocation statement,
+                  non-compete sync, and readiness checks.
                 </p>
               </div>
 
-              {isAllocationMismatch ? (
+              <div className="grid gap-4 md:grid-cols-5">
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Purchase Price</p>
+                  <p className="mt-2 text-lg font-bold text-slate-900">
+                    {formatCurrencyPreview(parseNumberOrNull(purchasePrice))}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Allocation Total</p>
+                  <p className="mt-2 text-lg font-bold text-slate-900">
+                    {formatCurrencyPreview(calculatedAllocationTotal)}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Difference</p>
+                  <p className={allocationDifference === 0 ? "mt-2 text-lg font-bold text-emerald-700" : "mt-2 text-lg font-bold text-red-700"}>
+                    {formatCurrencyPreview(allocationDifference)}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Completion</p>
+                  <p className="mt-2 text-lg font-bold text-slate-900">{allocationCompletion}%</p>
+                </div>
+                <div className={allocationStatus === "Balanced" ? "rounded-xl border border-emerald-200 bg-emerald-50 p-4" : "rounded-xl border border-red-200 bg-red-50 p-4"}>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Status</p>
+                  <p className={allocationStatus === "Balanced" ? "mt-2 text-lg font-bold text-emerald-700" : "mt-2 text-lg font-bold text-red-700"}>
+                    {allocationStatus}
+                  </p>
+                </div>
+              </div>
+
+              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
+                <div className="grid grid-cols-[1.5fr_1fr_1fr] border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  <div>Category</div>
+                  <div>Amount</div>
+                  <div>% of Purchase Price</div>
+                </div>
+
+                {allocationRows.map((row) => (
+                  <div
+                    key={row.label}
+                    className="grid grid-cols-[1.5fr_1fr_1fr] items-center gap-4 border-b border-slate-100 px-4 py-3 last:border-b-0"
+                  >
+                    <label className="text-sm font-medium text-slate-700">{row.label}</label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={row.value}
+                      onChange={(e) => row.setter(e.target.value)}
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                      placeholder={row.placeholder}
+                    />
+                    <div className="text-sm font-semibold text-slate-700">
+                      {percentOfPurchasePrice(row.value)}
+                    </div>
+                  </div>
+                ))}
+
+                <div className="grid grid-cols-[1.5fr_1fr_1fr] items-center gap-4 bg-slate-50 px-4 py-3">
+                  <p className="text-sm font-bold text-slate-900">Total</p>
+                  <p className="text-sm font-bold text-slate-900">
+                    {formatCurrencyPreview(calculatedAllocationTotal)}
+                  </p>
+                  <p className="text-sm font-bold text-slate-900">
+                    {allocationCompletion}%
+                  </p>
+                </div>
+              </div>
+
+              {allocationStatus === "Mismatch" ? (
                 <div className="rounded-xl border border-red-300 bg-red-50 p-4">
                   <p className="text-sm font-semibold text-red-800">
-                    Allocation mismatch detected
+                    Allocation total does not equal purchase price.
                   </p>
                   <p className="mt-1 text-sm text-red-700">
-                    Purchase Price and calculated allocation total differ by{" "}
-                    <span className="font-semibold">
-                      {formatCurrencyPreview(allocationDiff)}
-                    </span>
-                    .
-                  </p>
-                  <p className="mt-1 text-xs text-red-600">
-                    Use Auto Balance to adjust Goodwill so the calculated allocation
-                    total matches the purchase price.
+                    Difference: <span className="font-semibold">{formatCurrencyPreview(allocationDifference)}</span>
                   </p>
                   <button
                     type="button"
                     onClick={handleAutoBalanceAllocation}
                     className="mt-3 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
                   >
-                    Auto Balance Allocation
+                    Auto Balance Goodwill
                   </button>
                 </div>
               ) : (
                 <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
                   <p className="text-sm font-semibold text-emerald-800">
-                    Allocation is balanced
-                  </p>
-                  <p className="mt-1 text-xs text-emerald-700">
-                    Calculated allocation total matches the purchase price.
+                    Balanced: allocation equals purchase price.
                   </p>
                 </div>
               )}
+
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-sm font-semibold text-slate-900">Professional Review Note</p>
+                <p className="mt-1 text-xs leading-5 text-slate-600">
+                  Allocation support is provided for document preparation and professional review.
+                  Final tax classification should be reviewed by a CPA or tax advisor.
+                </p>
+              </div>
             </section>
 
             <section className="grid gap-5">

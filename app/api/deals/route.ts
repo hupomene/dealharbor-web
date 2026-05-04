@@ -118,6 +118,26 @@ export async function POST(request: Request) {
         : null,
     allocated_ffe:
       typeof body.allocated_ffe === "number" ? body.allocated_ffe : null,
+    
+    allocated_leasehold:
+      body.allocated_leasehold === null
+        ? null
+        : body.allocated_leasehold !== undefined
+        ? Number(body.allocated_leasehold)
+        : undefined,
+    allocated_customer_contracts:
+      body.allocated_customer_contracts === null
+        ? null
+        : body.allocated_customer_contracts !== undefined
+        ? Number(body.allocated_customer_contracts)
+        : undefined,
+    allocated_trade_name:
+      body.allocated_trade_name === null
+        ? null
+        : body.allocated_trade_name !== undefined
+        ? Number(body.allocated_trade_name)
+        : undefined,
+
     allocated_non_compete:
       body.allocated_non_compete === null
         ? null
