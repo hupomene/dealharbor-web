@@ -345,6 +345,21 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       body.closing_checklist_text !== undefined
         ? normalizeString(body.closing_checklist_text)
         : undefined,
+
+    promissory_first_payment_date:
+      body.promissory_first_payment_date === null
+        ? null
+        : body.promissory_first_payment_date !== undefined
+        ? body.promissory_first_payment_date
+        : undefined,
+
+    promissory_maturity_date:
+      body.promissory_maturity_date === null
+        ? null
+        : body.promissory_maturity_date !== undefined
+        ? body.promissory_maturity_date
+        : undefined,
+
   };
 
   const cleanPayload = Object.fromEntries(

@@ -196,6 +196,12 @@ export async function POST(request: Request) {
     landlord_consent_required: Boolean(body.landlord_consent_required ?? false),
     lease_assignment_required: Boolean(body.lease_assignment_required ?? false),
 
+    promissory_first_payment_date:
+      body.promissory_first_payment_date ?? null,
+
+    promissory_maturity_date:
+      body.promissory_maturity_date ?? null,
+
   };
 
   const { data, error } = await supabase

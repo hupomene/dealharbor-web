@@ -40,6 +40,16 @@ type DealFormData = {
 
   equipment_items_text?: string | null;
   closing_checklist_text?: string | null;
+  assumed_liabilities_text?: string | null;
+  excluded_liabilities_text?: string | null;
+
+  promissory_interest_rate?: number | null;
+  promissory_term_months?: number | null;
+  promissory_first_payment_date?: string | null;
+  promissory_maturity_date?: string | null;
+
+  non_compete_restricted_business?: string | null;
+  non_compete_territory?: string | null;
 };
 
 function formatDate(value: string | null) {
@@ -180,6 +190,38 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
   );
   const [closingChecklistText, setClosingChecklistText] = useState(
     deal.closing_checklist_text ?? ""
+  );
+
+  const [assumedLiabilitiesText, setAssumedLiabilitiesText] = useState(
+    deal.assumed_liabilities_text ?? ""
+  );
+
+  const [excludedLiabilitiesText, setExcludedLiabilitiesText] = useState(
+    deal.excluded_liabilities_text ?? ""
+  );
+
+  const [promissoryInterestRate, setPromissoryInterestRate] = useState(
+    numberToInput(deal.promissory_interest_rate)
+  );
+
+  const [promissoryTermMonths, setPromissoryTermMonths] = useState(
+    numberToInput(deal.promissory_term_months)
+  );
+
+  const [promissoryFirstPaymentDate, setPromissoryFirstPaymentDate] = useState(
+    normalizeDate(deal.promissory_first_payment_date)
+  );
+
+  const [promissoryMaturityDate, setPromissoryMaturityDate] = useState(
+    normalizeDate(deal.promissory_maturity_date)
+  );
+
+  const [nonCompeteRestrictedBusiness, setNonCompeteRestrictedBusiness] = useState(
+    deal.non_compete_restricted_business ?? ""
+  );
+
+  const [nonCompeteTerritory, setNonCompeteTerritory] = useState(
+    deal.non_compete_territory ?? ""
   );
 
   const [saving, setSaving] = useState(false);
@@ -414,7 +456,34 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
         equipmentItemsText.trim() !== "" ? equipmentItemsText.trim() : null,
       closing_checklist_text:
         closingChecklistText.trim() !== "" ? closingChecklistText.trim() : null,
-    };
+    
+      assumed_liabilities_text:
+        assumedLiabilitiesText.trim() !== "" ? assumedLiabilitiesText.trim() : null,
+
+      excluded_liabilities_text:
+        excludedLiabilitiesText.trim() !== "" ? excludedLiabilitiesText.trim() : null,
+
+      promissory_interest_rate:
+        promissoryInterestRate !== "" ? Number(promissoryInterestRate) : null,
+
+      promissory_term_months:
+        promissoryTermMonths !== "" ? Number(promissoryTermMonths) : null,
+
+      promissory_first_payment_date:
+        promissoryFirstPaymentDate.trim() !== "" ? promissoryFirstPaymentDate : null,
+
+      promissory_maturity_date:
+        promissoryMaturityDate.trim() !== "" ? promissoryMaturityDate : null,
+
+      non_compete_restricted_business:
+        nonCompeteRestrictedBusiness.trim() !== ""
+          ? nonCompeteRestrictedBusiness.trim()
+          : null,
+
+      non_compete_territory:
+        nonCompeteTerritory.trim() !== "" ? nonCompeteTerritory.trim() : null,
+
+      };
 
     console.log("SUBMIT BODY:", submitBody);
 
@@ -730,6 +799,30 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
               </div>
             </section>
 
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  Assumed Liabilities
+                </label>
+                <textarea
+                  value={assumedLiabilitiesText}
+                  onChange={(e) => setAssumedLiabilitiesText(e.target.value)}
+                  className="min-h-24 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                  placeholder="Lease obligations after closing, assigned vendor contracts after closing, utility obligations after closing..."
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  Excluded Liabilities
+                </label>
+                <textarea
+                  value={excludedLiabilitiesText}
+                  onChange={(e) => setExcludedLiabilitiesText(e.target.value)}
+                  className="min-h-24 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                  placeholder="Seller taxes before closing, employee wages before closing, accounts payable before closing..."
+                />
+              </div>
+
             <section className="grid gap-5">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-slate-900">
@@ -790,6 +883,62 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                     onChange={(e) => setSellerFinancingAmount(e.target.value)}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
                     placeholder="160000"
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Interest Rate (%)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={promissoryInterestRate}
+                    onChange={(e) => setPromissoryInterestRate(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                    placeholder="7.5"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Term Months
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={promissoryTermMonths}
+                    onChange={(e) => setPromissoryTermMonths(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                    placeholder="60"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    First Payment Date
+                  </label>
+                  <input
+                    type="date"
+                    value={promissoryFirstPaymentDate}
+                    onChange={(e) => setPromissoryFirstPaymentDate(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Maturity Date
+                  </label>
+                  <input
+                    type="date"
+                    value={promissoryMaturityDate}
+                    onChange={(e) => setPromissoryMaturityDate(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
                   />
                 </div>
               </div>
@@ -974,6 +1123,31 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                     placeholder="10"
                   />
                 </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Restricted Business
+                  </label>
+                  <textarea
+                    value={nonCompeteRestrictedBusiness}
+                    onChange={(e) => setNonCompeteRestrictedBusiness(e.target.value)}
+                    className="min-h-20 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                    placeholder="Laundry, dry cleaning, garment care, wash-and-fold, commercial laundry services..."
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Restricted Territory
+                  </label>
+                  <textarea
+                    value={nonCompeteTerritory}
+                    onChange={(e) => setNonCompeteTerritory(e.target.value)}
+                    className="min-h-20 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                    placeholder="25-mile radius from 1450 Greenville Avenue, Dallas, TX 75206"
+                  />
+                </div>
+
               </div>
             </section>
 
