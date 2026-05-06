@@ -86,6 +86,55 @@ export async function PATCH(request: Request, { params }: RouteContext) {
         ? body.seller_financing
         : undefined,
 
+    deal_name:
+      body.deal_name === null
+        ? null
+        : body.deal_name !== undefined
+        ? body.deal_name
+        : undefined,
+
+    business_type:
+      body.business_type === null
+        ? null
+        : body.business_type !== undefined
+        ? body.business_type
+        : undefined,
+
+    buyer_state_of_organization:
+      body.buyer_state_of_organization === null
+        ? null
+        : body.buyer_state_of_organization !== undefined
+        ? body.buyer_state_of_organization
+        : undefined,
+
+    seller_state_of_organization:
+      body.seller_state_of_organization === null
+        ? null
+        : body.seller_state_of_organization !== undefined
+        ? body.seller_state_of_organization
+        : undefined,
+
+    seller_ein:
+      body.seller_ein === null
+        ? null
+        : body.seller_ein !== undefined
+        ? body.seller_ein
+        : undefined,
+
+    business_location:
+      body.business_location === null
+        ? null
+        : body.business_location !== undefined
+        ? body.business_location
+        : undefined,
+
+    closing_method:
+      body.closing_method === null
+        ? null
+        : body.closing_method !== undefined
+        ? body.closing_method
+        : undefined,
+
     seller_name:
       body.seller_name !== undefined ? normalizeString(body.seller_name) : undefined,
     seller_address:
@@ -111,6 +160,63 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       body.included_assets_text !== undefined
         ? normalizeString(body.included_assets_text)
         : undefined,
+
+    assumed_liabilities_text:
+      body.assumed_liabilities_text === null
+        ? null
+        : body.assumed_liabilities_text !== undefined
+        ? body.assumed_liabilities_text
+        : undefined,
+
+    excluded_liabilities_text:
+      body.excluded_liabilities_text === null
+        ? null
+        : body.excluded_liabilities_text !== undefined
+        ? body.excluded_liabilities_text
+        : undefined,
+
+    promissory_note_terms_text:
+      body.promissory_note_terms_text === null
+        ? null
+        : body.promissory_note_terms_text !== undefined
+        ? body.promissory_note_terms_text
+        : undefined,
+
+    non_compete_restricted_party:
+      body.non_compete_restricted_party === null
+        ? null
+        : body.non_compete_restricted_party !== undefined
+        ? body.non_compete_restricted_party
+        : undefined,
+
+    non_compete_restricted_business:
+      body.non_compete_restricted_business === null
+        ? null
+        : body.non_compete_restricted_business !== undefined
+        ? body.non_compete_restricted_business
+        : undefined,
+
+    non_compete_territory:
+      body.non_compete_territory === null
+        ? null
+        : body.non_compete_territory !== undefined
+        ? body.non_compete_territory
+        : undefined,
+
+    landlord_consent_text:
+      body.landlord_consent_text === null
+        ? null
+        : body.landlord_consent_text !== undefined
+        ? body.landlord_consent_text
+        : undefined,
+
+    lease_assignment_text:
+      body.lease_assignment_text === null
+        ? null
+        : body.lease_assignment_text !== undefined
+        ? body.lease_assignment_text
+        : undefined,
+
     excluded_assets_text:
       body.excluded_assets_text !== undefined
         ? normalizeString(body.excluded_assets_text)
@@ -179,6 +285,38 @@ export async function PATCH(request: Request, { params }: RouteContext) {
         : body.allocated_goodwill !== undefined
         ? normalizeNumber(body.allocated_goodwill)
         : undefined,
+
+    promissory_interest_rate:
+      body.promissory_interest_rate === null
+        ? null
+        : body.promissory_interest_rate !== undefined
+        ? normalizeNumber(body.promissory_interest_rate)
+        : undefined,
+
+    promissory_term_months:
+      body.promissory_term_months === null
+        ? null
+        : body.promissory_term_months !== undefined
+        ? normalizeNumber(body.promissory_term_months)
+        : undefined,
+
+    non_solicitation_years:
+      body.non_solicitation_years === null
+        ? null
+        : body.non_solicitation_years !== undefined
+        ? normalizeNumber(body.non_solicitation_years)
+        : undefined,
+
+    landlord_consent_required:
+      body.landlord_consent_required !== undefined
+        ? Boolean(body.landlord_consent_required)
+        : undefined,
+
+    lease_assignment_required:
+      body.lease_assignment_required !== undefined
+        ? Boolean(body.lease_assignment_required)
+        : undefined,
+
     allocation_total:
       body.allocation_total === null
         ? null

@@ -168,6 +168,34 @@ export async function POST(request: Request) {
       typeof body.closing_checklist_text === "string"
         ? body.closing_checklist_text.trim() || null
         : null,
+
+    deal_name: body.deal_name ?? null,
+    business_type: body.business_type ?? null,
+    buyer_state_of_organization: body.buyer_state_of_organization ?? null,
+    seller_state_of_organization: body.seller_state_of_organization ?? null,
+    seller_ein: body.seller_ein ?? null,
+    business_location: body.business_location ?? null,
+    closing_method: body.closing_method ?? null,
+
+    assumed_liabilities_text: body.assumed_liabilities_text ?? null,
+    excluded_liabilities_text: body.excluded_liabilities_text ?? null,
+    promissory_note_terms_text: body.promissory_note_terms_text ?? null,
+    non_compete_restricted_party: body.non_compete_restricted_party ?? null,
+    non_compete_restricted_business: body.non_compete_restricted_business ?? null,
+    non_compete_territory: body.non_compete_territory ?? null,
+    landlord_consent_text: body.landlord_consent_text ?? null,
+    lease_assignment_text: body.lease_assignment_text ?? null,
+
+    promissory_interest_rate:
+      body.promissory_interest_rate !== undefined ? Number(body.promissory_interest_rate) : null,
+    promissory_term_months:
+      body.promissory_term_months !== undefined ? Number(body.promissory_term_months) : null,
+    non_solicitation_years:
+      body.non_solicitation_years !== undefined ? Number(body.non_solicitation_years) : null,
+
+    landlord_consent_required: Boolean(body.landlord_consent_required ?? false),
+    lease_assignment_required: Boolean(body.lease_assignment_required ?? false),
+
   };
 
   const { data, error } = await supabase

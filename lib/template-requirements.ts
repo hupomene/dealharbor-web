@@ -19,6 +19,11 @@ export const TEMPLATE_REQUIREMENTS: Record<TemplateKey, RequirementField[]> = {
     { field: "agreement_date", label: "Agreement Date" },
     { field: "closing_date", label: "Closing Date" },
     { field: "purchase_price", label: "Purchase Price" },
+    { field: "included_assets_text", label: "Included Assets" },
+    { field: "excluded_assets_text", label: "Excluded Assets" },
+    { field: "assumed_liabilities_text", label: "Assumed Liabilities" },
+    { field: "excluded_liabilities_text", label: "Excluded Liabilities" },
+    { field: "allocation_total", label: "Allocation Total", treatZeroAsMissing: true },
     { field: "state", label: "State" },
   ],
   bill_of_sale: [
@@ -38,6 +43,11 @@ export const TEMPLATE_REQUIREMENTS: Record<TemplateKey, RequirementField[]> = {
     { field: "state", label: "State" },
     { field: "seller_financing_amount", label: "Seller Financing Amount" },
     { field: "closing_date", label: "Issue Date / Closing Date" },
+    { field: "seller_financing_amount", label: "Seller Financing Amount", treatZeroAsMissing: true },
+    { field: "promissory_interest_rate", label: "Interest Rate" },
+    { field: "promissory_term_months", label: "Term Months" },
+    { field: "promissory_first_payment_date", label: "First Payment Date" },
+    { field: "promissory_maturity_date", label: "Maturity Date" },
   ],
   non_compete: [
     { field: "business_name", label: "Business Name" },
@@ -55,6 +65,9 @@ export const TEMPLATE_REQUIREMENTS: Record<TemplateKey, RequirementField[]> = {
       label: "Non-Compete Miles",
       treatZeroAsMissing: true,
     },
+    { field: "allocated_non_compete", label: "Non-Compete Allocation", treatZeroAsMissing: true },
+    { field: "non_compete_restricted_business", label: "Restricted Business" },
+    { field: "non_compete_territory", label: "Restricted Territory" },
   ],
   irs_8594: [
     { field: "business_name", label: "Business Name" },
@@ -70,6 +83,9 @@ export const TEMPLATE_REQUIREMENTS: Record<TemplateKey, RequirementField[]> = {
       treatZeroAsMissing: true,
     },
     { field: "allocated_goodwill", label: "Allocated Goodwill" },
+    { field: "allocated_leasehold", label: "Allocated Leasehold" },
+    { field: "allocated_customer_contracts", label: "Allocated Customer Contracts" },
+    { field: "allocated_trade_name", label: "Allocated Trade Name / Website / Phone Numbers" },
   ],
 };
 
