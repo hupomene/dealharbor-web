@@ -169,22 +169,80 @@ export async function POST(request: Request) {
         ? body.closing_checklist_text.trim() || null
         : null,
 
-    deal_name: body.deal_name ?? null,
-    business_type: body.business_type ?? null,
-    buyer_state_of_organization: body.buyer_state_of_organization ?? null,
-    seller_state_of_organization: body.seller_state_of_organization ?? null,
-    seller_ein: body.seller_ein ?? null,
-    business_location: body.business_location ?? null,
-    closing_method: body.closing_method ?? null,
+    deal_name:
+      typeof body.deal_name === "string"
+        ? body.deal_name.trim() || null
+        : null,
 
-    assumed_liabilities_text: body.assumed_liabilities_text ?? null,
-    excluded_liabilities_text: body.excluded_liabilities_text ?? null,
-    promissory_note_terms_text: body.promissory_note_terms_text ?? null,
-    non_compete_restricted_party: body.non_compete_restricted_party ?? null,
-    non_compete_restricted_business: body.non_compete_restricted_business ?? null,
-    non_compete_territory: body.non_compete_territory ?? null,
-    landlord_consent_text: body.landlord_consent_text ?? null,
-    lease_assignment_text: body.lease_assignment_text ?? null,
+    business_type:
+      typeof body.business_type === "string"
+        ? body.business_type.trim() || null
+        : null,
+
+    buyer_state_of_organization:
+      typeof body.buyer_state_of_organization === "string"
+        ? body.buyer_state_of_organization.trim() || null
+        : null,
+
+    seller_state_of_organization:
+      typeof body.seller_state_of_organization === "string"
+        ? body.seller_state_of_organization.trim() || null
+        : null,
+
+    seller_ein:
+      typeof body.seller_ein === "string"
+        ? body.seller_ein.trim() || null
+        : null,
+
+    business_location:
+      typeof body.business_location === "string"
+        ? body.business_location.trim() || null
+        : null,
+
+    closing_method:
+      typeof body.closing_method === "string"
+        ? body.closing_method.trim() || null
+        : null,
+
+    assumed_liabilities_text:
+      typeof body.assumed_liabilities_text === "string"
+        ? body.assumed_liabilities_text.trim() || null
+        : null,
+
+    excluded_liabilities_text:
+      typeof body.excluded_liabilities_text === "string"
+        ? body.excluded_liabilities_text.trim() || null
+        : null,
+
+    promissory_note_terms_text:
+      typeof body.promissory_note_terms_text === "string"
+        ? body.promissory_note_terms_text.trim() || null
+        : null,
+
+    non_compete_restricted_party:
+      typeof body.non_compete_restricted_party === "string"
+        ? body.non_compete_restricted_party.trim() || null
+        : null,
+
+    non_compete_restricted_business:
+      typeof body.non_compete_restricted_business === "string"
+        ? body.non_compete_restricted_business.trim() || null
+        : null,
+
+    non_compete_territory:
+      typeof body.non_compete_territory === "string"
+        ? body.non_compete_territory.trim() || null
+        : null,
+
+    landlord_consent_text:
+      typeof body.landlord_consent_text === "string"
+        ? body.landlord_consent_text.trim() || null
+        : null,
+
+    lease_assignment_text:
+      typeof body.lease_assignment_text === "string"
+        ? body.lease_assignment_text.trim() || null
+        : null,
 
     promissory_interest_rate:
       body.promissory_interest_rate !== undefined ? Number(body.promissory_interest_rate) : null,
@@ -197,10 +255,14 @@ export async function POST(request: Request) {
     lease_assignment_required: Boolean(body.lease_assignment_required ?? false),
 
     promissory_first_payment_date:
-      body.promissory_first_payment_date ?? null,
+      typeof body.promissory_first_payment_date === "string"
+        ? body.promissory_first_payment_date.trim() || null
+        : null,
 
     promissory_maturity_date:
-      body.promissory_maturity_date ?? null,
+      typeof body.promissory_maturity_date === "string"
+        ? body.promissory_maturity_date.trim() || null
+        : null,
 
   };
 
