@@ -13,6 +13,13 @@ type DealFormData = {
   seller_financing: boolean | null;
   created_at: string | null;
 
+  business_type?: string | null;
+  business_location?: string | null;
+  buyer_state_of_organization?: string | null;
+  seller_state_of_organization?: string | null;
+  seller_ein?: string | null;
+  closing_method?: string | null;
+
   seller_name?: string | null;
   seller_address?: string | null;
   buyer_name?: string | null;
@@ -128,13 +135,28 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
 
   const [businessName, setBusinessName] = useState(deal.business_name ?? "");
   const [purchasePrice, setPurchasePrice] = useState(numberToInput(deal.purchase_price));
+  const [businessType, setBusinessType] = useState(deal.business_type ?? "");
+  const [businessLocation, setBusinessLocation] = useState(
+    deal.business_location ?? ""
+  );
+  const [closingMethod, setClosingMethod] = useState(
+    deal.closing_method ?? ""
+  );
   const [downPayment, setDownPayment] = useState(numberToInput(deal.down_payment));
   const [sellerFinancing, setSellerFinancing] = useState(!!deal.seller_financing);
 
   const [sellerName, setSellerName] = useState(deal.seller_name ?? "");
   const [sellerAddress, setSellerAddress] = useState(deal.seller_address ?? "");
+  const [sellerStateOfOrganization, setSellerStateOfOrganization] = useState(
+    deal.seller_state_of_organization ?? ""
+  );
+  const [sellerEin, setSellerEin] = useState(deal.seller_ein ?? "");
+
   const [buyerName, setBuyerName] = useState(deal.buyer_name ?? "");
   const [buyerAddress, setBuyerAddress] = useState(deal.buyer_address ?? "");
+  const [buyerStateOfOrganization, setBuyerStateOfOrganization] = useState(
+    deal.buyer_state_of_organization ?? ""
+  );
   const [agreementDate, setAgreementDate] = useState(
     normalizeDate(deal.agreement_date)
   );
@@ -411,14 +433,28 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
 
     const submitBody = {
       business_name: businessName.trim(),
+      business_type: businessType.trim() !== "" ? businessType.trim() : null,
+      business_location:
+        businessLocation.trim() !== "" ? businessLocation.trim() : null,
+      closing_method: closingMethod.trim() !== "" ? closingMethod.trim() : null,
       purchase_price: purchasePrice !== "" ? Number(purchasePrice) : null,
       down_payment: downPayment !== "" ? Number(downPayment) : null,
       seller_financing: sellerFinancing,
 
       seller_name: sellerName.trim() !== "" ? sellerName.trim() : null,
       seller_address: sellerAddress.trim() !== "" ? sellerAddress.trim() : null,
+      seller_state_of_organization:
+        sellerStateOfOrganization.trim() !== ""
+          ? sellerStateOfOrganization.trim()
+          : null,
+      seller_ein: sellerEin.trim() !== "" ? sellerEin.trim() : null,
+
       buyer_name: buyerName.trim() !== "" ? buyerName.trim() : null,
       buyer_address: buyerAddress.trim() !== "" ? buyerAddress.trim() : null,
+      buyer_state_of_organization:
+        buyerStateOfOrganization.trim() !== ""
+          ? buyerStateOfOrganization.trim()
+          : null,
       agreement_date: agreementDate.trim() !== "" ? agreementDate : null,
       closing_date: closingDate.trim() !== "" ? closingDate : null,
 
@@ -637,6 +673,47 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                 />
               </div>
 
+              <div className="grid gap-5 md:grid-cols-3">
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  Business Type
+                </label>
+                <input
+                  type="text"
+                  value={businessType}
+                  onChange={(e) => setBusinessType(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                  placeholder="Laundry and Dry Cleaning Business"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  Business Location
+                </label>
+                <input
+                  type="text"
+                  value={businessLocation}
+                  onChange={(e) => setBusinessLocation(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                  placeholder="1450 Greenville Avenue, Dallas, TX 75206"
+                />
+              </div>
+
+              <div>
+                <label className="mb-2 block text-sm font-medium text-slate-700">
+                  Closing Method
+                </label>
+                <input
+                  type="text"
+                  value={closingMethod}
+                  onChange={(e) => setClosingMethod(e.target.value)}
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                  placeholder="Wire transfer and signed closing documents"
+                />
+              </div>
+            </div>
+
               <div className="grid gap-5 md:grid-cols-2">
                 <div>
                   <label className="mb-2 block text-sm font-medium text-slate-700">
@@ -751,6 +828,47 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                     onChange={(e) => setBuyerAddress(e.target.value)}
                     className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
                     placeholder="Buyer address"
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-5 md:grid-cols-3">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Seller State of Organization
+                  </label>
+                  <input
+                    type="text"
+                    value={sellerStateOfOrganization}
+                    onChange={(e) => setSellerStateOfOrganization(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                    placeholder="Texas"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Buyer State of Organization
+                  </label>
+                  <input
+                    type="text"
+                    value={buyerStateOfOrganization}
+                    onChange={(e) => setBuyerStateOfOrganization(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                    placeholder="Texas"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Seller EIN
+                  </label>
+                  <input
+                    type="text"
+                    value={sellerEin}
+                    onChange={(e) => setSellerEin(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                    placeholder="XX-XXXXXXX"
                   />
                 </div>
               </div>
