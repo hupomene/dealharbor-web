@@ -90,49 +90,49 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       body.deal_name === null
         ? null
         : body.deal_name !== undefined
-        ? body.deal_name
+        ? normalizeString(body.deal_name)
         : undefined,
 
     business_type:
       body.business_type === null
         ? null
         : body.business_type !== undefined
-        ? body.business_type
+        ? normalizeString(body.business_type)
         : undefined,
 
     buyer_state_of_organization:
       body.buyer_state_of_organization === null
         ? null
         : body.buyer_state_of_organization !== undefined
-        ? body.buyer_state_of_organization
+        ? normalizeString(body.buyer_state_of_organization)
         : undefined,
 
     seller_state_of_organization:
       body.seller_state_of_organization === null
         ? null
         : body.seller_state_of_organization !== undefined
-        ? body.seller_state_of_organization
+        ? normalizeString(body.seller_state_of_organization)
         : undefined,
 
     seller_ein:
       body.seller_ein === null
         ? null
         : body.seller_ein !== undefined
-        ? body.seller_ein
+        ? normalizeString(body.seller_ein)
         : undefined,
 
     business_location:
       body.business_location === null
         ? null
         : body.business_location !== undefined
-        ? body.business_location
+        ? normalizeString(body.business_location)
         : undefined,
 
     closing_method:
       body.closing_method === null
         ? null
         : body.closing_method !== undefined
-        ? body.closing_method
+        ? normalizeString(body.closing_method)
         : undefined,
 
     seller_name:
@@ -350,14 +350,14 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       body.promissory_first_payment_date === null
         ? null
         : body.promissory_first_payment_date !== undefined
-        ? body.promissory_first_payment_date
+        ? normalizeString(body.promissory_first_payment_date)
         : undefined,
 
     promissory_maturity_date:
       body.promissory_maturity_date === null
         ? null
         : body.promissory_maturity_date !== undefined
-        ? body.promissory_maturity_date
+        ? normalizeString(body.promissory_maturity_date)
         : undefined,
 
   };
