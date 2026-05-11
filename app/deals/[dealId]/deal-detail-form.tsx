@@ -899,8 +899,15 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                 <textarea
                   value={includedAssetsText}
                   onChange={(e) => setIncludedAssetsText(e.target.value)}
-                  className="min-h-24 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder="Furniture, fixtures, equipment, inventory, goodwill..."
+                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  rows={4}
+                  placeholder={`Enter one item per line
+
+                Commercial washers
+                Dryers
+                Pressing machines
+                Customer waiting-area furniture
+                POS terminals`}
                 />
               </div>
 
@@ -912,7 +919,11 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   value={excludedAssetsText}
                   onChange={(e) => setExcludedAssetsText(e.target.value)}
                   className="min-h-24 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder="Seller cash on hand, personal vehicle, accounts receivable..."
+                  placeholder={`Enter one item per line
+
+                  Seller cash on hand
+                  Personal vehicle
+                  Accounts receivable`}
                 />
               </div>
             </section>
@@ -925,7 +936,11 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   value={assumedLiabilitiesText}
                   onChange={(e) => setAssumedLiabilitiesText(e.target.value)}
                   className="min-h-24 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder="Lease obligations after closing, assigned vendor contracts after closing, utility obligations after closing..."
+                  placeholder={`Enter one item per line
+
+                  Equipment lease obligations
+                  Customer prepaid orders
+                  Assigned service contracts`}
                 />
               </div>
 
@@ -937,7 +952,11 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   value={excludedLiabilitiesText}
                   onChange={(e) => setExcludedLiabilitiesText(e.target.value)}
                   className="min-h-24 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder="Seller taxes before closing, employee wages before closing, accounts payable before closing..."
+                  placeholder={`Enter one item per line
+
+                  Seller tax liabilities
+                  Pending litigation
+                  Pre-closing payroll obligations`}
                 />
               </div>
 
@@ -1250,7 +1269,13 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                     value={nonCompeteRestrictedBusiness}
                     onChange={(e) => setNonCompeteRestrictedBusiness(e.target.value)}
                     className="min-h-20 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                    placeholder="Laundry, dry cleaning, garment care, wash-and-fold, commercial laundry services..."
+                
+                    placeholder={`Enter one item per line
+
+                    Laundry
+                    dry cleaning
+                    wash-and-fold 
+                    commercial laundry services`}
                   />
                 </div>
 
@@ -1283,7 +1308,12 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   value={equipmentItemsText}
                   onChange={(e) => setEquipmentItemsText(e.target.value)}
                   className="min-h-32 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder={"Espresso Machine | SN-1001 | Good\nPOS Terminal | POS-223 | Excellent"}
+                  placeholder={`Enter one item per line
+
+                  Commercial Washer #1
+                  Commercial Dryer #2
+                  Pressing Machine
+                  POS Terminal`}
                 />
               </div>
 
