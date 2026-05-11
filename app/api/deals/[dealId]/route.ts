@@ -165,7 +165,7 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       body.assumed_liabilities_text === null
         ? null
         : body.assumed_liabilities_text !== undefined
-        ? body.assumed_liabilities_text
+        ? normalizeString(body.assumed_liabilities_text)
         : undefined,
 
     excluded_liabilities_text:
