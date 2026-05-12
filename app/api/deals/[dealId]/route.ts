@@ -12,7 +12,14 @@ function normalizeString(value: unknown) {
 }
 
 function normalizeNumber(value: unknown) {
-  return typeof value === "number" && !Number.isNaN(value) ? value : null;
+  if (value === null || value === undefined || value === "") return null;
+
+  const parsed =
+    typeof value === "number"
+      ? value
+      : Number(String(value).replace(/[$,]/g, ""));
+
+  return Number.isNaN(parsed) ? null : parsed;
 }
 
 export async function GET(_request: Request, { params }: RouteContext) {
