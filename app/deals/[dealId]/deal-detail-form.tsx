@@ -15,10 +15,10 @@ type DealFormData = {
 
   business_type?: string | null;
   business_location?: string | null;
-  buyer_state_of_organization?: string | null;
-  seller_state_of_organization?: string | null;
-  seller_ein?: string | null;
   closing_method?: string | null;
+  seller_state_of_organization?: string | null;
+  buyer_state_of_organization?: string | null;
+  seller_ein?: string | null;
 
   seller_name?: string | null;
   seller_address?: string | null;
@@ -134,7 +134,6 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
   const router = useRouter();
 
   const [businessName, setBusinessName] = useState(deal.business_name ?? "");
-  const [purchasePrice, setPurchasePrice] = useState(numberToInput(deal.purchase_price));
   const [businessType, setBusinessType] = useState(deal.business_type ?? "");
   const [businessLocation, setBusinessLocation] = useState(
     deal.business_location ?? ""
@@ -142,6 +141,7 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
   const [closingMethod, setClosingMethod] = useState(
     deal.closing_method ?? ""
   );
+  const [purchasePrice, setPurchasePrice] = useState(numberToInput(deal.purchase_price));
   const [downPayment, setDownPayment] = useState(numberToInput(deal.down_payment));
   const [sellerFinancing, setSellerFinancing] = useState(!!deal.seller_financing);
 
@@ -151,7 +151,6 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
     deal.seller_state_of_organization ?? ""
   );
   const [sellerEin, setSellerEin] = useState(deal.seller_ein ?? "");
-
   const [buyerName, setBuyerName] = useState(deal.buyer_name ?? "");
   const [buyerAddress, setBuyerAddress] = useState(deal.buyer_address ?? "");
   const [buyerStateOfOrganization, setBuyerStateOfOrganization] = useState(
@@ -448,7 +447,6 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
           ? sellerStateOfOrganization.trim()
           : null,
       seller_ein: sellerEin.trim() !== "" ? sellerEin.trim() : null,
-
       buyer_name: buyerName.trim() !== "" ? buyerName.trim() : null,
       buyer_address: buyerAddress.trim() !== "" ? buyerAddress.trim() : null,
       buyer_state_of_organization:
@@ -674,45 +672,45 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
               </div>
 
               <div className="grid gap-5 md:grid-cols-3">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  Business Type
-                </label>
-                <input
-                  type="text"
-                  value={businessType}
-                  onChange={(e) => setBusinessType(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder="Laundry and Dry Cleaning Business"
-                />
-              </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Business Type
+                  </label>
+                  <input
+                    type="text"
+                    value={businessType}
+                    onChange={(e) => setBusinessType(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                    placeholder="Laundry and Dry Cleaning Business"
+                  />
+                </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  Business Location
-                </label>
-                <input
-                  type="text"
-                  value={businessLocation}
-                  onChange={(e) => setBusinessLocation(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder="1450 Greenville Avenue, Dallas, TX 75206"
-                />
-              </div>
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Business Location
+                  </label>
+                  <input
+                    type="text"
+                    value={businessLocation}
+                    onChange={(e) => setBusinessLocation(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                    placeholder="1450 Greenville Avenue, Dallas, TX 75206"
+                  />
+                </div>
 
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  Closing Method
-                </label>
-                <input
-                  type="text"
-                  value={closingMethod}
-                  onChange={(e) => setClosingMethod(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder="Wire transfer and signed closing documents"
-                />
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Closing Method
+                  </label>
+                  <input
+                    type="text"
+                    value={closingMethod}
+                    onChange={(e) => setClosingMethod(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                    placeholder="Wire transfer and signed closing documents"
+                  />
+                </div>
               </div>
-            </div>
 
               <div className="grid gap-5 md:grid-cols-2">
                 <div>
@@ -899,15 +897,8 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                 <textarea
                   value={includedAssetsText}
                   onChange={(e) => setIncludedAssetsText(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  rows={4}
-                  placeholder={`Enter one item per line
-
-                Commercial washers
-                Dryers
-                Pressing machines
-                Customer waiting-area furniture
-                POS terminals`}
+                  className="min-h-24 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                  placeholder="Furniture, fixtures, equipment, inventory, goodwill..."
                 />
               </div>
 
@@ -919,11 +910,7 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   value={excludedAssetsText}
                   onChange={(e) => setExcludedAssetsText(e.target.value)}
                   className="min-h-24 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder={`Enter one item per line
-
-                  Seller cash on hand
-                  Personal vehicle
-                  Accounts receivable`}
+                  placeholder="Seller cash on hand, personal vehicle, accounts receivable..."
                 />
               </div>
             </section>
@@ -936,11 +923,7 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   value={assumedLiabilitiesText}
                   onChange={(e) => setAssumedLiabilitiesText(e.target.value)}
                   className="min-h-24 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder={`Enter one item per line
-
-                  Equipment lease obligations
-                  Customer prepaid orders
-                  Assigned service contracts`}
+                  placeholder="Lease obligations after closing, assigned vendor contracts after closing, utility obligations after closing..."
                 />
               </div>
 
@@ -952,11 +935,7 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   value={excludedLiabilitiesText}
                   onChange={(e) => setExcludedLiabilitiesText(e.target.value)}
                   className="min-h-24 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder={`Enter one item per line
-
-                  Seller tax liabilities
-                  Pending litigation
-                  Pre-closing payroll obligations`}
+                  placeholder="Seller taxes before closing, employee wages before closing, accounts payable before closing..."
                 />
               </div>
 
@@ -1269,13 +1248,7 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                     value={nonCompeteRestrictedBusiness}
                     onChange={(e) => setNonCompeteRestrictedBusiness(e.target.value)}
                     className="min-h-20 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                
-                    placeholder={`Enter one item per line
-
-                    Laundry
-                    dry cleaning
-                    wash-and-fold 
-                    commercial laundry services`}
+                    placeholder="Laundry, dry cleaning, garment care, wash-and-fold, commercial laundry services..."
                   />
                 </div>
 
@@ -1308,12 +1281,7 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   value={equipmentItemsText}
                   onChange={(e) => setEquipmentItemsText(e.target.value)}
                   className="min-h-32 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder={`Enter one item per line
-
-                  Commercial Washer #1
-                  Commercial Dryer #2
-                  Pressing Machine
-                  POS Terminal`}
+                  placeholder={"Espresso Machine | SN-1001 | Good\nPOS Terminal | POS-223 | Excellent"}
                 />
               </div>
 

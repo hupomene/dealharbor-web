@@ -179,49 +179,49 @@ export async function PATCH(request: Request, { params }: RouteContext) {
       body.excluded_liabilities_text === null
         ? null
         : body.excluded_liabilities_text !== undefined
-        ? body.excluded_liabilities_text
+        ? normalizeString(body.excluded_liabilities_text)
         : undefined,
 
     promissory_note_terms_text:
       body.promissory_note_terms_text === null
         ? null
         : body.promissory_note_terms_text !== undefined
-        ? body.promissory_note_terms_text
+        ? normalizeString(body.promissory_note_terms_text)
         : undefined,
 
     non_compete_restricted_party:
       body.non_compete_restricted_party === null
         ? null
         : body.non_compete_restricted_party !== undefined
-        ? body.non_compete_restricted_party
+        ? normalizeString(body.non_compete_restricted_party)
         : undefined,
 
     non_compete_restricted_business:
       body.non_compete_restricted_business === null
         ? null
         : body.non_compete_restricted_business !== undefined
-        ? body.non_compete_restricted_business
+        ? normalizeString(body.non_compete_restricted_business)
         : undefined,
 
     non_compete_territory:
       body.non_compete_territory === null
         ? null
         : body.non_compete_territory !== undefined
-        ? body.non_compete_territory
+        ? normalizeString(body.non_compete_territory)
         : undefined,
 
     landlord_consent_text:
       body.landlord_consent_text === null
         ? null
         : body.landlord_consent_text !== undefined
-        ? body.landlord_consent_text
+        ? normalizeString(body.landlord_consent_text)
         : undefined,
 
     lease_assignment_text:
       body.lease_assignment_text === null
         ? null
         : body.lease_assignment_text !== undefined
-        ? body.lease_assignment_text
+        ? normalizeString(body.lease_assignment_text)
         : undefined,
 
     excluded_assets_text:
