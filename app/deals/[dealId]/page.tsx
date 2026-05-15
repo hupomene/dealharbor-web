@@ -42,38 +42,7 @@ export default async function DealDetailPage({ params }: PageProps) {
 
   const { data, error } = await supabase
     .from("deals")
-    .select(
-      `
-        id,
-        user_id,
-        business_name,
-        purchase_price,
-        down_payment,
-        seller_financing,
-        created_at,
-        seller_name,
-        seller_address,
-        buyer_name,
-        buyer_address,
-        agreement_date,
-        closing_date,
-        included_assets_text,
-        excluded_assets_text,
-        deposit_amount,
-        cash_at_closing,
-        seller_financing_amount,
-        seller_financing_clause,
-        allocated_inventory,
-        allocated_ffe,
-        allocated_goodwill,
-        allocation_total,
-        state,
-        non_compete_years,
-        non_compete_miles,
-        equipment_items_text,
-        closing_checklist_text
-      `
-    )
+    .select("*")
     .eq("id", dealId)
     .eq("user_id", user.id)
     .single();
