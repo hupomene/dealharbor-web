@@ -903,11 +903,11 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   rows={4}
                   placeholder={`Enter one item per line
 
-                Commercial washers
-                Dryers
-                Pressing machines
-                Customer waiting-area furniture
-                POS terminals`}
+                  Commercial washers
+                  Dryers
+                  Pressing machines
+                  Customer waiting-area furniture
+                  POS terminals`}
                 />
               </div>
 
@@ -921,9 +921,11 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   className="min-h-24 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
                   placeholder={`Enter one item per line
 
-                  Seller cash on hand
-                  Personal vehicle
-                  Accounts receivable`}
+                  Seller cash and bank accounts
+                  Accounts receivable before closing
+                  Seller tax records
+                  Personal vehicles
+                  Non-transferable licenses`}
                 />
               </div>
             </section>
@@ -1308,12 +1310,12 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   value={equipmentItemsText}
                   onChange={(e) => setEquipmentItemsText(e.target.value)}
                   className="min-h-32 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder={`Enter one item per line
+                  placeholder={`Enter one item per line using this format:
 
-                  Commercial Washer #1
-                  Commercial Dryer #2
-                  Pressing Machine
-                  POS Terminal`}
+                  Commercial Washer #1 | W-1001 | Good
+                  Commercial Dryer #1 | D-2001 | Good
+                  Pressing Machine | P-3001 | Fair
+                  POS Terminal | POS-223 | Excellent`}
                 />
               </div>
 
@@ -1328,7 +1330,17 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   value={closingChecklistText}
                   onChange={(e) => setClosingChecklistText(e.target.value)}
                   className="min-h-32 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder={"Bill of Sale executed\nAssignment of lease delivered\nInventory count completed"}
+                  placeholder={`Enter one item per line
+
+                  Asset Purchase Agreement executed
+                  Bill of Sale executed
+                  Promissory Note executed
+                  Non-Compete Agreement executed
+                  Closing funds delivered
+                  Lease assignment delivered
+                  Landlord consent delivered
+                  Equipment schedule attached
+                  IRS allocation reviewed`}
                 />
               </div>
             </section>
