@@ -101,7 +101,7 @@ export default function HomePage() {
           </div>
         </header>
 
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-8 py-14 lg:grid-cols-[0.72fr_1.28fr] lg:py-18">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-8 py-14 lg:grid-cols-[0.78fr_1.22fr] lg:py-18">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-300">
               AI-Powered Business Sale Agreement Automation
@@ -160,14 +160,14 @@ export default function HomePage() {
 
           <div className="relative">
             <div className="absolute -inset-4 rounded-[2rem] bg-amber-300/20 blur-3xl" />
-            <div className="relative -mr-4 overflow-hidden rounded-[2rem] border border-white/20 bg-white shadow-2xl lg:-mr-12 xl:-mr-24">
+            <div className="relative overflow-hidden rounded-[2rem] border border-white/20 bg-white shadow-2xl lg:-mr-6 xl:-mr-10">
               <Image
                 src="/images/pactanchor-hero.png"
                 alt="PactAnchor AI-powered business sale agreement automation dashboard"
                 width={1900}
                 height={1100}
                 priority
-                className="h-auto w-full scale-110 object-cover"
+                className="h-auto w-full object-contain"
               />
             </div>
           </div>
