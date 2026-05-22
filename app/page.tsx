@@ -258,15 +258,6 @@ export default function HomePage() {
             ))}
           </div>
 
-          <div className="mt-12 overflow-hidden rounded-[2rem] border bg-white shadow-xl">
-            <Image
-              src="/images/pactanchor-hero.png"
-              alt="PactAnchor document automation workflow overview"
-              width={1600}
-              height={900}
-              className="h-auto w-full object-cover"
-            />
-          </div>
         </div>
       </section>
 
