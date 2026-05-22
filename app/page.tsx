@@ -1,5 +1,11 @@
 import Image from "next/image";
 import Link from "next/link";
+import {
+  Clock3,
+  ShieldCheck,
+  RefreshCcw,
+  BadgeCheck,
+} from "lucide-react";
 
 const valueCards = [
   {
@@ -115,20 +121,25 @@ export default function HomePage() {
             </p>
 
             <div className="mt-8 grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
-              {[
-                ["⚡", "Save Time"],
-                ["◎", "Reduce Mistakes"],
-                ["盾", "Ensure Consistency"],
-                ["✓", "Close with Confidence"],
-              ].map(([icon, label]) => (
-                <div
-                  key={label}
-                  className="rounded-xl border border-white/15 bg-white/5 p-4 text-center"
-                >
-                  <div className="text-2xl text-amber-300">{icon}</div>
-                  <p className="mt-2 font-semibold text-slate-100">{label}</p>
-                </div>
-              ))}
+              <div className="rounded-xl border border-white/15 bg-white/5 p-4 text-center">
+                <Clock3 className="mx-auto h-8 w-8 text-cyan-300" />
+                <p className="mt-3 font-semibold text-slate-100">Save Time</p>
+              </div>
+
+              <div className="rounded-xl border border-white/15 bg-white/5 p-4 text-center">
+                <ShieldCheck className="mx-auto h-8 w-8 text-green-300" />
+                <p className="mt-3 font-semibold text-slate-100">Reduce Mistakes</p>
+              </div>
+
+              <div className="rounded-xl border border-white/15 bg-white/5 p-4 text-center">
+                <RefreshCcw className="mx-auto h-8 w-8 text-blue-300" />
+                <p className="mt-3 font-semibold text-slate-100">Ensure Consistency</p>
+              </div>
+
+              <div className="rounded-xl border border-white/15 bg-white/5 p-4 text-center">
+                <BadgeCheck className="mx-auto h-8 w-8 text-amber-300" />
+                <p className="mt-3 font-semibold text-slate-100">Close with Confidence</p>
+              </div>
             </div>
 
             <div className="mt-9 flex flex-wrap gap-4">
