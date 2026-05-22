@@ -101,42 +101,42 @@ export default function HomePage() {
           </div>
         </header>
 
-        <div className="mx-auto grid max-w-7xl items-center gap-12 px-8 py-16 lg:grid-cols-[0.88fr_1.12fr] lg:py-20">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-8 py-14 lg:grid-cols-[0.72fr_1.28fr] lg:py-18">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-300">
               AI-Powered Business Sale Agreement Automation
             </p>
 
-            <h1 className="mt-5 max-w-4xl text-5xl font-extrabold leading-tight tracking-tight md:text-6xl">
+            <h1 className="mt-4 max-w-3xl text-4xl font-extrabold leading-tight tracking-tight md:text-5xl xl:text-6xl">
               Close Deals Faster.
               <br />
               With Confidence.
             </h1>
 
-            <p className="mt-6 max-w-2xl text-xl leading-8 text-slate-200">
+            <p className="mt-5 max-w-xl text-base leading-7 text-slate-200 md:text-lg">
               PactAnchor automatically syncs your key deal documents—so every
               Asset Purchase Agreement, Bill of Sale, Promissory Note,
               Non-Compete Agreement, and IRS allocation package stays
               consistent, accurate, and closing-ready.
             </p>
 
-            <div className="mt-8 grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
-              <div className="rounded-xl border border-white/15 bg-white/5 p-4 text-center">
-                <Clock3 className="mx-auto h-8 w-8 text-cyan-300" />
+            <div className="mt-7 grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
+              <div className="rounded-xl border border-white/15 bg-white/5 p-3 text-center">
+                <Clock3 className="mx-auto h-7 w-7 text-cyan-300" />
                 <p className="mt-3 font-semibold text-slate-100">Save Time</p>
               </div>
 
-              <div className="rounded-xl border border-white/15 bg-white/5 p-4 text-center">
+              <div className="rounded-xl border border-white/15 bg-white/5 p-3 text-center">
                 <ShieldCheck className="mx-auto h-8 w-8 text-green-300" />
                 <p className="mt-3 font-semibold text-slate-100">Reduce Mistakes</p>
               </div>
 
-              <div className="rounded-xl border border-white/15 bg-white/5 p-4 text-center">
+              <div className="rounded-xl border border-white/15 bg-white/5 p-3 text-center">
                 <RefreshCcw className="mx-auto h-8 w-8 text-blue-300" />
                 <p className="mt-3 font-semibold text-slate-100">Ensure Consistency</p>
               </div>
 
-              <div className="rounded-xl border border-white/15 bg-white/5 p-4 text-center">
+              <div className="rounded-xl border border-white/15 bg-white/5 p-3 text-center">
                 <BadgeCheck className="mx-auto h-8 w-8 text-amber-300" />
                 <p className="mt-3 font-semibold text-slate-100">Close with Confidence</p>
               </div>
@@ -160,14 +160,14 @@ export default function HomePage() {
 
           <div className="relative">
             <div className="absolute -inset-4 rounded-[2rem] bg-amber-300/20 blur-3xl" />
-            <div className="relative overflow-hidden rounded-[2rem] border border-white/20 bg-white shadow-2xl">
+            <div className="relative -mr-4 overflow-hidden rounded-[2rem] border border-white/20 bg-white shadow-2xl lg:-mr-12 xl:-mr-24">
               <Image
                 src="/images/pactanchor-hero.png"
                 alt="PactAnchor AI-powered business sale agreement automation dashboard"
-                width={1600}
-                height={900}
+                width={1900}
+                height={1100}
                 priority
-                className="h-auto w-full object-cover"
+                className="h-auto w-full scale-110 object-cover"
               />
             </div>
           </div>
