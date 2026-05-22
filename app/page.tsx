@@ -1,14 +1,15 @@
+import Image from "next/image";
 import Link from "next/link";
 
 const valueCards = [
   {
     title: "Smart Deal Intake",
-    text: "Capture buyer, seller, purchase price, assets, allocation, and closing terms in one guided workflow.",
+    text: "Capture buyer, seller, purchase price, assets, allocation, liabilities, financing, and closing terms in one guided workflow.",
     icon: "▦",
   },
   {
     title: "Cross-Document Consistency",
-    text: "Keep APA, Bill of Sale, Non-Compete, Promissory Note, and IRS allocation terms aligned.",
+    text: "Keep APA, Bill of Sale, Non-Compete, Promissory Note, and IRS allocation details aligned across the package.",
     icon: "⛓",
   },
   {
@@ -19,20 +20,20 @@ const valueCards = [
 ];
 
 const workflow = [
-  ["1", "Input Deal Data"],
-  ["2", "Validate Fields"],
-  ["3", "Detect Mismatches"],
-  ["4", "Generate Documents"],
-  ["5", "Export Package"],
+  ["1", "Enter Deal Data", "Input buyer, seller, assets, purchase price, financing, liabilities, and closing terms."],
+  ["2", "Sync Documents", "PactAnchor aligns APA, BOS, PN, NC, and IRS allocation details from one source of truth."],
+  ["3", "Review Readiness", "Validate required fields, allocation balance, risk warnings, and closing deliverables."],
+  ["4", "Generate Documents", "Produce structured, consistent transaction documents in DOCX and PDF formats."],
+  ["5", "Export Package", "Download a closing-ready ZIP package for review, handoff, and recordkeeping."],
 ];
 
 const features = [
-  ["Asset Purchase Agreement", "Generate structured APA drafts quickly."],
-  ["Bill of Sale", "Create synchronized asset-transfer documents."],
-  ["Non-Compete Sync", "Keep covenant terms aligned across the package."],
-  ["Promissory Note", "Build seller-financing documents accurately."],
-  ["IRS 8594 Support", "Support purchase-price allocation workflows."],
-  ["Deal Score", "Evaluate readiness before closing."],
+  ["Asset Purchase Agreement", "Generate structured APA drafts with assets, liabilities, financing, and allocation terms."],
+  ["Bill of Sale", "Create synchronized asset-transfer documents from the same deal data."],
+  ["Non-Compete Sync", "Keep restricted business, territory, term, and allocation aligned across documents."],
+  ["Promissory Note", "Build seller-financing documents with principal, interest, payment dates, and default terms."],
+  ["IRS 8594 Support", "Support purchase-price allocation workflows for CPA/tax review."],
+  ["Deal Score", "Evaluate readiness, warnings, missing fields, and closing package completeness."],
 ];
 
 const pricing = [
@@ -47,20 +48,20 @@ const pricing = [
     price: "$99",
     period: "/month",
     badge: "Most Popular",
-    items: ["Unlimited deals", "Risk warnings", "Allocation mismatch alerts"],
+    items: ["Unlimited deals", "Risk warnings", "Allocation mismatch alerts", "ZIP closing package"],
   },
   {
     name: "Firm",
     price: "$299",
     period: "/month",
-    items: ["Team collaboration", "Custom templates", "Priority support"],
+    items: ["Team collaboration", "Custom templates", "Priority support", "Advisor-ready workflows"],
   },
 ];
 
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-slate-50 text-slate-950">
-      <section className="bg-[#061d3a] text-white">
+      <section className="overflow-hidden bg-[#061d3a] text-white">
         <header className="mx-auto flex max-w-7xl items-center justify-between px-8 py-6">
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-amber-400 text-2xl text-amber-400">
@@ -94,48 +95,70 @@ export default function HomePage() {
           </div>
         </header>
 
-        <div className="mx-auto grid max-w-7xl items-center gap-14 px-8 py-20 lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="mx-auto grid max-w-7xl items-center gap-12 px-8 py-16 lg:grid-cols-[0.88fr_1.12fr] lg:py-20">
           <div>
-            <h1 className="max-w-4xl text-5xl font-extrabold leading-tight tracking-tight md:text-6xl">
-              Generate Business Sale Documents with Confidence
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-300">
+              AI-Powered Business Sale Agreement Automation
+            </p>
+
+            <h1 className="mt-5 max-w-4xl text-5xl font-extrabold leading-tight tracking-tight md:text-6xl">
+              Close Deals Faster.
+              <br />
+              With Confidence.
             </h1>
+
             <p className="mt-6 max-w-2xl text-xl leading-8 text-slate-200">
-              PactAnchor turns one guided deal intake into a consistent,
-              closing-ready document package for small business acquisitions.
+              PactAnchor automatically syncs your key deal documents—so every
+              Asset Purchase Agreement, Bill of Sale, Promissory Note,
+              Non-Compete Agreement, and IRS allocation package stays
+              consistent, accurate, and closing-ready.
             </p>
-            <p className="mt-5 text-lg font-semibold text-amber-300">
-              Built for brokers, attorneys, accountants, advisors, buyers, and sellers.
-            </p>
+
+            <div className="mt-8 grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
+              {[
+                ["⚡", "Save Time"],
+                ["◎", "Reduce Mistakes"],
+                ["盾", "Ensure Consistency"],
+                ["✓", "Close with Confidence"],
+              ].map(([icon, label]) => (
+                <div
+                  key={label}
+                  className="rounded-xl border border-white/15 bg-white/5 p-4 text-center"
+                >
+                  <div className="text-2xl text-amber-300">{icon}</div>
+                  <p className="mt-2 font-semibold text-slate-100">{label}</p>
+                </div>
+              ))}
+            </div>
 
             <div className="mt-9 flex flex-wrap gap-4">
               <Link
                 href="/login"
-                className="rounded-lg bg-amber-400 px-8 py-4 text-base font-bold text-slate-950 hover:bg-amber-300"
+                className="rounded-lg bg-amber-400 px-8 py-4 text-base font-bold text-slate-950 shadow-lg shadow-amber-500/20 hover:bg-amber-300"
               >
-                Start a Deal
+                Start Your Deal with Confidence →
               </Link>
               <a
                 href="#workflow"
                 className="rounded-lg border border-slate-400 px-8 py-4 text-base font-bold text-white hover:bg-white/10"
               >
-                View Demo
+                Generate Closing-Ready Documents
               </a>
             </div>
           </div>
 
-          <div className="grid gap-5">
-            {valueCards.map((card) => (
-              <div
-                key={card.title}
-                className="rounded-2xl border border-slate-500/60 bg-white/5 p-7 shadow-xl"
-              >
-                <div className="text-3xl text-amber-400">{card.icon}</div>
-                <h3 className="mt-4 text-xl font-bold">{card.title}</h3>
-                <p className="mt-3 text-base leading-7 text-slate-200">
-                  {card.text}
-                </p>
-              </div>
-            ))}
+          <div className="relative">
+            <div className="absolute -inset-4 rounded-[2rem] bg-amber-300/20 blur-3xl" />
+            <div className="relative overflow-hidden rounded-[2rem] border border-white/20 bg-white shadow-2xl">
+              <Image
+                src="/images/pactanchor-hero.png"
+                alt="PactAnchor AI-powered business sale agreement automation dashboard"
+                width={1600}
+                height={900}
+                priority
+                className="h-auto w-full object-cover"
+              />
+            </div>
           </div>
         </div>
       </section>
@@ -149,8 +172,8 @@ export default function HomePage() {
                 ["Buyer", "Evergreen Ventures LLC"],
                 ["Seller", "Summit Holdings Inc."],
                 ["Purchase Price", "$2,500,000"],
-                ["Assets", "Furniture, Fixtures, Inventory"],
-                ["Closing Date", "06/30/2025"],
+                ["Assets", "Equipment, inventory, leasehold, contracts"],
+                ["Closing Date", "06/30/2026"],
               ].map(([label, value]) => (
                 <div key={label}>
                   <p className="mb-1 text-slate-500">{label}</p>
@@ -172,14 +195,14 @@ export default function HomePage() {
               <div className="h-3 w-[92%] rounded-full bg-emerald-500" />
             </div>
             <div className="mt-6 space-y-3 text-sm">
-              <p>✓ Purchase agreement signed</p>
-              <p>✓ Assets defined</p>
-              <p className="text-red-600">△ Missing buyer state</p>
-              <p className="text-red-600">△ Seller EIN missing</p>
-              <p className="text-amber-600">△ Allocation mismatch</p>
+              <p>✓ Purchase agreement prepared</p>
+              <p>✓ Assets and liabilities defined</p>
+              <p>✓ Seller financing terms synced</p>
+              <p className="text-amber-600">△ CPA allocation review suggested</p>
+              <p className="text-amber-600">△ Landlord consent may be required</p>
             </div>
             <div className="mt-6 rounded-xl border border-orange-200 bg-orange-50 p-4 font-semibold text-orange-700">
-              ⚠ Risk Warnings · 4
+              ⚠ Risk Warnings · 2
             </div>
           </div>
 
@@ -215,17 +238,34 @@ export default function HomePage() {
       <section id="workflow" className="bg-white py-18">
         <div className="mx-auto max-w-7xl px-8 py-16">
           <h2 className="text-center text-4xl font-extrabold">
-            PactAnchor 5-Step Automation Workflow
+            How PactAnchor Works
           </h2>
+          <p className="mx-auto mt-5 max-w-3xl text-center text-lg leading-8 text-slate-600">
+            From deal intake to document sync, readiness review, and final
+            closing package export—PactAnchor keeps the entire transaction
+            workflow aligned.
+          </p>
+
           <div className="mt-12 grid gap-6 md:grid-cols-5">
-            {workflow.map(([num, title]) => (
+            {workflow.map(([num, title, text]) => (
               <div key={num} className="rounded-2xl border bg-slate-50 p-7 text-center">
                 <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#061d3a] text-2xl font-bold text-white">
                   {num}
                 </div>
                 <h3 className="mt-5 text-lg font-bold">{title}</h3>
+                <p className="mt-3 text-sm leading-6 text-slate-600">{text}</p>
               </div>
             ))}
+          </div>
+
+          <div className="mt-12 overflow-hidden rounded-[2rem] border bg-white shadow-xl">
+            <Image
+              src="/images/pactanchor-hero.png"
+              alt="PactAnchor document automation workflow overview"
+              width={1600}
+              height={900}
+              className="h-auto w-full object-cover"
+            />
           </div>
         </div>
       </section>
