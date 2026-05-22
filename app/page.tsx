@@ -160,15 +160,16 @@ export default function HomePage() {
 
           <div className="relative">
             <div className="absolute -inset-4 rounded-[2rem] bg-amber-300/20 blur-3xl" />
-            <div className="relative overflow-hidden rounded-[2rem] border border-white/20 bg-white shadow-2xl lg:-mr-6 xl:-mr-10">
-              <Image
-                src="/images/pactanchor-hero.png"
-                alt="PactAnchor AI-powered business sale agreement automation dashboard"
-                width={1900}
-                height={1100}
-                priority
-                className="h-auto w-full object-contain"
-              />
+            <div className="relative overflow-hidden rounded-[2rem] border border-white/20 bg-black shadow-2xl lg:-mr-6 xl:-mr-10">
+              <video
+                className="aspect-video w-full rounded-[2rem] object-cover"
+                controls
+                preload="metadata"
+                poster="/images/pactanchor-hero.png"
+              >
+                <source src="/videos/PactAnchor-intro.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
             </div>
           </div>
         </div>
@@ -242,6 +243,20 @@ export default function HomePage() {
             <button className="mt-6 w-full rounded-lg bg-[#061d3a] py-4 font-bold text-white">
               Download All ZIP
             </button>
+          </div>
+        </div>
+      </section>
+      
+      <section className="bg-white px-6 pt-16">
+        <div className="mx-auto max-w-7xl">
+          <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-2xl">
+            <Image
+              src="/images/pactanchor-hero.png"
+              alt="PactAnchor product overview and document automation workflow"
+              width={1900}
+              height={1100}
+              className="h-auto w-full object-contain"
+            />
           </div>
         </div>
       </section>
