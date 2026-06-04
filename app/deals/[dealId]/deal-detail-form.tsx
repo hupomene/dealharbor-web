@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import DocumentGeneratorPanel from "@/components/deals/document-generator-panel";
 
 type DealFormData = {
@@ -12,13 +12,6 @@ type DealFormData = {
   down_payment: number | null;
   seller_financing: boolean | null;
   created_at: string | null;
-
-  business_type?: string | null;
-  business_location?: string | null;
-  buyer_state_of_organization?: string | null;
-  seller_state_of_organization?: string | null;
-  seller_ein?: string | null;
-  closing_method?: string | null;
 
   seller_name?: string | null;
   seller_address?: string | null;
@@ -34,12 +27,13 @@ type DealFormData = {
   seller_financing_amount?: number | null;
   seller_financing_clause?: string | null;
   allocated_inventory?: number | null;
+  promissory_interest_rate?: number | null;
+  promissory_term_months?: number | null;
+  promissory_first_payment_date?: string | null;
+  promissory_maturity_date?: string | null;
   allocated_ffe?: number | null;
-  allocated_leasehold?: number | null;
-  allocated_customer_contracts?: number | null;
-  allocated_trade_name?: number | null;
-  allocated_non_compete?: number | null;
   allocated_goodwill?: number | null;
+  allocated_non_compete?: number | null;
   allocation_total?: number | null;
   state?: string | null;
   non_compete_years?: number | null;
@@ -47,17 +41,42 @@ type DealFormData = {
 
   equipment_items_text?: string | null;
   closing_checklist_text?: string | null;
-  assumed_liabilities_text?: string | null;
-  excluded_liabilities_text?: string | null;
-
-  promissory_interest_rate?: number | null;
-  promissory_term_months?: number | null;
-  promissory_first_payment_date?: string | null;
-  promissory_maturity_date?: string | null;
-
-  non_compete_restricted_business?: string | null;
-  non_compete_territory?: string | null;
 };
+
+function toIsoDate(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function addMonths(date: Date, months: number) {
+  const result = new Date(date);
+  result.setMonth(result.getMonth() + months);
+  return result;
+}
+
+function getAutoFirstPaymentDate(closingDate: string) {
+  if (!closingDate) return "";
+
+  const closing = new Date(`${closingDate}T00:00:00`);
+  const afterOneMonth = addMonths(closing, 1);
+
+  return toIsoDate(
+    new Date(afterOneMonth.getFullYear(), afterOneMonth.getMonth() + 1, 1)
+  );
+}
+
+function getAutoMaturityDate(firstPaymentDate: string, termMonths: string) {
+  if (!firstPaymentDate || !termMonths) return "";
+
+  const months = Number(termMonths);
+  if (!months || Number.isNaN(months)) return "";
+
+  const firstPayment = new Date(`${firstPaymentDate}T00:00:00`);
+  const maturityBase = addMonths(firstPayment, months);
+
+  maturityBase.setDate(maturityBase.getDate() - 1);
+
+  return toIsoDate(maturityBase);
+}
 
 function formatDate(value: string | null) {
   if (!value) {
@@ -135,28 +154,13 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
 
   const [businessName, setBusinessName] = useState(deal.business_name ?? "");
   const [purchasePrice, setPurchasePrice] = useState(numberToInput(deal.purchase_price));
-  const [businessType, setBusinessType] = useState(deal.business_type ?? "");
-  const [businessLocation, setBusinessLocation] = useState(
-    deal.business_location ?? ""
-  );
-  const [closingMethod, setClosingMethod] = useState(
-    deal.closing_method ?? ""
-  );
   const [downPayment, setDownPayment] = useState(numberToInput(deal.down_payment));
   const [sellerFinancing, setSellerFinancing] = useState(!!deal.seller_financing);
 
   const [sellerName, setSellerName] = useState(deal.seller_name ?? "");
   const [sellerAddress, setSellerAddress] = useState(deal.seller_address ?? "");
-  const [sellerStateOfOrganization, setSellerStateOfOrganization] = useState(
-    deal.seller_state_of_organization ?? ""
-  );
-  const [sellerEin, setSellerEin] = useState(deal.seller_ein ?? "");
-
   const [buyerName, setBuyerName] = useState(deal.buyer_name ?? "");
   const [buyerAddress, setBuyerAddress] = useState(deal.buyer_address ?? "");
-  const [buyerStateOfOrganization, setBuyerStateOfOrganization] = useState(
-    deal.buyer_state_of_organization ?? ""
-  );
   const [agreementDate, setAgreementDate] = useState(
     normalizeDate(deal.agreement_date)
   );
@@ -180,24 +184,33 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
   const [sellerFinancingClause, setSellerFinancingClause] = useState(
     deal.seller_financing_clause ?? ""
   );
+  const [promissoryInterestRate, setPromissoryInterestRate] = useState(
+    numberToInput(deal.promissory_interest_rate)
+  );
+
+  const [promissoryTermMonths, setPromissoryTermMonths] = useState(
+    numberToInput(deal.promissory_term_months)
+  );
+
+  const [promissoryFirstPaymentDate, setPromissoryFirstPaymentDate] = useState(
+    normalizeDate(deal.promissory_first_payment_date)
+  );
+
+  const [promissoryMaturityDate, setPromissoryMaturityDate] = useState(
+    normalizeDate(deal.promissory_maturity_date)
+  );
   const [allocatedInventory, setAllocatedInventory] = useState(
     numberToInput(deal.allocated_inventory)
   );
   const [allocatedFfe, setAllocatedFfe] = useState(numberToInput(deal.allocated_ffe));
-  const [allocatedLeasehold, setAllocatedLeasehold] = useState(
-    numberToInput(deal.allocated_leasehold)
-  );
-  const [allocatedCustomerContracts, setAllocatedCustomerContracts] = useState(
-    numberToInput(deal.allocated_customer_contracts)
-  );
-  const [allocatedTradeName, setAllocatedTradeName] = useState(
-    numberToInput(deal.allocated_trade_name)
-  );
   const [allocatedGoodwill, setAllocatedGoodwill] = useState(
     numberToInput(deal.allocated_goodwill)
   );
   const [allocatedNonCompete, setAllocatedNonCompete] = useState(
     numberToInput(deal.allocated_non_compete)
+  );
+  const [allocationTotal, setAllocationTotal] = useState(
+    numberToInput(deal.allocation_total)
   );
   const [stateValue, setStateValue] = useState(deal.state ?? "");
   const [nonCompeteYears, setNonCompeteYears] = useState(
@@ -214,41 +227,21 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
     deal.closing_checklist_text ?? ""
   );
 
-  const [assumedLiabilitiesText, setAssumedLiabilitiesText] = useState(
-    deal.assumed_liabilities_text ?? ""
-  );
-
-  const [excludedLiabilitiesText, setExcludedLiabilitiesText] = useState(
-    deal.excluded_liabilities_text ?? ""
-  );
-
-  const [promissoryInterestRate, setPromissoryInterestRate] = useState(
-    numberToInput(deal.promissory_interest_rate)
-  );
-
-  const [promissoryTermMonths, setPromissoryTermMonths] = useState(
-    numberToInput(deal.promissory_term_months)
-  );
-
-  const [promissoryFirstPaymentDate, setPromissoryFirstPaymentDate] = useState(
-    normalizeDate(deal.promissory_first_payment_date)
-  );
-
-  const [promissoryMaturityDate, setPromissoryMaturityDate] = useState(
-    normalizeDate(deal.promissory_maturity_date)
-  );
-
-  const [nonCompeteRestrictedBusiness, setNonCompeteRestrictedBusiness] = useState(
-    deal.non_compete_restricted_business ?? ""
-  );
-
-  const [nonCompeteTerritory, setNonCompeteTerritory] = useState(
-    deal.non_compete_territory ?? ""
-  );
-
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  useEffect(() => {
+    const nextFirstPaymentDate = getAutoFirstPaymentDate(closingDate);
+
+    setPromissoryFirstPaymentDate(nextFirstPaymentDate);
+
+    const nextMaturityDate = getAutoMaturityDate(
+      nextFirstPaymentDate,
+      promissoryTermMonths
+    );
+
+    setPromissoryMaturityDate(nextMaturityDate);
+  }, [closingDate, promissoryTermMonths]);
 
   const calculatedCashAtClosing = useMemo(() => {
     const pp = parseNumberOrZero(purchasePrice);
@@ -260,165 +253,10 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
   const calculatedAllocationTotal = useMemo(() => {
     const inv = parseNumberOrZero(allocatedInventory);
     const ffe = parseNumberOrZero(allocatedFfe);
-    const leasehold = parseNumberOrZero(allocatedLeasehold);
-    const customerContracts = parseNumberOrZero(allocatedCustomerContracts);
-    const tradeName = parseNumberOrZero(allocatedTradeName);
-    const nonCompete = parseNumberOrZero(allocatedNonCompete);
     const goodwill = parseNumberOrZero(allocatedGoodwill);
-
-    return inv + ffe + leasehold + customerContracts + tradeName + nonCompete + goodwill;
-  }, [
-    allocatedInventory,
-    allocatedFfe,
-    allocatedLeasehold,
-    allocatedCustomerContracts,
-    allocatedTradeName,
-    allocatedNonCompete,
-    allocatedGoodwill,
-  ]);
-
-  const allocationDifference = useMemo(() => {
-    return calculatedAllocationTotal - parseNumberOrZero(purchasePrice);
-  }, [calculatedAllocationTotal, purchasePrice]);
-
-  const allocationStatus = allocationDifference === 0 ? "Balanced" : "Mismatch";
-
-  const allocationCompletion = useMemo(() => {
-    const pp = parseNumberOrZero(purchasePrice);
-    if (pp <= 0) return 0;
-    return Math.round((calculatedAllocationTotal / pp) * 1000) / 10;
-  }, [calculatedAllocationTotal, purchasePrice]);
-
-  const percentOfPurchasePrice = (value: string) => {
-    const pp = parseNumberOrZero(purchasePrice);
-    if (pp <= 0) return "0.0%";
-    return `${((parseNumberOrZero(value) / pp) * 100).toFixed(1)}%`;
-  };
-
-  const allocationRows = [
-    { label: "Inventory", value: allocatedInventory, setter: setAllocatedInventory, placeholder: "75000" },
-    { label: "Furniture, Fixtures & Equipment", value: allocatedFfe, setter: setAllocatedFfe, placeholder: "850000" },
-    { label: "Leasehold Interest", value: allocatedLeasehold, setter: setAllocatedLeasehold, placeholder: "250000" },
-    { label: "Customer Contracts", value: allocatedCustomerContracts, setter: setAllocatedCustomerContracts, placeholder: "300000" },
-    { label: "Trade Name / Website / Phone Numbers", value: allocatedTradeName, setter: setAllocatedTradeName, placeholder: "100000" },
-    { label: "Non-Compete Covenant", value: allocatedNonCompete, setter: setAllocatedNonCompete, placeholder: "125000" },
-    { label: "Goodwill / Going Concern Value", value: allocatedGoodwill, setter: setAllocatedGoodwill, placeholder: "800000" },
-  ];
-
-  const includedAssetsLower = includedAssetsText.toLowerCase();
-  const hasIncludedAssetKeyword = (keywords: string[]) =>
-    keywords.some((keyword) => includedAssetsLower.includes(keyword));
-
-  const riskItems = [
-    allocationDifference !== 0
-      ? {
-          level: "HIGH",
-          message: "Allocation total does not equal purchase price.",
-          fix: "Adjust allocation categories or use Auto Balance to align the total.",
-        }
-      : null,
-    hasIncludedAssetKeyword(["inventory"]) && parseNumberOrZero(allocatedInventory) <= 0
-      ? {
-          level: "MEDIUM",
-          message: "Inventory is included but no allocation amount was entered.",
-          fix: "Enter an allocated inventory amount.",
-        }
-      : null,
-    hasIncludedAssetKeyword(["equipment", "fixture", "fixtures", "furniture", "pos"]) &&
-    parseNumberOrZero(allocatedFfe) <= 0
-      ? {
-          level: "MEDIUM",
-          message: "Equipment is included but FFE allocation is missing.",
-          fix: "Enter an allocated FFE amount.",
-        }
-      : null,
-    hasIncludedAssetKeyword(["contract", "contracts"]) &&
-    parseNumberOrZero(allocatedCustomerContracts) <= 0
-      ? {
-          level: "MEDIUM",
-          message: "Customer contracts are included but not allocated.",
-          fix: "Enter an allocated customer contracts amount.",
-        }
-      : null,
-    hasIncludedAssetKeyword(["trade name", "brand", "website", "phone", "logo"]) &&
-    parseNumberOrZero(allocatedTradeName) <= 0
-      ? {
-          level: "MEDIUM",
-          message: "Intangible assets are included but no trade name allocation was entered.",
-          fix: "Enter a trade name / website / phone number allocation amount.",
-        }
-      : null,
-    (parseNumberOrZero(nonCompeteYears) > 0 || parseNumberOrZero(nonCompeteMiles) > 0) &&
-    parseNumberOrZero(allocatedNonCompete) <= 0
-      ? {
-          level: "MEDIUM",
-          message: "Non-compete agreement exists but allocation is missing.",
-          fix: "Enter an allocated non-compete covenant amount.",
-        }
-      : null,
-    hasIncludedAssetKeyword(["goodwill", "going concern"]) && parseNumberOrZero(allocatedGoodwill) <= 0
-      ? {
-          level: "LOW",
-          message: "Goodwill is included but goodwill allocation is missing.",
-          fix: "Enter a goodwill / going concern value allocation.",
-        }
-      : null,
-  ].filter(Boolean) as {
-    level: "HIGH" | "MEDIUM" | "LOW";
-    message: string;
-    fix: string;
-  }[];
-
-  const dealScore = useMemo(() => {
-    let score = 0;
-
-    if (businessName.trim()) score += 10;
-    if (parseNumberOrZero(purchasePrice) > 0) score += 10;
-    if (sellerName.trim() && buyerName.trim()) score += 10;
-    if (agreementDate && closingDate) score += 10;
-    if (includedAssetsText.trim()) score += 10;
-    if (allocationDifference === 0 && parseNumberOrZero(purchasePrice) > 0) score += 25;
-    if (parseNumberOrZero(allocatedNonCompete) > 0) score += 10;
-    if (equipmentItemsText.trim()) score += 10;
-    if (riskItems.length === 0) score += 15;
-
-    return Math.min(score, 100);
-  }, [
-    businessName,
-    purchasePrice,
-    sellerName,
-    buyerName,
-    agreementDate,
-    closingDate,
-    includedAssetsText,
-    allocationDifference,
-    allocatedNonCompete,
-    equipmentItemsText,
-    riskItems.length,
-  ]);
-
-  const scoreLabel =
-    dealScore >= 85 ? "Ready" : dealScore >= 70 ? "Needs Review" : "High Risk";
-
-  const scoreBarColor =
-    dealScore >= 85
-      ? "bg-emerald-500"
-      : dealScore >= 70
-      ? "bg-amber-500"
-      : "bg-red-500";
-
-  function handleAutoBalanceAllocation() {
-    const pp = parseNumberOrZero(purchasePrice);
-    const inv = parseNumberOrZero(allocatedInventory);
-    const ffe = parseNumberOrZero(allocatedFfe);
-    const leasehold = parseNumberOrZero(allocatedLeasehold);
-    const customerContracts = parseNumberOrZero(allocatedCustomerContracts);
-    const tradeName = parseNumberOrZero(allocatedTradeName);
     const nonCompete = parseNumberOrZero(allocatedNonCompete);
-
-    const newGoodwill = pp - inv - ffe - leasehold - customerContracts - tradeName - nonCompete;
-    setAllocatedGoodwill(String(newGoodwill));
-  }
+    return inv + ffe + goodwill + nonCompete;
+  }, [allocatedInventory, allocatedFfe, allocatedGoodwill, allocatedNonCompete]);
 
   const canSave = useMemo(() => {
     return businessName.trim().length > 0 && !saving;
@@ -433,28 +271,14 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
 
     const submitBody = {
       business_name: businessName.trim(),
-      business_type: businessType.trim() !== "" ? businessType.trim() : null,
-      business_location:
-        businessLocation.trim() !== "" ? businessLocation.trim() : null,
-      closing_method: closingMethod.trim() !== "" ? closingMethod.trim() : null,
       purchase_price: purchasePrice !== "" ? Number(purchasePrice) : null,
       down_payment: downPayment !== "" ? Number(downPayment) : null,
       seller_financing: sellerFinancing,
 
       seller_name: sellerName.trim() !== "" ? sellerName.trim() : null,
       seller_address: sellerAddress.trim() !== "" ? sellerAddress.trim() : null,
-      seller_state_of_organization:
-        sellerStateOfOrganization.trim() !== ""
-          ? sellerStateOfOrganization.trim()
-          : null,
-      seller_ein: sellerEin.trim() !== "" ? sellerEin.trim() : null,
-
       buyer_name: buyerName.trim() !== "" ? buyerName.trim() : null,
       buyer_address: buyerAddress.trim() !== "" ? buyerAddress.trim() : null,
-      buyer_state_of_organization:
-        buyerStateOfOrganization.trim() !== ""
-          ? buyerStateOfOrganization.trim()
-          : null,
       agreement_date: agreementDate.trim() !== "" ? agreementDate : null,
       closing_date: closingDate.trim() !== "" ? closingDate : null,
 
@@ -468,20 +292,23 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
         sellerFinancingAmount !== "" ? Number(sellerFinancingAmount) : null,
       seller_financing_clause:
         sellerFinancingClause.trim() !== "" ? sellerFinancingClause.trim() : null,
+        promissory_interest_rate:
+          promissoryInterestRate !== "" ? Number(promissoryInterestRate) : null,
+        promissory_term_months:
+          promissoryTermMonths !== "" ? Number(promissoryTermMonths) : null,
+        promissory_first_payment_date:
+          promissoryFirstPaymentDate.trim() !== "" ? promissoryFirstPaymentDate : null,
+        promissory_maturity_date:
+          promissoryMaturityDate.trim() !== "" ? promissoryMaturityDate : null,
       allocated_inventory:
         allocatedInventory !== "" ? Number(allocatedInventory) : null,
       allocated_ffe: allocatedFfe !== "" ? Number(allocatedFfe) : null,
-      allocated_leasehold:
-        allocatedLeasehold !== "" ? Number(allocatedLeasehold) : null,
-      allocated_customer_contracts:
-        allocatedCustomerContracts !== "" ? Number(allocatedCustomerContracts) : null,
-      allocated_trade_name:
-        allocatedTradeName !== "" ? Number(allocatedTradeName) : null,
-      allocated_non_compete:
-        allocatedNonCompete !== "" ? Number(allocatedNonCompete) : null,
       allocated_goodwill:
         allocatedGoodwill !== "" ? Number(allocatedGoodwill) : null,
-      allocation_total: calculatedAllocationTotal,
+      allocated_non_compete:
+        allocatedNonCompete !== "" ? Number(allocatedNonCompete) : null,
+      allocation_total:
+        allocationTotal !== "" ? Number(allocationTotal) : null,
       state: stateValue.trim() !== "" ? stateValue.trim() : null,
       non_compete_years:
         nonCompeteYears !== "" ? Number(nonCompeteYears) : null,
@@ -492,34 +319,7 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
         equipmentItemsText.trim() !== "" ? equipmentItemsText.trim() : null,
       closing_checklist_text:
         closingChecklistText.trim() !== "" ? closingChecklistText.trim() : null,
-    
-      assumed_liabilities_text:
-        assumedLiabilitiesText.trim() !== "" ? assumedLiabilitiesText.trim() : null,
-
-      excluded_liabilities_text:
-        excludedLiabilitiesText.trim() !== "" ? excludedLiabilitiesText.trim() : null,
-
-      promissory_interest_rate:
-        promissoryInterestRate !== "" ? Number(promissoryInterestRate) : null,
-
-      promissory_term_months:
-        promissoryTermMonths !== "" ? Number(promissoryTermMonths) : null,
-
-      promissory_first_payment_date:
-        promissoryFirstPaymentDate.trim() !== "" ? promissoryFirstPaymentDate : null,
-
-      promissory_maturity_date:
-        promissoryMaturityDate.trim() !== "" ? promissoryMaturityDate : null,
-
-      non_compete_restricted_business:
-        nonCompeteRestrictedBusiness.trim() !== ""
-          ? nonCompeteRestrictedBusiness.trim()
-          : null,
-
-      non_compete_territory:
-        nonCompeteTerritory.trim() !== "" ? nonCompeteTerritory.trim() : null,
-
-      };
+    };
 
     console.log("SUBMIT BODY:", submitBody);
 
@@ -580,77 +380,6 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
           </div>
         </div>
 
-        <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
-          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-sm font-semibold text-slate-500">
-                PactAnchor Deal Intelligence
-              </p>
-              <h2 className="mt-1 text-2xl font-bold text-slate-900">
-                Deal Score: {dealScore}/100
-              </h2>
-              <p className="mt-1 text-sm text-slate-600">
-                Status: <span className="font-semibold">{scoreLabel}</span>
-              </p>
-            </div>
-
-            <div className="w-full md:w-72">
-              <div className="mb-2 flex justify-between text-xs text-slate-500">
-                <span>Risk</span>
-                <span>Closing Ready</span>
-              </div>
-              <div className="h-3 rounded-full bg-slate-100">
-                <div
-                  className={`h-3 rounded-full ${scoreBarColor}`}
-                  style={{ width: `${dealScore}%` }}
-                />
-              </div>
-            </div>
-          </div>
-
-          {riskItems.length > 0 ? (
-            <div className="mt-6 rounded-xl border border-red-200 bg-red-50 p-4">
-              <p className="text-sm font-bold text-red-800">Risk Alerts</p>
-
-              <div className="mt-3 space-y-3">
-                {riskItems.map((risk, index) => (
-                  <div key={index} className="rounded-lg bg-white p-3 text-sm">
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={
-                          risk.level === "HIGH"
-                            ? "rounded-full bg-red-100 px-2 py-1 text-xs font-bold text-red-700"
-                            : risk.level === "MEDIUM"
-                            ? "rounded-full bg-amber-100 px-2 py-1 text-xs font-bold text-amber-700"
-                            : "rounded-full bg-blue-100 px-2 py-1 text-xs font-bold text-blue-700"
-                        }
-                      >
-                        {risk.level}
-                      </span>
-                      <span className="font-semibold text-slate-900">
-                        {risk.message}
-                      </span>
-                    </div>
-
-                    <p className="mt-2 text-slate-600">
-                      Recommended Action: {risk.fix}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
-            <div className="mt-6 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-              <p className="text-sm font-bold text-emerald-800">
-                No major deal risks detected.
-              </p>
-              <p className="mt-1 text-sm text-emerald-700">
-                This deal appears ready for document generation.
-              </p>
-            </div>
-          )}
-        </div>
-
         <form
           onSubmit={handleSubmit}
           className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
@@ -672,47 +401,6 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   required
                 />
               </div>
-
-              <div className="grid gap-5 md:grid-cols-3">
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  Business Type
-                </label>
-                <input
-                  type="text"
-                  value={businessType}
-                  onChange={(e) => setBusinessType(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder="Laundry and Dry Cleaning Business"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  Business Location
-                </label>
-                <input
-                  type="text"
-                  value={businessLocation}
-                  onChange={(e) => setBusinessLocation(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder="1450 Greenville Avenue, Dallas, TX 75206"
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  Closing Method
-                </label>
-                <input
-                  type="text"
-                  value={closingMethod}
-                  onChange={(e) => setClosingMethod(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder="Wire transfer and signed closing documents"
-                />
-              </div>
-            </div>
 
               <div className="grid gap-5 md:grid-cols-2">
                 <div>
@@ -832,47 +520,6 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                 </div>
               </div>
 
-              <div className="grid gap-5 md:grid-cols-3">
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-700">
-                    Seller State of Organization
-                  </label>
-                  <input
-                    type="text"
-                    value={sellerStateOfOrganization}
-                    onChange={(e) => setSellerStateOfOrganization(e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                    placeholder="Texas"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-700">
-                    Buyer State of Organization
-                  </label>
-                  <input
-                    type="text"
-                    value={buyerStateOfOrganization}
-                    onChange={(e) => setBuyerStateOfOrganization(e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                    placeholder="Texas"
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-700">
-                    Seller EIN
-                  </label>
-                  <input
-                    type="text"
-                    value={sellerEin}
-                    onChange={(e) => setSellerEin(e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                    placeholder="XX-XXXXXXX"
-                  />
-                </div>
-              </div>
-
               <div className="grid gap-5 md:grid-cols-2">
                 <div>
                   <label className="mb-2 block text-sm font-medium text-slate-700">
@@ -899,15 +546,8 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                 <textarea
                   value={includedAssetsText}
                   onChange={(e) => setIncludedAssetsText(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
-                  rows={4}
-                  placeholder={`Enter one item per line
-
-                  Commercial washers
-                  Dryers
-                  Pressing machines
-                  Customer waiting-area furniture
-                  POS terminals`}
+                  className="min-h-24 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                  placeholder="Furniture, fixtures, equipment, inventory, goodwill..."
                 />
               </div>
 
@@ -919,54 +559,19 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   value={excludedAssetsText}
                   onChange={(e) => setExcludedAssetsText(e.target.value)}
                   className="min-h-24 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder={`Enter one item per line
-
-                  Seller cash and bank accounts
-                  Accounts receivable before closing
-                  Seller tax records
-                  Personal vehicles
-                  Non-transferable licenses`}
+                  placeholder="Seller cash on hand, personal vehicle, accounts receivable..."
                 />
               </div>
             </section>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  Assumed Liabilities
-                </label>
-                <textarea
-                  value={assumedLiabilitiesText}
-                  onChange={(e) => setAssumedLiabilitiesText(e.target.value)}
-                  className="min-h-24 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder={`Enter one item per line
-
-                  Equipment lease obligations
-                  Customer prepaid orders
-                  Assigned service contracts`}
-                />
-              </div>
-
-              <div>
-                <label className="mb-2 block text-sm font-medium text-slate-700">
-                  Excluded Liabilities
-                </label>
-                <textarea
-                  value={excludedLiabilitiesText}
-                  onChange={(e) => setExcludedLiabilitiesText(e.target.value)}
-                  className="min-h-24 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder={`Enter one item per line
-
-                  Seller tax liabilities
-                  Pending litigation
-                  Pre-closing payroll obligations`}
-                />
-              </div>
 
             <section className="grid gap-5">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-slate-900">
                   Payment Terms
                 </h2>
+                <p className="text-sm text-slate-500">
+                  Promissory Note issue date is based on the Closing Date. First payment and maturity dates are calculated automatically from the closing date and term.
+                </p>
               </div>
 
               <label className="inline-flex items-center gap-3 text-sm text-slate-700">
@@ -1026,7 +631,7 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                 </div>
               </div>
 
-              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+              <div className="grid gap-5 md:grid-cols-4">
                 <div>
                   <label className="mb-2 block text-sm font-medium text-slate-700">
                     Interest Rate (%)
@@ -1048,7 +653,7 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   </label>
                   <input
                     type="number"
-                    min="0"
+                    min="1"
                     step="1"
                     value={promissoryTermMonths}
                     onChange={(e) => setPromissoryTermMonths(e.target.value)}
@@ -1062,11 +667,16 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                     First Payment Date
                   </label>
                   <input
-                    type="date"
+                    type="text"
                     value={promissoryFirstPaymentDate}
-                    onChange={(e) => setPromissoryFirstPaymentDate(e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                    readOnly
+                    tabIndex={-1}
+                    className="w-full cursor-not-allowed rounded-lg border border-slate-300 bg-slate-100 px-3 py-2 text-sm text-slate-600 outline-none"
+                    placeholder="Auto-calculated"
                   />
+                  <p className="mt-1 text-xs text-slate-500">
+                    Auto-calculated from Closing Date.
+                  </p>
                 </div>
 
                 <div>
@@ -1074,11 +684,16 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                     Maturity Date
                   </label>
                   <input
-                    type="date"
+                    type="text"
                     value={promissoryMaturityDate}
-                    onChange={(e) => setPromissoryMaturityDate(e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                    readOnly
+                    tabIndex={-1}
+                    className="w-full cursor-not-allowed rounded-lg border border-slate-300 bg-slate-100 px-3 py-2 text-sm text-slate-600 outline-none"
+                    placeholder="Auto-calculated"
                   />
+                  <p className="mt-1 text-xs text-slate-500">
+                    Auto-calculated from Term Months and First Payment Date.
+                  </p>
                 </div>
               </div>
 
@@ -1117,115 +732,104 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
             </section>
 
             <section className="grid gap-5">
-              <div>
-                <h2 className="text-lg font-semibold text-slate-900">Purchase Price Allocation</h2>
-                <p className="mt-2 border-l-4 border-slate-200 pl-4 text-sm leading-6 text-slate-600">
-                  Allocate the total purchase price across transferred asset categories.
-                  PactAnchor will use this schedule for the APA, allocation statement,
-                  non-compete sync, and readiness checks.
-                </p>
+              <h2 className="text-lg font-semibold text-slate-900">Allocation</h2>
+
+              <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-5">
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Allocated Inventory
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={allocatedInventory}
+                    onChange={(e) => setAllocatedInventory(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                    placeholder="50000"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Allocated FFE
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={allocatedFfe}
+                    onChange={(e) => setAllocatedFfe(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                    placeholder="120000"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Allocated Goodwill
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={allocatedGoodwill}
+                    onChange={(e) => setAllocatedGoodwill(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                    placeholder="250000"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Allocated Non-Compete
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={allocatedNonCompete}
+                    onChange={(e) => setAllocatedNonCompete(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                    placeholder="20000"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-2 block text-sm font-medium text-slate-700">
+                    Allocation Total
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={allocationTotal}
+                    onChange={(e) => setAllocationTotal(e.target.value)}
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                    placeholder="420000"
+                  />
+                </div>
               </div>
 
-              <div className="grid gap-4 md:grid-cols-5">
+              <div className="grid gap-4 md:grid-cols-2">
+                <CalculationCard
+                  title="Calculated Allocation Total"
+                  formula="Allocated Inventory + Allocated FFE + Allocated Goodwill + Allocated Non-Compete"
+                  value={calculatedAllocationTotal}
+                  onUse={() => setAllocationTotal(String(calculatedAllocationTotal))}
+                />
+
                 <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Purchase Price</p>
-                  <p className="mt-2 text-lg font-bold text-slate-900">
-                    {formatCurrencyPreview(parseNumberOrNull(purchasePrice))}
+                  <p className="text-sm font-semibold text-slate-900">
+                    Current Allocation Total Input
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Saved value that will be used in templates.
+                  </p>
+                  <p className="mt-3 text-lg font-semibold text-slate-900">
+                    {formatCurrencyPreview(parseNumberOrNull(allocationTotal))}
                   </p>
                 </div>
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Allocation Total</p>
-                  <p className="mt-2 text-lg font-bold text-slate-900">
-                    {formatCurrencyPreview(calculatedAllocationTotal)}
-                  </p>
-                </div>
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Difference</p>
-                  <p className={allocationDifference === 0 ? "mt-2 text-lg font-bold text-emerald-700" : "mt-2 text-lg font-bold text-red-700"}>
-                    {formatCurrencyPreview(allocationDifference)}
-                  </p>
-                </div>
-                <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Completion</p>
-                  <p className="mt-2 text-lg font-bold text-slate-900">{allocationCompletion}%</p>
-                </div>
-                <div className={allocationStatus === "Balanced" ? "rounded-xl border border-emerald-200 bg-emerald-50 p-4" : "rounded-xl border border-red-200 bg-red-50 p-4"}>
-                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Status</p>
-                  <p className={allocationStatus === "Balanced" ? "mt-2 text-lg font-bold text-emerald-700" : "mt-2 text-lg font-bold text-red-700"}>
-                    {allocationStatus}
-                  </p>
-                </div>
-              </div>
-
-              <div className="overflow-hidden rounded-xl border border-slate-200 bg-white">
-                <div className="grid grid-cols-[1.5fr_1fr_1fr] border-b border-slate-200 bg-slate-50 px-4 py-3 text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  <div>Category</div>
-                  <div>Amount</div>
-                  <div>% of Purchase Price</div>
-                </div>
-
-                {allocationRows.map((row) => (
-                  <div
-                    key={row.label}
-                    className="grid grid-cols-[1.5fr_1fr_1fr] items-center gap-4 border-b border-slate-100 px-4 py-3 last:border-b-0"
-                  >
-                    <label className="text-sm font-medium text-slate-700">{row.label}</label>
-                    <input
-                      type="number"
-                      min="0"
-                      step="1"
-                      value={row.value}
-                      onChange={(e) => row.setter(e.target.value)}
-                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                      placeholder={row.placeholder}
-                    />
-                    <div className="text-sm font-semibold text-slate-700">
-                      {percentOfPurchasePrice(row.value)}
-                    </div>
-                  </div>
-                ))}
-
-                <div className="grid grid-cols-[1.5fr_1fr_1fr] items-center gap-4 bg-slate-50 px-4 py-3">
-                  <p className="text-sm font-bold text-slate-900">Total</p>
-                  <p className="text-sm font-bold text-slate-900">
-                    {formatCurrencyPreview(calculatedAllocationTotal)}
-                  </p>
-                  <p className="text-sm font-bold text-slate-900">
-                    {allocationCompletion}%
-                  </p>
-                </div>
-              </div>
-
-              {allocationStatus === "Mismatch" ? (
-                <div className="rounded-xl border border-red-300 bg-red-50 p-4">
-                  <p className="text-sm font-semibold text-red-800">
-                    Allocation total does not equal purchase price.
-                  </p>
-                  <p className="mt-1 text-sm text-red-700">
-                    Difference: <span className="font-semibold">{formatCurrencyPreview(allocationDifference)}</span>
-                  </p>
-                  <button
-                    type="button"
-                    onClick={handleAutoBalanceAllocation}
-                    className="mt-3 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
-                  >
-                    Auto Balance Goodwill
-                  </button>
-                </div>
-              ) : (
-                <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-                  <p className="text-sm font-semibold text-emerald-800">
-                    Balanced: allocation equals purchase price.
-                  </p>
-                </div>
-              )}
-
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                <p className="text-sm font-semibold text-slate-900">Professional Review Note</p>
-                <p className="mt-1 text-xs leading-5 text-slate-600">
-                  Allocation support is provided for document preparation and professional review.
-                  Final tax classification should be reviewed by a CPA or tax advisor.
-                </p>
               </div>
             </section>
 
@@ -1262,37 +866,6 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                     placeholder="10"
                   />
                 </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-700">
-                    Restricted Business
-                  </label>
-                  <textarea
-                    value={nonCompeteRestrictedBusiness}
-                    onChange={(e) => setNonCompeteRestrictedBusiness(e.target.value)}
-                    className="min-h-20 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                
-                    placeholder={`Enter one item per line
-
-                    Laundry
-                    dry cleaning
-                    wash-and-fold 
-                    commercial laundry services`}
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-sm font-medium text-slate-700">
-                    Restricted Territory
-                  </label>
-                  <textarea
-                    value={nonCompeteTerritory}
-                    onChange={(e) => setNonCompeteTerritory(e.target.value)}
-                    className="min-h-20 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                    placeholder="25-mile radius from 1450 Greenville Avenue, Dallas, TX 75206"
-                  />
-                </div>
-
               </div>
             </section>
 
@@ -1310,12 +883,7 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   value={equipmentItemsText}
                   onChange={(e) => setEquipmentItemsText(e.target.value)}
                   className="min-h-32 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder={`Enter one item per line using this format:
-
-                  Commercial Washer #1 | W-1001 | Good
-                  Commercial Dryer #1 | D-2001 | Good
-                  Pressing Machine | P-3001 | Fair
-                  POS Terminal | POS-223 | Excellent`}
+                  placeholder={"Espresso Machine | SN-1001 | Good\nPOS Terminal | POS-223 | Excellent"}
                 />
               </div>
 
@@ -1330,17 +898,7 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   value={closingChecklistText}
                   onChange={(e) => setClosingChecklistText(e.target.value)}
                   className="min-h-32 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
-                  placeholder={`Enter one item per line
-
-                  Asset Purchase Agreement executed
-                  Bill of Sale executed
-                  Promissory Note executed
-                  Non-Compete Agreement executed
-                  Closing funds delivered
-                  Lease assignment delivered
-                  Landlord consent delivered
-                  Equipment schedule attached
-                  IRS allocation reviewed`}
+                  placeholder={"Bill of Sale executed\nAssignment of lease delivered\nInventory count completed"}
                 />
               </div>
             </section>
