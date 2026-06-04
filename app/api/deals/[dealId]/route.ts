@@ -22,6 +22,41 @@ function normalizeNumber(value: unknown) {
   return Number.isNaN(parsed) ? null : parsed;
 }
 
+function toIsoDate(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function addMonths(date: Date, months: number) {
+  const result = new Date(date);
+  result.setMonth(result.getMonth() + months);
+  return result;
+}
+
+function getAutoFirstPaymentDate(closingDate: string | null) {
+  if (!closingDate) return null;
+
+  const closing = new Date(`${closingDate}T00:00:00`);
+  const afterOneMonth = addMonths(closing, 1);
+
+  return toIsoDate(
+    new Date(afterOneMonth.getFullYear(), afterOneMonth.getMonth() + 1, 1)
+  );
+}
+
+function getAutoMaturityDate(
+  firstPaymentDate: string | null,
+  termMonths: number | null
+) {
+  if (!firstPaymentDate || !termMonths) return null;
+
+  const firstPayment = new Date(`${firstPaymentDate}T00:00:00`);
+  const maturityBase = addMonths(firstPayment, termMonths);
+
+  maturityBase.setDate(maturityBase.getDate() - 1);
+
+  return toIsoDate(maturityBase);
+}
+
 export async function GET(_request: Request, { params }: RouteContext) {
   const { dealId } = await params;
   const supabase = await createServerSupabaseClient();
@@ -70,6 +105,27 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   } catch {
     return NextResponse.json({ error: "Invalid JSON body." }, { status: 400 });
   }
+
+  const normalizedClosingDate =
+    body.closing_date === null
+      ? null
+      : body.closing_date !== undefined
+      ? normalizeString(body.closing_date)
+      : null;
+
+  const normalizedPromissoryTermMonths =
+    body.promissory_term_months === null
+      ? null
+      : body.promissory_term_months !== undefined
+      ? normalizeNumber(body.promissory_term_months)
+      : null;
+
+  const autoFirstPaymentDate = getAutoFirstPaymentDate(normalizedClosingDate);
+
+  const autoMaturityDate = getAutoMaturityDate(
+    autoFirstPaymentDate,
+    normalizedPromissoryTermMonths
+  );
 
   const updatePayload = {
     business_name:
@@ -354,17 +410,13 @@ export async function PATCH(request: Request, { params }: RouteContext) {
         : undefined,
 
     promissory_first_payment_date:
-      body.promissory_first_payment_date === null
-        ? null
-        : body.promissory_first_payment_date !== undefined
-        ? normalizeString(body.promissory_first_payment_date)
+      body.closing_date !== undefined || body.promissory_term_months !== undefined
+        ? autoFirstPaymentDate
         : undefined,
 
     promissory_maturity_date:
-      body.promissory_maturity_date === null
-        ? null
-        : body.promissory_maturity_date !== undefined
-        ? normalizeString(body.promissory_maturity_date)
+      body.closing_date !== undefined || body.promissory_term_months !== undefined
+        ? autoMaturityDate
         : undefined,
 
   };
