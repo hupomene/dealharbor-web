@@ -380,6 +380,62 @@ export async function PATCH(request: Request, { params }: RouteContext) {
         ? Boolean(body.lease_assignment_required)
         : undefined,
 
+    escrow_agent_name:
+      body.escrow_agent_name === null
+        ? null
+        : body.escrow_agent_name !== undefined
+        ? normalizeString(body.escrow_agent_name)
+        : undefined,
+
+    escrow_agent_address:
+      body.escrow_agent_address === null
+        ? null
+        : body.escrow_agent_address !== undefined
+        ? normalizeString(body.escrow_agent_address)
+        : undefined,
+
+    escrow_deposit_amount:
+      body.escrow_deposit_amount === null
+        ? null
+        : body.escrow_deposit_amount !== undefined
+        ? normalizeNumber(body.escrow_deposit_amount)
+        : undefined,
+
+    escrow_release_condition:
+      body.escrow_release_condition === null
+        ? null
+        : body.escrow_release_condition !== undefined
+        ? normalizeString(body.escrow_release_condition)
+        : undefined,
+
+    lease_assignment_condition:
+      body.lease_assignment_condition === null
+        ? null
+        : body.lease_assignment_condition !== undefined
+        ? normalizeString(body.lease_assignment_condition)
+        : undefined,
+
+    due_diligence_period_days:
+      body.due_diligence_period_days === null
+        ? null
+        : body.due_diligence_period_days !== undefined
+        ? normalizeNumber(body.due_diligence_period_days)
+        : undefined,
+
+    due_diligence_items_text:
+      body.due_diligence_items_text === null
+        ? null
+        : body.due_diligence_items_text !== undefined
+        ? normalizeString(body.due_diligence_items_text)
+        : undefined,
+
+    due_diligence_condition:
+      body.due_diligence_condition === null
+        ? null
+        : body.due_diligence_condition !== undefined
+        ? normalizeString(body.due_diligence_condition)
+        : undefined,
+
     allocation_total:
       body.allocation_total === null
         ? null
