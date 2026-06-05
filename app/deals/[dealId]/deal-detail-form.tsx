@@ -329,7 +329,9 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
   );
 
   const [dueDiligencePeriodDays, setDueDiligencePeriodDays] = useState(
-    numberToInput(deal.due_diligence_period_days)
+    deal.due_diligence_period_days != null
+      ? String(deal.due_diligence_period_days)
+      : ""
   );
 
   const [dueDiligenceItemsText, setDueDiligenceItemsText] = useState(
@@ -638,7 +640,9 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
           leaseAssignmentCondition.trim() !== "" ? leaseAssignmentCondition.trim() : null,
 
         due_diligence_period_days:
-          dueDiligencePeriodDays !== "" ? Number(dueDiligencePeriodDays) : null,
+          dueDiligencePeriodDays.trim() !== ""
+            ? parseNumberOrNull(dueDiligencePeriodDays)
+            : null,
         due_diligence_items_text:
           dueDiligenceItemsText.trim() !== "" ? dueDiligenceItemsText.trim() : null,
         due_diligence_condition:
