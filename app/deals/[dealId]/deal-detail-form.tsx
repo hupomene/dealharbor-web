@@ -1536,7 +1536,10 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   min="0"
                   step="1"
                   value={dueDiligencePeriodDays}
-                  onChange={(e) => setDueDiligencePeriodDays(e.target.value)}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setDueDiligencePeriodDays(value);
+                  }}
                   className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
                   placeholder="14"
                 />

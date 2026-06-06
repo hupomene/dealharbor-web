@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server-client";
 import type { DealRecord } from "@/types/persistence";
-import LogoutButton from "@/components/auth/logout-button";
+import LogoutButton from "../../components/auth/logout-button";
 
 function formatCurrency(value: number | null) {
   if (value == null) return "—";

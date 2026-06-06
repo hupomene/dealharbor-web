@@ -12,12 +12,12 @@ type RouteContext = {
   }>;
 };
 
-const TEMPLATE_LABELS: Record<TemplateKey, string> = {
+const TEMPLATE_LABELS: Record<string, string> = {
   asset_purchase_agreement: "Asset Purchase Agreement",
   bill_of_sale: "Bill of Sale",
   promissory_note: "Promissory Note",
   non_compete: "Non-Compete Agreement",
-  irs_8594: "IRS Form 8594 Allocation Summary",
+  irs_8594_summary: "IRS Form 8594 Allocation Summary",
 };
 
 export async function GET(_request: Request, { params }: RouteContext) {
