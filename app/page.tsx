@@ -44,23 +44,44 @@ const features = [
 
 const pricing = [
   {
-    name: "Starter",
-    price: "$25",
-    period: "/deal",
-    items: ["Smart deal intake", "Standard document package", "DOCX/PDF export"],
+    name: "Single Deal Package",
+    price: "$29",
+    period: "one-time",
+    badge: "Launch Price",
+    description:
+      "Generate one synchronized small business sale transaction document package.",
+    paymentLink: "https://buy.stripe.com/dRm7sM4y60twgWpeKhfUQ00",
+    buttonText: "Start with One Deal",
+    items: [
+      "One business sale deal package",
+      "Asset Purchase Agreement",
+      "Bill of Sale",
+      "Promissory Note",
+      "Non-Compete Agreement",
+      "IRS Form 8594 Allocation Summary",
+      "DOCX/PDF document output",
+      "Report Issue support",
+    ],
   },
   {
-    name: "Pro",
+    name: "Broker Launch Plan",
     price: "$99",
     period: "/month",
-    badge: "Most Popular",
-    items: ["Unlimited deals", "Risk warnings", "Allocation mismatch alerts", "ZIP closing package"],
-  },
-  {
-    name: "Firm",
-    price: "$299",
-    period: "/month",
-    items: ["Team collaboration", "Custom templates", "Priority support", "Advisor-ready workflows"],
+    badge: "Best for Brokers",
+    description:
+      "Monthly launch access for brokers and advisors preparing small business sale document packages.",
+    paymentLink: "https://buy.stripe.com/dRm9AU4y67VY6hLgSpfUQ01",
+    buttonText: "Get Broker Launch Access",
+    items: [
+      "Multiple deal packages",
+      "Broker-focused workflow",
+      "Synchronized APA/BOS/PN/NC documents",
+      "IRS Form 8594 Allocation Summary",
+      "Closing package document generation",
+      "Report Issue channel",
+      "Request Feature channel",
+      "Priority feedback review",
+    ],
   },
 ];
 
@@ -288,32 +309,73 @@ export default function HomePage() {
       </section>
 
       <section id="pricing" className="mx-auto max-w-7xl px-8 py-16">
-        <h2 className="text-center text-4xl font-extrabold">Pricing</h2>
-        <div className="mt-12 grid gap-8 md:grid-cols-3">
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-600">
+            Launch Access
+          </p>
+
+          <h2 className="mt-3 text-4xl font-extrabold">
+            Start generating closing-ready documents today.
+          </h2>
+
+          <p className="mt-5 text-lg leading-8 text-slate-600">
+            Choose a launch plan and start preparing synchronized small business sale
+            transaction documents with PactAnchor.
+          </p>
+        </div>
+
+        <div className="mt-12 grid gap-8 md:grid-cols-2">
           {pricing.map((plan) => (
             <div
               key={plan.name}
-              className={`relative rounded-2xl border bg-white p-8 shadow-sm ${
+              className={`relative flex flex-col rounded-2xl border bg-white p-8 shadow-sm ${
                 plan.badge ? "border-amber-400 ring-2 ring-amber-300" : ""
               }`}
             >
               {plan.badge && (
-                <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-md bg-amber-400 px-8 py-1 text-sm font-bold text-white">
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 rounded-md bg-amber-400 px-8 py-1 text-sm font-bold text-slate-950">
                   {plan.badge}
                 </div>
               )}
+
               <h3 className="text-2xl font-bold">{plan.name}</h3>
-              <p className="mt-4">
+
+              <p className="mt-3 min-h-[52px] text-sm leading-6 text-slate-600">
+                {plan.description}
+              </p>
+
+              <p className="mt-6">
                 <span className="text-5xl font-extrabold">{plan.price}</span>
                 <span className="text-slate-500"> {plan.period}</span>
               </p>
-              <ul className="mt-8 space-y-3 text-base">
+
+              <ul className="mt-8 flex-1 space-y-3 text-base">
                 {plan.items.map((item) => (
                   <li key={item}>✓ {item}</li>
                 ))}
               </ul>
+
+              <a
+                href={plan.paymentLink}
+                className="mt-8 block rounded-lg bg-[#061d3a] px-6 py-4 text-center text-base font-bold text-white hover:bg-[#09284f]"
+              >
+                {plan.buttonText}
+              </a>
             </div>
           ))}
+        </div>
+
+        <div className="mx-auto mt-10 max-w-4xl rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm leading-7 text-slate-700">
+          <p className="font-semibold text-slate-900">
+            Attorney review disclaimer
+          </p>
+          <p className="mt-2">
+            PactAnchor is a document automation platform designed to help prepare
+            attorney-review-ready draft transaction documents. PactAnchor is not a law
+            firm and does not provide legal advice. Users should consult a qualified
+            attorney, CPA, or other professional advisor before using any document in a
+            real transaction.
+          </p>
         </div>
       </section>
 
