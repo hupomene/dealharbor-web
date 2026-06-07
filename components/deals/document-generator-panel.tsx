@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 
 type DocumentRow = {
   id: string;
@@ -96,12 +96,13 @@ type BatchCompareResult = {
   changes: BatchCompareChange[];
 };
 
+type SupportModalType = "issue" | "feature" | "feedback" | null;
+
 const TEMPLATE_OPTIONS: TemplateOption[] = [
   { key: "asset_purchase_agreement", label: "Asset Purchase Agreement" },
   { key: "bill_of_sale", label: "Bill of Sale" },
   { key: "promissory_note", label: "Promissory Note" },
   { key: "non_compete", label: "Non-Compete Agreement" },
-  { key: "irs_8594", label: "IRS Form 8594 Allocation Summary" },
 ];
 
 function formatDate(value: string) {
@@ -212,6 +213,11 @@ export default function DocumentGeneratorPanel({ dealId }: Props) {
   const [compareResult, setCompareResult] = useState<BatchCompareResult | null>(null);
   const [olderBatchId, setOlderBatchId] = useState("");
   const [newerBatchId, setNewerBatchId] = useState("");
+
+  const [supportModal, setSupportModal] = useState<SupportModalType>(null);
+  const [supportSubmitting, setSupportSubmitting] = useState(false);
+  const [supportError, setSupportError] = useState<string | null>(null);
+  const [supportSuccess, setSupportSuccess] = useState<string | null>(null);
 
   const loadDocuments = useCallback(async () => {
     setLoading(true);
@@ -520,6 +526,182 @@ export default function DocumentGeneratorPanel({ dealId }: Props) {
       );
     } finally {
       setCompareLoading(false);
+    }
+  };
+
+  const closeSupportModal = () => {
+    if (supportSubmitting) return;
+    setSupportModal(null);
+    setSupportError(null);
+  };
+
+  const currentPageUrl = () => {
+    if (typeof window === "undefined") return null;
+    return window.location.href;
+  };
+
+  const handleSubmitIssue = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    setSupportSubmitting(true);
+    setSupportError(null);
+    setSupportSuccess(null);
+
+    const formData = new FormData(event.currentTarget);
+
+    try {
+      const response = await fetch("/api/issue-reports", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          deal_id: dealId,
+          document_type: String(formData.get("document_type") || "general"),
+          issue_type: String(formData.get("issue_type") || "other"),
+          severity: String(formData.get("severity") || "medium"),
+          title: String(formData.get("title") || ""),
+          description: String(formData.get("description") || ""),
+          user_email: String(formData.get("user_email") || ""),
+          page_url: currentPageUrl(),
+        }),
+      });
+
+      const payload = await parseJsonSafely(response);
+
+      if (!response.ok) {
+        throw new Error(
+          payload && typeof payload.error === "string"
+            ? payload.error
+            : "Failed to submit issue report."
+        );
+      }
+
+      setSupportSuccess(
+        "Issue report submitted. Thank you for helping us improve PactAnchor."
+      );
+      setSupportModal(null);
+    } catch (err) {
+      setSupportError(
+        err instanceof Error ? err.message : "Failed to submit issue report."
+      );
+    } finally {
+      setSupportSubmitting(false);
+    }
+  };
+
+  const handleSubmitFeatureRequest = async (
+    event: FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+
+    setSupportSubmitting(true);
+    setSupportError(null);
+    setSupportSuccess(null);
+
+    const formData = new FormData(event.currentTarget);
+
+    try {
+      const response = await fetch("/api/feature-requests", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          deal_id: dealId,
+          title: String(formData.get("title") || ""),
+          description: String(formData.get("description") || ""),
+          category: String(formData.get("category") || "other"),
+          priority: String(formData.get("priority") || "medium"),
+          requested_by_email: String(formData.get("requested_by_email") || ""),
+          user_role: String(formData.get("user_role") || ""),
+        }),
+      });
+
+      const payload = await parseJsonSafely(response);
+
+      if (!response.ok) {
+        throw new Error(
+          payload && typeof payload.error === "string"
+            ? payload.error
+            : "Failed to submit feature request."
+        );
+      }
+
+      setSupportSuccess("Feature request submitted. Thank you for your suggestion.");
+      setSupportModal(null);
+    } catch (err) {
+      setSupportError(
+        err instanceof Error ? err.message : "Failed to submit feature request."
+      );
+    } finally {
+      setSupportSubmitting(false);
+    }
+  };
+
+  const handleSubmitProductFeedback = async (
+    event: FormEvent<HTMLFormElement>
+  ) => {
+    event.preventDefault();
+
+    setSupportSubmitting(true);
+    setSupportError(null);
+    setSupportSuccess(null);
+
+    const formData = new FormData(event.currentTarget);
+
+    try {
+      const response = await fetch("/api/product-feedback", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          deal_id: dealId,
+          user_role: String(formData.get("user_role") || ""),
+          user_email: String(formData.get("user_email") || ""),
+          time_saving_rating: Number(formData.get("time_saving_rating") || 0),
+          document_quality_rating: Number(
+            formData.get("document_quality_rating") || 0
+          ),
+          ease_of_use_rating: Number(formData.get("ease_of_use_rating") || 0),
+          synchronization_value_rating: Number(
+            formData.get("synchronization_value_rating") || 0
+          ),
+          likelihood_to_use_again: Number(
+            formData.get("likelihood_to_use_again") || 0
+          ),
+          likelihood_to_recommend: Number(
+            formData.get("likelihood_to_recommend") || 0
+          ),
+          most_useful: String(formData.get("most_useful") || ""),
+          most_confusing: String(formData.get("most_confusing") || ""),
+          improvement_suggestion: String(
+            formData.get("improvement_suggestion") || ""
+          ),
+          open_to_feedback_call:
+            formData.get("open_to_feedback_call") === "on",
+        }),
+      });
+
+      const payload = await parseJsonSafely(response);
+
+      if (!response.ok) {
+        throw new Error(
+          payload && typeof payload.error === "string"
+            ? payload.error
+            : "Failed to submit product feedback."
+        );
+      }
+
+      setSupportSuccess("Feedback submitted. Thank you for using PactAnchor.");
+      setSupportModal(null);
+    } catch (err) {
+      setSupportError(
+        err instanceof Error ? err.message : "Failed to submit product feedback."
+      );
+    } finally {
+      setSupportSubmitting(false);
     }
   };
 
@@ -1026,6 +1208,70 @@ export default function DocumentGeneratorPanel({ dealId }: Props) {
         </div>
       )}
 
+      {supportSuccess && (
+        <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">
+          {supportSuccess}
+        </div>
+      )}
+
+      {supportError && (
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
+          {supportError}
+        </div>
+      )}
+
+      <div className="mb-6 rounded-xl border border-blue-200 bg-blue-50 p-4">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h3 className="text-sm font-semibold text-slate-900">
+              Help improve PactAnchor
+            </h3>
+            <p className="mt-1 text-xs leading-5 text-slate-600">
+              Found a document issue, need a feature, or want to share feedback?
+              Send it directly from this deal workspace.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-2 sm:flex-row">
+            <button
+              type="button"
+              onClick={() => {
+                setSupportError(null);
+                setSupportSuccess(null);
+                setSupportModal("issue");
+              }}
+              className="rounded-lg bg-slate-900 px-3 py-2 text-sm font-medium text-white hover:bg-slate-800"
+            >
+              Report Issue
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setSupportError(null);
+                setSupportSuccess(null);
+                setSupportModal("feature");
+              }}
+              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+            >
+              Request Feature
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setSupportError(null);
+                setSupportSuccess(null);
+                setSupportModal("feedback");
+              }}
+              className="rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
+            >
+              Submit Feedback
+            </button>
+          </div>
+        </div>
+      </div>
+
       {emptyState ? (
         <div className="text-sm text-slate-500">{emptyState}</div>
       ) : (
@@ -1057,6 +1303,359 @@ export default function DocumentGeneratorPanel({ dealId }: Props) {
           </tbody>
         </table>
       )}
+      {supportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4 py-6">
+          <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">
+                  {supportModal === "issue"
+                    ? "Report an Issue"
+                    : supportModal === "feature"
+                      ? "Request a Feature"
+                      : "Submit Product Feedback"}
+                </h3>
+                <p className="mt-1 text-sm text-slate-600">
+                  {supportModal === "issue"
+                    ? "Tell us what went wrong so we can fix it quickly."
+                    : supportModal === "feature"
+                      ? "Tell us what would make PactAnchor more useful for your workflow."
+                      : "Share your experience using PactAnchor."}
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={closeSupportModal}
+                className="rounded-lg border border-slate-300 px-3 py-1 text-sm text-slate-600 hover:bg-slate-100"
+              >
+                Close
+              </button>
+            </div>
+
+            {supportModal === "issue" && (
+              <form onSubmit={handleSubmitIssue} className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-slate-700">
+                      Document Type
+                    </label>
+                    <select
+                      name="document_type"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    >
+                      <option value="general">General</option>
+                      <option value="asset_purchase_agreement">Asset Purchase Agreement</option>
+                      <option value="bill_of_sale">Bill of Sale</option>
+                      <option value="promissory_note">Promissory Note</option>
+                      <option value="non_compete">Non-Compete Agreement</option>
+                      <option value="irs_8594_summary">IRS Form 8594 Summary</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-slate-700">
+                      Issue Type
+                    </label>
+                    <select
+                      name="issue_type"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    >
+                      <option value="document_error">Document error</option>
+                      <option value="missing_data">Missing data</option>
+                      <option value="wrong_calculation">Wrong calculation</option>
+                      <option value="formatting_issue">Formatting issue</option>
+                      <option value="download_problem">Download problem</option>
+                      <option value="legal_language_concern">Legal language concern</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-700">
+                    Severity
+                  </label>
+                  <select
+                    name="severity"
+                    defaultValue="medium"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  >
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="critical">Critical</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-700">
+                    Title
+                  </label>
+                  <input
+                    name="title"
+                    required
+                    placeholder="Example: Seller name is missing in the APA"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-700">
+                    Description
+                  </label>
+                  <textarea
+                    name="description"
+                    required
+                    placeholder="Describe what happened and where you saw the issue."
+                    className="min-h-28 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-700">
+                    Email
+                  </label>
+                  <input
+                    name="user_email"
+                    type="email"
+                    placeholder="you@example.com"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={supportSubmitting}
+                  className="w-full rounded-lg bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
+                >
+                  {supportSubmitting ? "Submitting..." : "Submit Issue"}
+                </button>
+              </form>
+            )}
+
+            {supportModal === "feature" && (
+              <form onSubmit={handleSubmitFeatureRequest} className="space-y-4">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-700">
+                    Feature Title
+                  </label>
+                  <input
+                    name="title"
+                    required
+                    placeholder="Example: Add attorney review handoff"
+                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-700">
+                    Description
+                  </label>
+                  <textarea
+                    name="description"
+                    required
+                    placeholder="Explain what you want and why it would help your workflow."
+                    className="min-h-28 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-slate-700">
+                      Category
+                    </label>
+                    <select
+                      name="category"
+                      defaultValue="other"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    >
+                      <option value="new_document">New document</option>
+                      <option value="clause_option">Clause option</option>
+                      <option value="workflow">Workflow</option>
+                      <option value="export">Export</option>
+                      <option value="collaboration">Collaboration</option>
+                      <option value="attorney_review">Attorney review</option>
+                      <option value="broker_tools">Broker tools</option>
+                      <option value="pricing">Pricing</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-slate-700">
+                      Priority
+                    </label>
+                    <select
+                      name="priority"
+                      defaultValue="medium"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    >
+                      <option value="low">Low</option>
+                      <option value="medium">Medium</option>
+                      <option value="high">High</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-slate-700">
+                      Your Role
+                    </label>
+                    <select
+                      name="user_role"
+                      defaultValue="business_broker"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    >
+                      <option value="business_broker">Business Broker</option>
+                      <option value="buyer">Buyer</option>
+                      <option value="seller">Seller</option>
+                      <option value="attorney">Attorney</option>
+                      <option value="cpa">CPA</option>
+                      <option value="ma_advisor">M&A Advisor</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-slate-700">
+                      Email
+                    </label>
+                    <input
+                      name="requested_by_email"
+                      type="email"
+                      placeholder="you@example.com"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={supportSubmitting}
+                  className="w-full rounded-lg bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
+                >
+                  {supportSubmitting ? "Submitting..." : "Submit Feature Request"}
+                </button>
+              </form>
+            )}
+
+            {supportModal === "feedback" && (
+              <form onSubmit={handleSubmitProductFeedback} className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-slate-700">
+                      Your Role
+                    </label>
+                    <select
+                      name="user_role"
+                      defaultValue="business_broker"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    >
+                      <option value="business_broker">Business Broker</option>
+                      <option value="buyer">Buyer</option>
+                      <option value="seller">Seller</option>
+                      <option value="attorney">Attorney</option>
+                      <option value="cpa">CPA</option>
+                      <option value="ma_advisor">M&A Advisor</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-slate-700">
+                      Email
+                    </label>
+                    <input
+                      name="user_email"
+                      type="email"
+                      placeholder="you@example.com"
+                      className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  {[
+                    ["time_saving_rating", "This saves me time."],
+                    ["document_quality_rating", "The document quality is usable."],
+                    ["ease_of_use_rating", "The workflow is easy to use."],
+                    ["synchronization_value_rating", "Document synchronization is valuable."],
+                    ["likelihood_to_use_again", "I would use this again."],
+                    ["likelihood_to_recommend", "I would recommend this."],
+                  ].map(([name, label]) => (
+                    <div key={name}>
+                      <label className="mb-1 block text-xs font-medium text-slate-700">
+                        {label}
+                      </label>
+                      <select
+                        name={name}
+                        defaultValue="5"
+                        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                      >
+                        <option value="5">5 - Strongly agree</option>
+                        <option value="4">4 - Agree</option>
+                        <option value="3">3 - Neutral</option>
+                        <option value="2">2 - Disagree</option>
+                        <option value="1">1 - Strongly disagree</option>
+                      </select>
+                    </div>
+                  ))}
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-700">
+                    What was most useful?
+                  </label>
+                  <textarea
+                    name="most_useful"
+                    className="min-h-20 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-700">
+                    What was confusing?
+                  </label>
+                  <textarea
+                    name="most_confusing"
+                    className="min-h-20 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-slate-700">
+                    What would make PactAnchor more valuable?
+                  </label>
+                  <textarea
+                    name="improvement_suggestion"
+                    className="min-h-20 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
+                  />
+                </div>
+
+                <label className="inline-flex items-center gap-2 text-sm text-slate-700">
+                  <input
+                    name="open_to_feedback_call"
+                    type="checkbox"
+                    className="h-4 w-4 rounded border-slate-300"
+                  />
+                  I am open to a short feedback call.
+                </label>
+
+                <button
+                  type="submit"
+                  disabled={supportSubmitting}
+                  className="w-full rounded-lg bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
+                >
+                  {supportSubmitting ? "Submitting..." : "Submit Feedback"}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
     </section>
   );
 }
