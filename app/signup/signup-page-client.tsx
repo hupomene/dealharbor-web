@@ -11,7 +11,7 @@ export default function SignupPageClient() {
 
   const redirectTo = useMemo(() => {
     const next = searchParams.get("next");
-    return next && next.startsWith("/") ? next : "/deals/new";
+    return next && next.startsWith("/") ? next : "/dashboard";
   }, [searchParams]);
 
   const [email, setEmail] = useState("");

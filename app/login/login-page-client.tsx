@@ -11,7 +11,7 @@ export default function LoginPageClient() {
 
   const redirectTo = useMemo(() => {
     const next = searchParams.get("next");
-    return next && next.startsWith("/") ? next : "/deals";
+    return next && next.startsWith("/") ? next : "/dashboard";
   }, [searchParams]);
 
   const initialError = useMemo(() => {
