@@ -12,6 +12,13 @@ function formatCurrency(value: number | null) {
   }).format(value);
 }
 
+function getAdminEmails() {
+  return (process.env.ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((email) => email.trim().toLowerCase())
+    .filter(Boolean);
+}
+
 export default async function DashboardPage() {
   const supabase = await createServerSupabaseClient();
 
@@ -22,6 +29,11 @@ export default async function DashboardPage() {
   if (!user) {
     redirect("/login");
   }
+
+  const adminEmails = getAdminEmails();
+  const isAdmin =
+    adminEmails.length > 0 &&
+    adminEmails.includes((user?.email ?? "").toLowerCase());
 
   const { data: deals, error } = await supabase
     .from("deals")
@@ -58,12 +70,14 @@ export default async function DashboardPage() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <Link
-              href="/admin/beta-feedback"
-              className="rounded-xl border border-amber-300 bg-amber-50 px-5 py-3 text-sm font-medium text-amber-800 hover:bg-amber-100"
-            >
-              Admin Feedback Review
-            </Link>
+            {isAdmin && (
+              <Link
+                href="/admin/beta-feedback"
+                className="rounded-xl border border-amber-300 bg-amber-50 px-5 py-3 text-sm font-medium text-amber-800 hover:bg-amber-100"
+              >
+                Admin Feedback Review
+              </Link>
+            )}
 
             <Link
               href="/deals"
