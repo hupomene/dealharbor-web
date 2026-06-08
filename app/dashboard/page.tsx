@@ -3,6 +3,12 @@ import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server-client";
 import type { DealRecord } from "@/types/persistence";
 
+const SINGLE_DEAL_PAYMENT_LINK =
+  "https://buy.stripe.com/dRm7sM4y60twgWpeKhfUQ00";
+
+const BROKER_PLAN_PAYMENT_LINK =
+  "https://buy.stripe.com/dRm9AU4y67VY6hLgSpfUQ01";
+
 function formatCurrency(value: number | null) {
   if (value == null) return "$0";
   return new Intl.NumberFormat("en-US", {
@@ -19,6 +25,102 @@ function getAdminEmails() {
     .filter(Boolean);
 }
 
+function AccessPendingScreen({ userEmail }: { userEmail: string | null }) {
+  return (
+    <main className="min-h-screen bg-slate-50 px-6 py-12 text-slate-900">
+      <div className="mx-auto max-w-4xl rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-600">
+          PactAnchor Access
+        </p>
+
+        <h1 className="mt-3 text-3xl font-bold">
+          Your PactAnchor access is pending.
+        </h1>
+
+        <p className="mt-4 text-base leading-7 text-slate-600">
+          This account does not currently have paid access enabled. If you
+          already completed payment, please make sure you are signed in with the
+          same email address used at checkout.
+        </p>
+
+        <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+          <p className="text-sm font-semibold text-slate-900">
+            Signed in email
+          </p>
+          <p className="mt-1 text-sm text-slate-600">
+            {userEmail ?? "Unknown"}
+          </p>
+        </div>
+
+        <div className="mt-8 grid gap-5 md:grid-cols-2">
+          <div className="rounded-2xl border border-slate-200 bg-white p-6">
+            <p className="text-sm font-semibold text-amber-700">
+              Single Deal Package
+            </p>
+            <p className="mt-2 text-3xl font-bold">$29</p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              Generate one synchronized small business sale document package.
+            </p>
+            <a
+              href={SINGLE_DEAL_PAYMENT_LINK}
+              className="mt-5 inline-flex w-full justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800"
+            >
+              Start with One Deal
+            </a>
+          </div>
+
+          <div className="rounded-2xl border border-amber-300 bg-amber-50 p-6">
+            <p className="text-sm font-semibold text-amber-800">
+              Broker Launch Plan
+            </p>
+            <p className="mt-2 text-3xl font-bold">$99/month</p>
+            <p className="mt-2 text-sm leading-6 text-slate-700">
+              Monthly launch access for brokers and advisors preparing small
+              business sale document packages.
+            </p>
+            <a
+              href={BROKER_PLAN_PAYMENT_LINK}
+              className="mt-5 inline-flex w-full justify-center rounded-xl bg-amber-500 px-4 py-3 text-sm font-semibold text-slate-950 hover:bg-amber-400"
+            >
+              Get Broker Launch Access
+            </a>
+          </div>
+        </div>
+
+        <p className="mt-8 text-xs leading-6 text-slate-500">
+          PactAnchor prepares attorney-review-ready draft transaction documents.
+          PactAnchor is not a law firm and does not provide legal advice.
+        </p>
+      </div>
+    </main>
+  );
+}
+
+function AccessBlockedScreen({ userEmail }: { userEmail: string | null }) {
+  return (
+    <main className="min-h-screen bg-slate-50 px-6 py-12 text-slate-900">
+      <div className="mx-auto max-w-3xl rounded-3xl border border-red-200 bg-white p-8 shadow-sm">
+        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-red-600">
+          Access Blocked
+        </p>
+
+        <h1 className="mt-3 text-3xl font-bold">
+          This account cannot access PactAnchor.
+        </h1>
+
+        <p className="mt-4 text-base leading-7 text-slate-600">
+          Please contact Covenant AI Solutions LLC if you believe this is a
+          mistake.
+        </p>
+
+        <p className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+          Signed in as: {userEmail ?? "Unknown"}
+        </p>
+      </div>
+    </main>
+  );
+}
+
 export default async function DashboardPage() {
   const supabase = await createServerSupabaseClient();
 
@@ -33,7 +135,23 @@ export default async function DashboardPage() {
   const adminEmails = getAdminEmails();
   const isAdmin =
     adminEmails.length > 0 &&
-    adminEmails.includes((user?.email ?? "").toLowerCase());
+    adminEmails.includes((user.email ?? "").toLowerCase());
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("access_status, plan_type")
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const accessStatus = isAdmin ? "admin" : profile?.access_status ?? "free";
+
+  if (accessStatus === "blocked") {
+    return <AccessBlockedScreen userEmail={user.email ?? null} />;
+  }
+
+  if (accessStatus !== "paid" && accessStatus !== "admin") {
+    return <AccessPendingScreen userEmail={user.email ?? null} />;
+  }
 
   const { data: deals, error } = await supabase
     .from("deals")
