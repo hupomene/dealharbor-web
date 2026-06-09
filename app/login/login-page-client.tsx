@@ -79,9 +79,19 @@ export default function LoginPageClient() {
             </div>
 
             <div>
-              <label className="mb-2 block text-sm font-medium text-slate-700">
-                Password
-              </label>
+              <div className="mb-2 flex items-center justify-between gap-4">
+                <label className="block text-sm font-medium text-slate-700">
+                  Password
+                </label>
+
+                <Link
+                  href="/forgot-password"
+                  className="text-sm font-medium text-slate-700 underline hover:text-slate-950"
+                >
+                  Forgot password?
+                </Link>
+              </div>
+
               <input
                 type="password"
                 value={password}
