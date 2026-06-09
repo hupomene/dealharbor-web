@@ -51,7 +51,7 @@ const pricing = [
     description:
       "Generate one synchronized small business sale transaction document package.",
     paymentLink: "https://buy.stripe.com/dRm7sM4y60twgWpeKhfUQ00",
-    buttonText: "Start with One Deal",
+    buttonText: "Buy Single Deal Package",
     items: [
       "One business sale deal package",
       "Asset Purchase Agreement",
@@ -71,7 +71,7 @@ const pricing = [
     description:
       "Monthly launch access for brokers and advisors preparing small business sale document packages.",
     paymentLink: "https://buy.stripe.com/dRm9AU4y67VY6hLgSpfUQ01",
-    buttonText: "Get Broker Launch Access",
+    buttonText: "Start Broker Launch Plan",
     items: [
       "Multiple deal packages",
       "Broker-focused workflow",
@@ -410,12 +410,12 @@ export default function HomePage() {
             </div>
 
             <div className="mt-9 flex flex-wrap gap-4">
-              <Link
-                href="/login"
+              <a
+                href="#pricing"
                 className="rounded-lg bg-amber-400 px-8 py-4 text-base font-bold text-slate-950 shadow-lg shadow-amber-500/20 hover:bg-amber-300"
               >
-                Start Your Deal with Confidence →
-              </Link>
+                View Launch Pricing →
+              </a>
               <a
                 href="#document-sync"
                 className="rounded-lg border border-slate-400 px-8 py-4 text-base font-bold text-white hover:bg-white/10"
@@ -612,7 +612,11 @@ export default function HomePage() {
             </div>
           ))}
         </div>
-
+        <p className="mx-auto mt-6 max-w-3xl text-center text-sm leading-6 text-slate-500">
+          After checkout, please sign in or create your PactAnchor account using
+          the same email address used for Stripe payment. During launch, access
+          may be activated after payment verification.
+        </p>
         <div className="mx-auto mt-10 max-w-4xl rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm leading-7 text-slate-700">
           <p className="font-semibold text-slate-900">
             Attorney review disclaimer
