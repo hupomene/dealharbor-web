@@ -6,6 +6,7 @@ import {
   RefreshCcw,
   BadgeCheck,
 } from "lucide-react";
+import DocumentPreviewRotator from "@/components/marketing/document-preview-rotator";
 
 const valueCards = [
   {
@@ -85,6 +86,7 @@ const pricing = [
   },
 ];
 
+
 function IntakeToDocumentsPreview() {
   const intakeFields = [
     {
@@ -133,6 +135,7 @@ function IntakeToDocumentsPreview() {
     {
       title: "Asset Purchase Agreement",
       badge: "APA",
+      imageSrc: "/marketing/docs/apa-preview.png",
       items: [
         "Parties and business description",
         "Purchase price and payment structure",
@@ -143,6 +146,7 @@ function IntakeToDocumentsPreview() {
     {
       title: "Bill of Sale",
       badge: "BOS",
+      imageSrc: "/marketing/docs/bos-preview.png",
       items: [
         "Seller and buyer names",
         "Transferred asset list",
@@ -153,6 +157,7 @@ function IntakeToDocumentsPreview() {
     {
       title: "Promissory Note",
       badge: "PN",
+      imageSrc: "/marketing/docs/pn-preview.png",
       items: [
         "Seller-financed principal amount",
         "Issue date based on closing date",
@@ -163,6 +168,7 @@ function IntakeToDocumentsPreview() {
     {
       title: "Non-Compete Agreement",
       badge: "NC",
+      imageSrc: "/marketing/docs/nc-preview.png",
       items: [
         "Restricted and protected parties",
         "Restricted term and radius",
@@ -173,6 +179,7 @@ function IntakeToDocumentsPreview() {
     {
       title: "IRS Form 8594 Summary",
       badge: "8594",
+      imageSrc: "/marketing/docs/irs-8594-preview.png",
       items: [
         "Inventory allocation",
         "FFE and equipment allocation",
@@ -224,16 +231,13 @@ function IntakeToDocumentsPreview() {
                   key={field.label}
                   className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4"
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-                        {field.label}
-                      </p>
-                      <p className="mt-1 text-sm font-semibold text-white">
-                        {field.value}
-                      </p>
-                    </div>
-                  </div>
+                  <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                    {field.label}
+                  </p>
+
+                  <p className="mt-1 text-sm font-semibold text-white">
+                    {field.value}
+                  </p>
 
                   <p className="mt-3 text-xs leading-5 text-slate-400">
                     Applied to:{" "}
@@ -274,32 +278,14 @@ function IntakeToDocumentsPreview() {
 
             <div className="grid gap-4 md:grid-cols-2">
               {documentOutputs.map((doc) => (
-                <div
+                <DocumentPreviewRotator
                   key={doc.title}
-                  className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5"
-                >
-                  <div className="mb-4 flex items-center justify-between gap-4">
-                    <h4 className="text-sm font-semibold text-white">
-                      {doc.title}
-                    </h4>
-
-                    <span className="rounded-full border border-slate-700 px-2.5 py-1 text-xs font-semibold text-slate-300">
-                      {doc.badge}
-                    </span>
-                  </div>
-
-                  <ul className="space-y-2">
-                    {doc.items.map((item) => (
-                      <li
-                        key={item}
-                        className="flex gap-2 text-sm leading-6 text-slate-400"
-                      >
-                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-300" />
-                        <span>{item}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                  title={doc.title}
+                  badge={doc.badge}
+                  items={doc.items}
+                  imageSrc={doc.imageSrc}
+                  intervalMs={1000}
+                />
               ))}
             </div>
 
@@ -328,7 +314,6 @@ function IntakeToDocumentsPreview() {
     </section>
   );
 }
-
 
 export default function HomePage() {
   return (
@@ -359,12 +344,12 @@ export default function HomePage() {
             <Link href="/login" className="text-sm text-slate-200">
               Sign In
             </Link>
-            <Link
-              href="/login"
+            <a
+              href="#pricing"
               className="rounded-lg bg-amber-400 px-6 py-3 text-sm font-bold text-slate-950 hover:bg-amber-300"
             >
-              Start a Deal
-            </Link>
+              View Pricing
+            </a>
           </div>
         </header>
 
