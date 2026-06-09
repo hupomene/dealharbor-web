@@ -21,7 +21,7 @@ const valueCards = [
   },
   {
     title: "Closing-Ready Package",
-    text: "Generate organized DOCX, PDF, and ZIP packages before attorney review and closing.",
+    text: "Generate organized DOCX, PDF, and ZIP draft packages for attorney review and closing preparation.",
     icon: "✓",
   },
 ];
@@ -356,19 +356,18 @@ export default function HomePage() {
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-8 py-14 lg:grid-cols-[0.78fr_1.22fr] lg:py-20">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-300">
-              EARLY ACCESS · AI-POWERED DOCUMENT AUTOMATION
+              EARLY ACCESS · BUSINESS SALE DOCUMENT AUTOMATION
             </p>
 
             <h1 className="mt-4 max-w-3xl text-4xl font-extrabold leading-tight tracking-tight md:text-5xl xl:text-6xl">
-              Close Deals Faster.
-              <br />
-              With Confidence.
+              AI-Powered Business Sale Document Automation
             </h1>
 
             <p className="mt-5 max-w-xl text-base leading-7 text-slate-200 md:text-lg">
-              PactAnchor is now open for early access — an AI-powered document automation
-              platform for small business sale transactions. Enter deal terms once and
-              generate synchronized draft packages for attorney review.
+              Enter deal information once and generate synchronized, attorney-review-ready
+              draft packages for small business sale transactions, including Asset Purchase
+              Agreements, Bills of Sale, Promissory Notes, Non-Compete Agreements, and Closing
+              Checklists.
             </p>
 
             <div className="mt-7 grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
@@ -398,13 +397,13 @@ export default function HomePage() {
                 href="#pricing"
                 className="rounded-lg bg-amber-400 px-8 py-4 text-base font-bold text-slate-950 shadow-lg shadow-amber-500/20 hover:bg-amber-300"
               >
-                View Launch Pricing →
+                Start Early Access →
               </a>
               <a
                 href="#document-sync"
                 className="rounded-lg border border-slate-400 px-8 py-4 text-base font-bold text-white hover:bg-white/10"
               >
-                See Document Sync Preview
+                See How Document Sync Works
               </a>
             </div>
           </div>
