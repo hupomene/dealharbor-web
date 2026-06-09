@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server-client";
 import type { DealRecord } from "@/types/persistence";
 import LogoutButton from "../../components/auth/logout-button";
+import { requirePaidAccess } from "@/lib/access-control";
 
 function formatCurrency(value: number | null) {
   if (value == null) return "—";
@@ -23,6 +24,8 @@ export default async function DealsPage() {
   if (!user) {
     redirect("/login");
   }
+
+  await requirePaidAccess({ supabase, user });
 
   const { data, error } = await supabase
     .from("deals")

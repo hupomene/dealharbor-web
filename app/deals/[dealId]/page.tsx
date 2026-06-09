@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server-client";
 import DealDetailForm from "./deal-detail-form";
+import { requirePaidAccess } from "@/lib/access-control";
 
 type PageProps = {
   params: Promise<{
@@ -40,6 +41,8 @@ export default async function DealDetailPage({ params }: PageProps) {
     redirect(`/login?next=/deals/${dealId}`);
   }
 
+  await requirePaidAccess({ supabase, user });
+  
   const { data, error } = await supabase
     .from("deals")
     .select("*")

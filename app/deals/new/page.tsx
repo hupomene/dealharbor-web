@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server-client";
 import NewDealForm from "./new-deal-form";
+import { requirePaidAccess } from "@/lib/access-control";
 
 export default async function NewDealPage() {
   const supabase = await createServerSupabaseClient();
@@ -13,6 +14,8 @@ export default async function NewDealPage() {
   if (!user) {
     redirect("/login?next=/deals/new");
   }
+
+  await requirePaidAccess({ supabase, user });
 
   return (
     <main className="min-h-screen bg-slate-50 px-8 py-10">
