@@ -5,13 +5,21 @@ export const metadata = {
   metadataBase: new URL("https://www.pactanchor.com"),
   title: "PactAnchor | Business Sale Document Automation",
   description:
-    "PactAnchor is an AI-powered document automation platform for small business sale transactions. Enter deal terms once and generate synchronized draft packages for attorney review.",
+    "PactAnchor is an AI-powered document automation platform for small business sale transactions. Generate synchronized attorney-review-ready draft packages with greater consistency.",
   openGraph: {
     title: "PactAnchor | Business Sale Document Automation",
     description:
       "AI-powered document automation for small business sale transactions. Enter deal terms once and generate synchronized draft packages for attorney review.",
     url: "https://www.pactanchor.com",
     siteName: "PactAnchor",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "PactAnchor business sale document automation platform",
+      },
+    ],
     type: "website",
   },
   twitter: {
@@ -19,6 +27,7 @@ export const metadata = {
     title: "PactAnchor | Business Sale Document Automation",
     description:
       "AI-powered document automation for small business sale transactions.",
+    images: ["/og-image.png"],
   },
 };
 
