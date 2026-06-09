@@ -1,15 +1,27 @@
 import type { Metadata } from "next";
 import "./globals.css";
 
-export const metadata = {
+export const metadata: Metadata = {
   metadataBase: new URL("https://www.pactanchor.com"),
-  title: "PactAnchor | Business Sale Document Automation",
+  title: "PactAnchor | AI Business Sale Document Automation",
   description:
-    "PactAnchor is an AI-powered document automation platform for small business sale transactions. Generate synchronized attorney-review-ready draft packages with greater consistency.",
+  "Generate consistent, attorney-review-ready business sale document packages from one guided intake. PactAnchor supports Asset Purchase Agreements, Bills of Sale, Promissory Notes, Non-Compete Agreements, and Closing Checklists.",
+  keywords: [
+  "PactAnchor",
+  "business sale document automation",
+  "AI document automation",
+  "business broker document automation",
+  "asset purchase agreement generator",
+  "bill of sale generator",
+  "promissory note generator",
+  "non-compete agreement",
+  "small business acquisition documents",
+  "attorney-review-ready documents",
+  ],
   openGraph: {
-    title: "PactAnchor | Business Sale Document Automation",
+    title: "PactAnchor | AI Business Sale Document Automation",
     description:
-      "AI-powered document automation for small business sale transactions. Enter deal terms once and generate synchronized draft packages for attorney review.",
+      "Generate synchronized, attorney-review-ready draft packages for small business sale transactions from one guided intake.",
     url: "https://www.pactanchor.com",
     siteName: "PactAnchor",
     images: [
@@ -17,14 +29,14 @@ export const metadata = {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "PactAnchor business sale document automation platform",
+        alt: "PactAnchor AI business sale document automation platform",
       },
     ],
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "PactAnchor | Business Sale Document Automation",
+    title: "PactAnchor | AI Business Sale Document Automation",
     description:
       "AI-powered document automation for small business sale transactions.",
     images: ["/og-image.png"],
@@ -42,3 +54,4 @@ export default function RootLayout({
     </html>
   );
 }
+
