@@ -85,6 +85,251 @@ const pricing = [
   },
 ];
 
+function IntakeToDocumentsPreview() {
+  const intakeFields = [
+    {
+      label: "Seller",
+      value: "Green Market LLC",
+      mapsTo: "APA, Bill of Sale, Non-Compete",
+    },
+    {
+      label: "Buyer",
+      value: "Blue Star Holdings LLC",
+      mapsTo: "APA, Bill of Sale, Promissory Note",
+    },
+    {
+      label: "Purchase Price",
+      value: "$350,000",
+      mapsTo: "APA payment terms, IRS 8594 allocation",
+    },
+    {
+      label: "Deposit",
+      value: "$25,000",
+      mapsTo: "APA consideration and closing terms",
+    },
+    {
+      label: "Seller Financing",
+      value: "$100,000",
+      mapsTo: "APA payment terms, Promissory Note principal",
+    },
+    {
+      label: "Closing Date",
+      value: "June 30, 2026",
+      mapsTo: "APA, Bill of Sale, Promissory Note issue date",
+    },
+    {
+      label: "Business Address",
+      value: "1450 Greenville Ave, Dallas, TX",
+      mapsTo: "APA business description, Non-Compete territory",
+    },
+    {
+      label: "Non-Compete Radius",
+      value: "25 miles",
+      mapsTo: "Non-Compete restricted territory",
+    },
+  ];
+
+  const documentOutputs = [
+    {
+      title: "Asset Purchase Agreement",
+      badge: "APA",
+      items: [
+        "Parties and business description",
+        "Purchase price and payment structure",
+        "Included and excluded assets",
+        "Closing conditions and contingencies",
+      ],
+    },
+    {
+      title: "Bill of Sale",
+      badge: "BOS",
+      items: [
+        "Seller and buyer names",
+        "Transferred asset list",
+        "Excluded asset confirmation",
+        "Closing-date transfer language",
+      ],
+    },
+    {
+      title: "Promissory Note",
+      badge: "PN",
+      items: [
+        "Seller-financed principal amount",
+        "Issue date based on closing date",
+        "Payment and maturity structure",
+        "Borrower and lender information",
+      ],
+    },
+    {
+      title: "Non-Compete Agreement",
+      badge: "NC",
+      items: [
+        "Restricted and protected parties",
+        "Restricted term and radius",
+        "Business address-based territory",
+        "Non-compete consideration",
+      ],
+    },
+    {
+      title: "IRS Form 8594 Summary",
+      badge: "8594",
+      items: [
+        "Inventory allocation",
+        "FFE and equipment allocation",
+        "Goodwill and going-concern value",
+        "Non-compete allocation support",
+      ],
+    },
+  ];
+
+  return (
+    <section id="document-sync" className="bg-slate-950 px-6 py-24 text-white">
+      <div className="mx-auto max-w-7xl">
+        <div className="mx-auto max-w-3xl text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-emerald-300">
+            Cross-document synchronization
+          </p>
+
+          <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-5xl">
+            See How One Deal Intake Powers Every Document
+          </h2>
+
+          <p className="mt-6 text-lg leading-8 text-slate-300">
+            PactAnchor applies the same transaction terms across the Asset
+            Purchase Agreement, Bill of Sale, Promissory Note, Non-Compete
+            Agreement, and IRS Form 8594 Allocation Summary.
+          </p>
+        </div>
+
+        <div className="mt-16 grid gap-8 lg:grid-cols-[1fr_auto_1.35fr] lg:items-start">
+          <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6 shadow-2xl">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-semibold text-white">
+                  Deal Intake
+                </h3>
+                <p className="mt-1 text-sm text-slate-400">
+                  Enter transaction terms once.
+                </p>
+              </div>
+
+              <span className="rounded-full bg-emerald-400/10 px-3 py-1 text-xs font-semibold text-emerald-300">
+                Input
+              </span>
+            </div>
+
+            <div className="space-y-3">
+              {intakeFields.map((field) => (
+                <div
+                  key={field.label}
+                  className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4"
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                        {field.label}
+                      </p>
+                      <p className="mt-1 text-sm font-semibold text-white">
+                        {field.value}
+                      </p>
+                    </div>
+                  </div>
+
+                  <p className="mt-3 text-xs leading-5 text-slate-400">
+                    Applied to:{" "}
+                    <span className="text-emerald-300">{field.mapsTo}</span>
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="hidden h-full items-center justify-center lg:flex">
+            <div className="flex flex-col items-center gap-4">
+              <div className="rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-sm font-semibold text-emerald-300">
+                Auto-sync
+              </div>
+              <div className="h-32 w-px bg-gradient-to-b from-emerald-300/0 via-emerald-300/70 to-emerald-300/0" />
+              <div className="rounded-full border border-slate-700 bg-slate-900 px-4 py-2 text-xs text-slate-300">
+                Consistent terms
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-slate-800 bg-slate-900/70 p-6 shadow-2xl">
+            <div className="mb-6 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-semibold text-white">
+                  Generated Document Package
+                </h3>
+                <p className="mt-1 text-sm text-slate-400">
+                  Deal terms flow into multiple synchronized drafts.
+                </p>
+              </div>
+
+              <span className="rounded-full bg-blue-400/10 px-3 py-1 text-xs font-semibold text-blue-300">
+                Output
+              </span>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              {documentOutputs.map((doc) => (
+                <div
+                  key={doc.title}
+                  className="rounded-2xl border border-slate-800 bg-slate-950/70 p-5"
+                >
+                  <div className="mb-4 flex items-center justify-between gap-4">
+                    <h4 className="text-sm font-semibold text-white">
+                      {doc.title}
+                    </h4>
+
+                    <span className="rounded-full border border-slate-700 px-2.5 py-1 text-xs font-semibold text-slate-300">
+                      {doc.badge}
+                    </span>
+                  </div>
+
+                  <ul className="space-y-2">
+                    {doc.items.map((item) => (
+                      <li
+                        key={item}
+                        className="flex gap-2 text-sm leading-6 text-slate-400"
+                      >
+                        <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-300" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 rounded-2xl border border-emerald-400/20 bg-emerald-400/10 p-5">
+              <p className="text-sm font-semibold text-emerald-200">
+                Why it matters
+              </p>
+              <p className="mt-2 text-sm leading-6 text-emerald-100/90">
+                The same purchase price, seller financing amount, asset list,
+                closing date, non-compete radius, and allocation data stay
+                aligned across the full document package.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="mx-auto mt-10 max-w-4xl rounded-2xl border border-amber-400/20 bg-amber-400/10 p-5 text-center">
+          <p className="text-sm leading-6 text-amber-100/90">
+            PactAnchor generates attorney-review-ready draft documents. It is
+            not a law firm and does not provide legal advice. Users should
+            consult a qualified attorney before using documents in a real
+            transaction.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-slate-50 text-slate-950">
@@ -105,6 +350,7 @@ export default function HomePage() {
           <nav className="hidden items-center gap-8 text-sm text-slate-200 md:flex">
             <a href="#product">Product</a>
             <a href="#workflow">Workflow</a>
+            <a href="#document-sync">Document Sync</a>
             <a href="#pricing">Pricing</a>
             <a href="#features">Features</a>
           </nav>
@@ -282,7 +528,7 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section id="workflow" className="bg-white py-18">
+      <section id="workflow" className="bg-white py-20">
         <div className="mx-auto max-w-7xl px-8 py-16">
           <h2 className="text-center text-4xl font-extrabold">
             How PactAnchor Works
@@ -307,6 +553,8 @@ export default function HomePage() {
 
         </div>
       </section>
+
+      <IntakeToDocumentsPreview />
 
       <section id="pricing" className="mx-auto max-w-7xl px-8 py-16">
         <div className="mx-auto max-w-3xl text-center">
