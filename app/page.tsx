@@ -356,7 +356,7 @@ export default function HomePage() {
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-8 py-14 lg:grid-cols-[0.78fr_1.22fr] lg:py-20">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-300">
-              AI-Powered Business Sale Agreement Automation
+              EARLY ACCESS · AI-POWERED DOCUMENT AUTOMATION
             </p>
 
             <h1 className="mt-4 max-w-3xl text-4xl font-extrabold leading-tight tracking-tight md:text-5xl xl:text-6xl">
@@ -366,10 +366,9 @@ export default function HomePage() {
             </h1>
 
             <p className="mt-5 max-w-xl text-base leading-7 text-slate-200 md:text-lg">
-              PactAnchor automatically syncs your key deal documents—so every
-              Asset Purchase Agreement, Bill of Sale, Promissory Note,
-              Non-Compete Agreement, and IRS allocation package stays
-              consistent, accurate, and closing-ready.
+              PactAnchor is now open for early access — an AI-powered document automation
+              platform for small business sale transactions. Enter deal terms once and
+              generate synchronized draft packages for attorney review.
             </p>
 
             <div className="mt-7 grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
