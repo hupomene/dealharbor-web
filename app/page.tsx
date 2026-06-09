@@ -284,7 +284,7 @@ function IntakeToDocumentsPreview() {
                   badge={doc.badge}
                   items={doc.items}
                   imageSrc={doc.imageSrc}
-                  intervalMs={1000}
+                  intervalMs={3000}
                 />
               ))}
             </div>
