@@ -368,7 +368,7 @@ export default function HomePage() {
           </div>
         </header>
 
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-8 py-14 lg:grid-cols-[0.78fr_1.22fr] lg:py-18">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-8 py-14 lg:grid-cols-[0.78fr_1.22fr] lg:py-20">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-300">
               AI-Powered Business Sale Agreement Automation
@@ -417,10 +417,10 @@ export default function HomePage() {
                 Start Your Deal with Confidence →
               </Link>
               <a
-                href="#workflow"
+                href="#document-sync"
                 className="rounded-lg border border-slate-400 px-8 py-4 text-base font-bold text-white hover:bg-white/10"
               >
-                Generate Closing-Ready Documents
+                See Document Sync Preview
               </a>
             </div>
           </div>
