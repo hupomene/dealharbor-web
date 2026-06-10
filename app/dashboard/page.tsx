@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server-client";
 import type { DealRecord } from "@/types/persistence";
+import LogoutButton from "@/components/auth/logout-button";
 
 const SINGLE_DEAL_PAYMENT_LINK =
   "https://buy.stripe.com/7sYbJ28Om2BEdKdeKhfUQ02";
@@ -29,13 +30,19 @@ function AccessPendingScreen({ userEmail }: { userEmail: string | null }) {
   return (
     <main className="min-h-screen bg-slate-50 px-6 py-12 text-slate-900">
       <div className="mx-auto max-w-4xl rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-600">
-          PactAnchor Access
-        </p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-600">
+              PactAnchor Access
+            </p>
 
-        <h1 className="mt-3 text-3xl font-bold">
-          Your PactAnchor access is pending.
-        </h1>
+            <h1 className="mt-3 text-3xl font-bold">
+              Your PactAnchor access is pending.
+            </h1>
+          </div>
+
+          <LogoutButton />
+        </div>
 
         <p className="mt-4 text-base leading-7 text-slate-600">
           This account does not currently have paid access enabled. If you
@@ -100,13 +107,19 @@ function AccessBlockedScreen({ userEmail }: { userEmail: string | null }) {
   return (
     <main className="min-h-screen bg-slate-50 px-6 py-12 text-slate-900">
       <div className="mx-auto max-w-3xl rounded-3xl border border-red-200 bg-white p-8 shadow-sm">
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-red-600">
-          Access Blocked
-        </p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-red-600">
+              Access Blocked
+            </p>
 
-        <h1 className="mt-3 text-3xl font-bold">
-          This account cannot access PactAnchor.
-        </h1>
+            <h1 className="mt-3 text-3xl font-bold">
+              This account cannot access PactAnchor.
+            </h1>
+          </div>
+
+          <LogoutButton />
+        </div>
 
         <p className="mt-4 text-base leading-7 text-slate-600">
           Please contact Covenant AI Solutions LLC if you believe this is a
@@ -210,6 +223,8 @@ export default async function DashboardPage() {
             >
               New Deal
             </Link>
+            
+            <LogoutButton />
           </div>
         </div>
 
