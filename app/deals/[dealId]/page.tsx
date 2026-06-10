@@ -19,12 +19,21 @@ export default async function DealDetailPage({ params }: PageProps) {
         <div className="mx-auto max-w-3xl px-6 py-8">
           <div className="rounded-2xl border border-red-200 bg-white p-6 shadow-sm">
             <p className="text-sm text-red-700">Missing deal ID.</p>
-            <Link
-              href="/deals"
-              className="mt-4 inline-block text-sm font-medium text-slate-900 underline underline-offset-2"
-            >
-              Back to Deals
-            </Link>
+            <div className="mt-4 flex gap-4 text-sm font-medium">
+              <Link
+                href="/dashboard"
+                className="text-slate-900 underline underline-offset-2"
+              >
+                Back to Dashboard
+              </Link>
+
+              <Link
+                href="/deals"
+                className="text-slate-900 underline underline-offset-2"
+              >
+                Back to Deals
+              </Link>
+            </div>
           </div>
         </div>
       </main>
@@ -58,12 +67,21 @@ export default async function DealDetailPage({ params }: PageProps) {
             <p className="text-sm text-red-700">
               {error?.message ?? "Deal not found."}
             </p>
-            <Link
-              href="/deals"
-              className="mt-4 inline-block text-sm font-medium text-slate-900 underline underline-offset-2"
-            >
-              Back to Deals
-            </Link>
+            <div className="mt-4 flex gap-4 text-sm font-medium">
+              <Link
+                href="/dashboard"
+                className="text-slate-900 underline underline-offset-2"
+              >
+                Back to Dashboard
+              </Link>
+
+              <Link
+                href="/deals"
+                className="text-slate-900 underline underline-offset-2"
+              >
+                Back to Deals
+              </Link>
+            </div>
           </div>
         </div>
       </main>

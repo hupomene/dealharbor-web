@@ -2,8 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server-client";
 import type { DealRecord } from "@/types/persistence";
-import LogoutButton from "../../components/auth/logout-button";
 import { requirePaidAccess } from "@/lib/access-control";
+import WorkspaceNav from "@/components/auth/workspace-nav";
 
 function formatCurrency(value: number | null) {
   if (value == null) return "—";
@@ -53,16 +53,7 @@ export default async function DealsPage() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
-            <LogoutButton />
-
-            <Link
-              href="/deals/new"
-              className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white hover:bg-slate-800"
-            >
-              New Deal
-            </Link>
-          </div>
+          <WorkspaceNav showDeals={false} />
         </div>
 
         <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">

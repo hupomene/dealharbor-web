@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server-client";
 import type { DealRecord } from "@/types/persistence";
 import LogoutButton from "@/components/auth/logout-button";
+import WorkspaceNav from "@/components/auth/workspace-nav";
 
 const SINGLE_DEAL_PAYMENT_LINK =
   "https://buy.stripe.com/7sYbJ28Om2BEdKdeKhfUQ02";
@@ -210,21 +211,7 @@ export default async function DashboardPage() {
               </Link>
             )}
 
-            <Link
-              href="/deals"
-              className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            >
-              View All Deals
-            </Link>
-
-            <Link
-              href="/deals/new"
-              className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-medium text-white hover:bg-slate-800"
-            >
-              New Deal
-            </Link>
-            
-            <LogoutButton />
+            <WorkspaceNav showDashboard={false} />
           </div>
         </div>
 

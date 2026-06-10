@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import DocumentGeneratorPanel from "@/components/deals/document-generator-panel";
+import WorkspaceNav from "@/components/auth/workspace-nav";
 
 type DealFormData = {
   id: string;
@@ -689,24 +690,22 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
   return (
     <main className="min-h-screen bg-slate-50">
       <div className="mx-auto max-w-5xl px-6 py-8">
-        <div className="mb-8 flex flex-col gap-3">
-          <Link
-            href="/deals"
-            className="text-sm font-medium text-slate-600 underline underline-offset-2 hover:text-slate-900"
-          >
-            ← Back to Deals
-          </Link>
-
+        <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
             <p className="text-sm text-slate-500">PactAnchor Deal Detail</p>
+
             <h1 className="text-3xl font-semibold tracking-tight text-slate-900">
               {businessName || "Untitled Deal"}
             </h1>
+
             <p className="mt-2 text-sm text-slate-600">Deal ID: {deal.id}</p>
+
             <p className="mt-1 text-sm text-slate-500">
               Created: {formatDate(deal.created_at)}
             </p>
           </div>
+
+          <WorkspaceNav />
         </div>
 
         <div className="mb-6 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">

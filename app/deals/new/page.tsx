@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server-client";
 import NewDealForm from "./new-deal-form";
 import { requirePaidAccess } from "@/lib/access-control";
+import WorkspaceNav from "@/components/auth/workspace-nav";
 
 export default async function NewDealPage() {
   const supabase = await createServerSupabaseClient();
@@ -15,11 +15,18 @@ export default async function NewDealPage() {
     redirect("/login?next=/deals/new");
   }
 
-  await requirePaidAccess({ supabase, user });
+  const accessCheck = await requirePaidAccess({
+    supabase,
+    user,
+  });
+
+  if (!accessCheck.allowed) {
+    redirect("/dashboard");
+  }
 
   return (
-    <main className="min-h-screen bg-slate-50 px-8 py-10">
-      <div className="mx-auto max-w-4xl">
+    <main className="min-h-screen bg-slate-50 px-8 py-10 text-slate-900">
+      <div className="mx-auto max-w-6xl">
         <div className="mb-8 flex items-start justify-between gap-4">
           <div>
             <p className="text-sm text-slate-500">PactAnchor Workspace</p>
@@ -32,17 +39,10 @@ export default async function NewDealPage() {
             </p>
           </div>
 
-          <Link
-            href="/deals"
-            className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-700 hover:bg-slate-50"
-          >
-            Back to Deals
-          </Link>
+          <WorkspaceNav showNewDeal={false} />
         </div>
 
-        <section className="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-          <NewDealForm />
-        </section>
+        <NewDealForm />
       </div>
     </main>
   );

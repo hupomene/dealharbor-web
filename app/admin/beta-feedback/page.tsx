@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server-client";
+import WorkspaceNav from "@/components/auth/workspace-nav";
 
 type IssueReport = {
   id: string;
@@ -166,19 +167,21 @@ export default async function AdminBetaFeedbackPage() {
             </p>
           </div>
 
-          <div className="flex gap-3">
-            <Link
-              href="/dashboard"
-              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-100"
-            >
-              Dashboard
-            </Link>
-            <Link
-              href="/deals"
-              className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800"
-            >
-              Deals
-            </Link>
+          <div className="mb-8 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-600">
+                PactAnchor Admin
+              </p>
+              <h1 className="mt-2 text-3xl font-bold">
+                Beta Feedback Review
+              </h1>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+                Review user-submitted issue reports, feature requests, and product
+                feedback from PactAnchor launch users.
+              </p>
+            </div>
+
+            <WorkspaceNav />
           </div>
         </div>
 
