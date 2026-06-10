@@ -4,10 +4,10 @@ import { createServerSupabaseClient } from "@/lib/supabase/server-client";
 import type { DealRecord } from "@/types/persistence";
 
 const SINGLE_DEAL_PAYMENT_LINK =
-  "https://buy.stripe.com/dRm7sM4y60twgWpeKhfUQ00";
+  "https://buy.stripe.com/7sYbJ28Om2BEdKdeKhfUQ02";
 
 const BROKER_PLAN_PAYMENT_LINK =
-  "https://buy.stripe.com/dRm9AU4y67VY6hLgSpfUQ01";
+  "https://buy.stripe.com/5kQ14oaWu902ay18lTfUQ03";
 
 function formatCurrency(value: number | null) {
   if (value == null) return "$0";

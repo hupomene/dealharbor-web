@@ -46,12 +46,12 @@ const features = [
 const pricing = [
   {
     name: "Single Deal Package",
-    price: "$29",
+    price: "$49",
     period: "one-time",
     badge: "Launch Price",
     description:
       "Generate one synchronized small business sale transaction document package.",
-    paymentLink: "https://buy.stripe.com/dRm7sM4y60twgWpeKhfUQ00",
+    paymentLink: "https://buy.stripe.com/7sYbJ28Om2BEdKdeKhfUQ02",
     buttonText: "Buy Single Deal Package",
     items: [
       "One business sale deal package",
@@ -66,12 +66,12 @@ const pricing = [
   },
   {
     name: "Broker Launch Plan",
-    price: "$99",
+    price: "$149",
     period: "/month",
     badge: "Best for Brokers",
     description:
       "Monthly launch access for brokers and advisors preparing small business sale document packages.",
-    paymentLink: "https://buy.stripe.com/dRm9AU4y67VY6hLgSpfUQ01",
+    paymentLink: "https://buy.stripe.com/5kQ14oaWu902ay18lTfUQ03",
     buttonText: "Start Broker Launch Plan",
     items: [
       "Multiple deal packages",
