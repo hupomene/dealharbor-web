@@ -15,14 +15,10 @@ export default async function NewDealPage() {
     redirect("/login?next=/deals/new");
   }
 
-  const accessCheck = await requirePaidAccess({
+  await requirePaidAccess({
     supabase,
     user,
   });
-
-  if (!accessCheck.allowed) {
-    redirect("/dashboard");
-  }
 
   return (
     <main className="min-h-screen bg-slate-50 px-8 py-10 text-slate-900">
