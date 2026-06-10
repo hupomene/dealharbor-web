@@ -123,7 +123,7 @@ export default function TermsPage() {
               9. Contact
             </h2>
             <p className="mt-3">
-              For questions about these terms, contact Covenant AI Solutions LLC.
+              For questions about these Terms of Service, contact PactAnchor, operated by Covenant AI Solutions LLC, at info@pactanchor.com.
             </p>
           </section>
         </div>

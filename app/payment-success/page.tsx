@@ -90,8 +90,7 @@ export default function PaymentSuccessPage() {
           <p className="mt-2 text-sm leading-6 text-amber-100/90">
             If you completed payment but still see an access pending message,
             make sure you are signed in with the same email used at checkout. If
-            access is not activated shortly, please contact Covenant AI
-            Solutions LLC with your payment email.
+            access is not activated shortly, please contact at info@pactanchor.com with your payment email.
           </p>
         </div>
 
@@ -103,7 +102,7 @@ export default function PaymentSuccessPage() {
         </p>
 
         <p className="mt-4 text-xs text-slate-500">
-          Covenant AI Solutions LLC
+          PactAnchor is operated by Covenant AI Solutions LLC.
         </p>
       </section>
     </main>

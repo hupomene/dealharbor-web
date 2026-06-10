@@ -640,6 +640,13 @@ export default function HomePage() {
           <div className="mt-5 border-t border-white/10 pt-5 text-xs leading-6 text-slate-300">
             <p>PactAnchor is operated by Covenant AI Solutions LLC.</p>
 
+            <p className="mt-1">
+              Contact:{" "}
+              <a href="mailto:info@pactanchor.com" className="underline hover:text-white">
+                info@pactanchor.com
+              </a>
+            </p>
+
             <div className="mt-2 flex flex-wrap gap-4">
               <a href="/terms" className="underline hover:text-white">
                 Terms of Service
