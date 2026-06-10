@@ -627,12 +627,28 @@ export default function HomePage() {
       </section>
 
       <footer className="bg-[#061d3a] px-8 py-8 text-white">
-        <div className="mx-auto flex max-w-7xl flex-col justify-between gap-4 text-sm md:flex-row">
-          <p>
-            Designed to support document preparation and attorney review workflows.
-            Not a substitute for legal, tax, or financial advice.
-          </p>
-          <p className="text-amber-300">Secure. Encrypted. Trusted.</p>
+        <div className="mx-auto max-w-7xl">
+          <div className="flex flex-col justify-between gap-4 text-sm md:flex-row">
+            <p>
+              Designed to support document preparation and attorney review workflows.
+              Not a substitute for legal, tax, or financial advice.
+            </p>
+
+            <p className="text-amber-300">Secure. Encrypted. Trusted.</p>
+          </div>
+
+          <div className="mt-5 border-t border-white/10 pt-5 text-xs leading-6 text-slate-300">
+            <p>PactAnchor is operated by Covenant AI Solutions LLC.</p>
+
+            <div className="mt-2 flex flex-wrap gap-4">
+              <a href="/terms" className="underline hover:text-white">
+                Terms of Service
+              </a>
+              <a href="/privacy" className="underline hover:text-white">
+                Privacy Policy
+              </a>
+            </div>
+          </div>
         </div>
       </footer>
     </main>
