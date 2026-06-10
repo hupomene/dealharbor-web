@@ -57,7 +57,7 @@ function AccessPendingScreen({ userEmail }: { userEmail: string | null }) {
             <p className="text-sm font-semibold text-amber-700">
               Single Deal Package
             </p>
-            <p className="mt-2 text-3xl font-bold">$29</p>
+            <p className="mt-2 text-3xl font-bold">$49</p>
             <p className="mt-2 text-sm leading-6 text-slate-600">
               Generate one synchronized small business sale document package.
             </p>
@@ -73,7 +73,7 @@ function AccessPendingScreen({ userEmail }: { userEmail: string | null }) {
             <p className="text-sm font-semibold text-amber-800">
               Broker Launch Plan
             </p>
-            <p className="mt-2 text-3xl font-bold">$99/month</p>
+            <p className="mt-2 text-3xl font-bold">$149/month</p>
             <p className="mt-2 text-sm leading-6 text-slate-700">
               Monthly launch access for brokers and advisors preparing small
               business sale document packages.
