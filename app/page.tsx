@@ -333,6 +333,7 @@ export default function HomePage() {
           </div>
 
           <nav className="hidden items-center gap-8 text-sm text-slate-200 md:flex">
+            <Link href="/demo">Demo</Link>
             <a href="#product">Product</a>
             <a href="#workflow">Workflow</a>
             <a href="#document-sync">Document Sync</a>
@@ -344,6 +345,14 @@ export default function HomePage() {
             <Link href="/login" className="text-sm text-slate-200">
               Sign In
             </Link>
+
+            <Link
+              href="/demo"
+              className="rounded-lg border border-slate-400 px-5 py-3 text-sm font-bold text-white hover:bg-white/10"
+            >
+              Demo
+            </Link>
+
             <a
               href="#pricing"
               className="rounded-lg bg-amber-400 px-6 py-3 text-sm font-bold text-slate-950 hover:bg-amber-300"
@@ -393,17 +402,25 @@ export default function HomePage() {
             </div>
 
             <div className="mt-9 flex flex-wrap gap-4">
-              <a
-                href="#pricing"
+              <Link
+                href="/demo"
                 className="rounded-lg bg-amber-400 px-8 py-4 text-base font-bold text-slate-950 shadow-lg shadow-amber-500/20 hover:bg-amber-300"
               >
-                Start Early Access →
+                Preview Sample Documents
+              </Link>
+
+              <a
+                href="#pricing"
+                className="rounded-lg border border-slate-400 px-8 py-4 text-base font-bold text-white hover:bg-white/10"
+              >
+                View Launch Pricing
               </a>
+
               <a
                 href="#document-sync"
                 className="rounded-lg border border-slate-400 px-8 py-4 text-base font-bold text-white hover:bg-white/10"
               >
-                See How Document Sync Works
+                See Document Sync
               </a>
             </div>
           </div>
