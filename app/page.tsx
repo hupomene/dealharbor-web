@@ -64,7 +64,7 @@ const pricing = [
       "Report Issue support",
     ],
   },
-  {
+    {
     name: "Broker Launch Plan",
     price: "$149",
     period: "/month",
@@ -84,8 +84,97 @@ const pricing = [
       "Priority feedback review",
     ],
   },
+  {
+    name: "Attorney Workflow Plan",
+    price: "Coming Soon",
+    period: "",
+    badge: "For Attorneys",
+    description:
+      "For transaction attorneys and small law firms preparing repeatable business sale draft packages.",
+    paymentLink:
+      "mailto:info@pactanchor.com?subject=Attorney%20Workflow%20Plan%20Early%20Access",
+    buttonText: "Contact for Early Access",
+    items: [
+      "Structured client deal intake",
+      "Attorney-review-ready draft package",
+      "Cross-document consistency checks",
+      "Matter-based workflow direction",
+      "Law firm review support",
+      "Designed to reduce repetitive first-draft work",
+      "Not a substitute for attorney judgment",
+    ],
+  },
 ];
 
+function AttorneyPositioningSection() {
+  const attorneyBenefits = [
+    {
+      title: "Reduce repetitive first-draft work",
+      text: "Turn structured deal intake into a more consistent first-draft transaction package instead of manually rebuilding the same buyer, seller, purchase price, asset, financing, and closing terms across multiple documents.",
+    },
+    {
+      title: "Improve cross-document consistency",
+      text: "Keep APA, Bill of Sale, Promissory Note, Non-Compete Agreement, and allocation summary terms aligned before attorney review begins.",
+    },
+    {
+      title: "Support legal review workflows",
+      text: "PactAnchor helps organize transaction data and prepare attorney-review-ready drafts so lawyers can focus on judgment, negotiation, risk allocation, and client-specific legal analysis.",
+    },
+  ];
+
+  return (
+    <section id="attorneys" className="bg-slate-100 px-8 py-20">
+      <div className="mx-auto max-w-7xl">
+        <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-600">
+              For Transaction Attorneys
+            </p>
+
+            <h2 className="mt-3 text-4xl font-extrabold tracking-tight text-slate-950">
+              Draft packages faster while keeping legal judgment where it belongs.
+            </h2>
+
+            <p className="mt-5 text-lg leading-8 text-slate-600">
+              PactAnchor is designed to support business sale attorneys, small
+              firm transaction lawyers, and legal professionals who prepare
+              repeatable small business acquisition documents. It helps turn
+              structured deal intake into consistent attorney-review-ready draft
+              packages.
+            </p>
+
+            <div className="mt-7 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm leading-7 text-slate-700">
+              <p className="font-semibold text-slate-950">
+                Attorney workflow positioning
+              </p>
+              <p className="mt-2">
+                PactAnchor does not provide legal advice and does not replace
+                attorney review. It helps reduce repetitive drafting, organize
+                deal terms, and improve consistency before legal review begins.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-5">
+            {attorneyBenefits.map((item) => (
+              <div
+                key={item.title}
+                className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+              >
+                <h3 className="text-xl font-bold text-slate-950">
+                  {item.title}
+                </h3>
+                <p className="mt-3 text-sm leading-7 text-slate-600">
+                  {item.text}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 function IntakeToDocumentsPreview() {
   const intakeFields = [
@@ -315,6 +404,7 @@ function IntakeToDocumentsPreview() {
   );
 }
 
+
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-slate-50 text-slate-950">
@@ -333,9 +423,9 @@ export default function HomePage() {
           </div>
 
           <nav className="hidden items-center gap-8 text-sm text-slate-200 md:flex">
-            <Link href="/demo">Demo</Link>
             <a href="#product">Product</a>
             <a href="#workflow">Workflow</a>
+            <a href="#attorneys">For Attorneys</a>
             <a href="#document-sync">Document Sync</a>
             <a href="#pricing">Pricing</a>
             <a href="#features">Features</a>
@@ -373,10 +463,11 @@ export default function HomePage() {
             </h1>
 
             <p className="mt-5 max-w-xl text-base leading-7 text-slate-200 md:text-lg">
-              Enter deal information once and generate synchronized, attorney-review-ready
-              draft packages for small business sale transactions, including Asset Purchase
-              Agreements, Bills of Sale, Promissory Notes, Non-Compete Agreements, and Closing
-              Checklists.
+              Enter deal information once and generate synchronized,
+              attorney-review-ready draft packages for small business sale transactions.
+              Built for buyers, sellers, brokers, advisors, and attorneys who need cleaner
+              first drafts across Asset Purchase Agreements, Bills of Sale, Promissory
+              Notes, Non-Compete Agreements, and Closing Checklists.
             </p>
 
             <div className="mt-7 grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
@@ -554,6 +645,8 @@ export default function HomePage() {
         </div>
       </section>
 
+      <AttorneyPositioningSection />
+
       <IntakeToDocumentsPreview />
 
       <section id="pricing" className="mx-auto max-w-7xl px-8 py-16">
@@ -572,7 +665,7 @@ export default function HomePage() {
           </p>
         </div>
 
-        <div className="mt-12 grid gap-8 md:grid-cols-2">
+        <div className="mt-12 grid gap-8 md:grid-cols-3">
           {pricing.map((plan) => (
             <div
               key={plan.name}
@@ -593,7 +686,15 @@ export default function HomePage() {
               </p>
 
               <p className="mt-6">
-                <span className="text-5xl font-extrabold">{plan.price}</span>
+                <span
+                  className={
+                    plan.price === "Coming Soon"
+                      ? "text-3xl font-extrabold"
+                      : "text-5xl font-extrabold"
+                  }
+                >
+                  {plan.price}
+                </span>
                 <span className="text-slate-500"> {plan.period}</span>
               </p>
 
