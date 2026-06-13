@@ -69,16 +69,16 @@ export default async function NewDealPage() {
     redirect("/login?next=/deals/new");
   }
 
-      const accessProfile = await requirePaidAccessProfile({
-        supabase,
-        user,
-      });
+  const accessProfile = await requirePaidAccessProfile({
+    supabase,
+    user,
+  });
 
-      if (!canCreateMultipleDeals(accessProfile.planType)) {
-        const { count, error: countError } = await supabase
-          .from("deals")
-          .select("id", { count: "exact", head: true })
-          .eq("user_id", user.id);
+  if (!canCreateMultipleDeals(accessProfile.planType)) {
+    const { count, error: countError } = await supabase
+      .from("deals")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id);
 
         if (countError) {
           console.error("[new deal] failed to count deals:", countError);
@@ -107,8 +107,8 @@ export default async function NewDealPage() {
           <WorkspaceNav showNewDeal={false} />
         </div>
 
-        <NewDealForm />
-      </div>
+            <NewDealForm planType={accessProfile.planType} />
+        </div>
     </main>
   );
 }
