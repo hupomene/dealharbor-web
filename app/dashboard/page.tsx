@@ -135,6 +135,61 @@ function AccessBlockedScreen({ userEmail }: { userEmail: string | null }) {
   );
 }
 
+function QuickStartGuideCard() {
+  return (
+    <section className="mb-10 rounded-3xl border border-amber-200 bg-amber-50 p-7 shadow-sm">
+      <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-700">
+            Quick Start Guide
+          </p>
+
+          <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">
+            New to PactAnchor?
+          </h2>
+
+          <p className="mt-3 max-w-3xl text-base leading-7 text-slate-700">
+            Follow this guided workflow to create your first
+            attorney-review-ready business sale document package. PactAnchor
+            helps you move from deal intake to synchronized draft documents with
+            fewer manual inconsistencies.
+          </p>
+
+          <div className="mt-6 flex flex-wrap gap-3">
+            <Link
+              href="/dashboard/guide"
+              className="rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800"
+            >
+              How to Use PactAnchor
+            </Link>
+
+            <Link
+              href="/deals/new"
+              className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+            >
+              Create New Deal
+            </Link>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-amber-200 bg-white p-5">
+          <p className="text-sm font-semibold text-slate-900">
+            Getting started checklist
+          </p>
+
+          <ol className="mt-4 space-y-3 text-sm leading-6 text-slate-700">
+            <li>1. Create a new deal</li>
+            <li>2. Complete the guided intake</li>
+            <li>3. Review buyer, seller, asset, and payment terms</li>
+            <li>4. Generate the document package</li>
+            <li>5. Send drafts for attorney review</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 export default async function DashboardPage() {
   const supabase = await createServerSupabaseClient();
 
@@ -214,6 +269,8 @@ export default async function DashboardPage() {
             <WorkspaceNav showDashboard={false} />
           </div>
         </div>
+
+        <QuickStartGuideCard />
 
         <div className="grid gap-5 md:grid-cols-3">
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
