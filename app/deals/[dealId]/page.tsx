@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server-client";
 import DealDetailForm from "./deal-detail-form";
-import { requirePaidAccess } from "@/lib/access-control";
+import { requirePaidAccessProfile } from "@/lib/access-control";
 
 type PageProps = {
   params: Promise<{
@@ -50,7 +50,7 @@ export default async function DealDetailPage({ params }: PageProps) {
     redirect(`/login?next=/deals/${dealId}`);
   }
 
-  await requirePaidAccess({ supabase, user });
+    const accessProfile = await requirePaidAccessProfile({ supabase, user });
   
   const { data, error } = await supabase
     .from("deals")
@@ -88,5 +88,5 @@ export default async function DealDetailPage({ params }: PageProps) {
     );
   }
 
-  return <DealDetailForm deal={data} />;
+    return <DealDetailForm deal={data} planType={accessProfile.planType} />;
 }

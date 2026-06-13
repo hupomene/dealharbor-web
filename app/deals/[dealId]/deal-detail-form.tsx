@@ -73,6 +73,13 @@ type DealFormData = {
   due_diligence_condition?: string | null;
 };
 
+type PlanType =
+  | "single_deal"
+  | "broker_launch"
+  | "attorney_workflow"
+  | "admin"
+  | null;
+
 function toIsoDate(date: Date) {
   return date.toISOString().slice(0, 10);
 }
@@ -179,8 +186,28 @@ function CalculationCard({
   );
 }
 
-export default function DealDetailForm({ deal }: { deal: DealFormData }) {
+export default function DealDetailForm({
+  deal,
+  planType,
+}: {
+  deal: DealFormData;
+  planType: PlanType;
+}) {
   const router = useRouter();
+
+  const canEditDealIdentity =
+    planType === "broker_launch" ||
+    planType === "attorney_workflow" ||
+    planType === "admin";
+
+  const editableFieldClassName =
+    "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500";
+
+  const lockedFieldClassName =
+    "w-full cursor-not-allowed rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-sm text-slate-500 outline-none";
+
+  const lockedFieldHelpText =
+    "Locked for Single Deal Package users to preserve the original deal identity.";
 
   const [businessName, setBusinessName] = useState(deal.business_name ?? "");
   const [purchasePrice, setPurchasePrice] = useState(numberToInput(deal.purchase_price));
@@ -529,8 +556,8 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
   }
 
   const canSave = useMemo(() => {
-    return businessName.trim().length > 0 && !saving;
-  }, [businessName, saving]);
+    return !saving;
+  }, [saving]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -540,16 +567,22 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
     setSuccessMessage("");
 
     const submitBody = {
-      business_name: businessName.trim(),
+      ...(canEditDealIdentity
+        ? {
+            business_name: businessName.trim(),
+            business_location:
+              businessLocation.trim() !== "" ? businessLocation.trim() : null,
+            purchase_price: purchasePrice !== "" ? Number(purchasePrice) : null,
+            down_payment: downPayment !== "" ? Number(downPayment) : null,
+            seller_name: sellerName.trim() !== "" ? sellerName.trim() : null,
+            buyer_name: buyerName.trim() !== "" ? buyerName.trim() : null,
+          }
+        : {}),
+
       business_type: businessType.trim() !== "" ? businessType.trim() : null,
-      business_location:
-        businessLocation.trim() !== "" ? businessLocation.trim() : null,
       closing_method: closingMethod.trim() !== "" ? closingMethod.trim() : null,
-      purchase_price: purchasePrice !== "" ? Number(purchasePrice) : null,
-      down_payment: downPayment !== "" ? Number(downPayment) : null,
       seller_financing: sellerFinancing,
 
-      seller_name: sellerName.trim() !== "" ? sellerName.trim() : null,
       seller_address: sellerAddress.trim() !== "" ? sellerAddress.trim() : null,
       seller_state_of_organization:
         sellerStateOfOrganization.trim() !== ""
@@ -557,7 +590,6 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
           : null,
       seller_ein: sellerEin.trim() !== "" ? sellerEin.trim() : null,
 
-      buyer_name: buyerName.trim() !== "" ? buyerName.trim() : null,
       buyer_address: buyerAddress.trim() !== "" ? buyerAddress.trim() : null,
       buyer_state_of_organization:
         buyerStateOfOrganization.trim() !== ""
@@ -785,7 +817,15 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
         >
           <div className="grid gap-8">
             <section className="grid gap-5">
-              <h2 className="text-lg font-semibold text-slate-900">Core Deal Info</h2>
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">Core Deal Info</h2>
+                {!canEditDealIdentity && (
+                  <p className="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-slate-700">
+                    Single Deal Package users can regenerate documents for this same deal,
+                    but core deal identity fields are locked after creation.
+                  </p>
+                )}
+              </div>
 
               <div>
                 <label className="mb-2 block text-sm font-medium text-slate-700">
@@ -795,10 +835,17 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   type="text"
                   value={businessName}
                   onChange={(e) => setBusinessName(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                  readOnly={!canEditDealIdentity}
+                  aria-readonly={!canEditDealIdentity}
+                  className={
+                    canEditDealIdentity ? editableFieldClassName : lockedFieldClassName
+                  }
                   placeholder="Business name"
-                  required
+                  required={canEditDealIdentity}
                 />
+                {!canEditDealIdentity && (
+                  <p className="mt-1 text-xs text-slate-500">{lockedFieldHelpText}</p>
+                )}
               </div>
 
               <div className="grid gap-5 md:grid-cols-3">
@@ -823,9 +870,16 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                   type="text"
                   value={businessLocation}
                   onChange={(e) => setBusinessLocation(e.target.value)}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                  readOnly={!canEditDealIdentity}
+                  aria-readonly={!canEditDealIdentity}
+                  className={
+                    canEditDealIdentity ? editableFieldClassName : lockedFieldClassName
+                  }
                   placeholder="1450 Greenville Avenue, Dallas, TX 75206"
                 />
+                {!canEditDealIdentity && (
+                  <p className="mt-1 text-xs text-slate-500">{lockedFieldHelpText}</p>
+                )}
               </div>
 
               <div>
@@ -853,9 +907,16 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                     step="1"
                     value={purchasePrice}
                     onChange={(e) => setPurchasePrice(e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                    readOnly={!canEditDealIdentity}
+                    aria-readonly={!canEditDealIdentity}
+                    className={
+                      canEditDealIdentity ? editableFieldClassName : lockedFieldClassName
+                    }
                     placeholder="750000"
                   />
+                  {!canEditDealIdentity && (
+                    <p className="mt-1 text-xs text-slate-500">{lockedFieldHelpText}</p>
+                  )}
                 </div>
 
                 <div>
@@ -868,9 +929,16 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                     step="1"
                     value={downPayment}
                     onChange={(e) => setDownPayment(e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                    readOnly={!canEditDealIdentity}
+                    aria-readonly={!canEditDealIdentity}
+                    className={
+                      canEditDealIdentity ? editableFieldClassName : lockedFieldClassName
+                    }
                     placeholder="150000"
                   />
+                  {!canEditDealIdentity && (
+                    <p className="mt-1 text-xs text-slate-500">{lockedFieldHelpText}</p>
+                  )}
                 </div>
               </div>
 
@@ -913,9 +981,16 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                     type="text"
                     value={sellerName}
                     onChange={(e) => setSellerName(e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                    readOnly={!canEditDealIdentity}
+                    aria-readonly={!canEditDealIdentity}
+                    className={
+                      canEditDealIdentity ? editableFieldClassName : lockedFieldClassName
+                    }
                     placeholder="Seller legal name"
                   />
+                  {!canEditDealIdentity && (
+                    <p className="mt-1 text-xs text-slate-500">{lockedFieldHelpText}</p>
+                  )}
                 </div>
 
                 <div>
@@ -926,9 +1001,16 @@ export default function DealDetailForm({ deal }: { deal: DealFormData }) {
                     type="text"
                     value={buyerName}
                     onChange={(e) => setBuyerName(e.target.value)}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500"
+                    readOnly={!canEditDealIdentity}
+                    aria-readonly={!canEditDealIdentity}
+                    className={
+                      canEditDealIdentity ? editableFieldClassName : lockedFieldClassName
+                    }
                     placeholder="Buyer legal name"
                   />
+                  {!canEditDealIdentity && (
+                    <p className="mt-1 text-xs text-slate-500">{lockedFieldHelpText}</p>
+                  )}
                 </div>
               </div>
 

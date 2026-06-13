@@ -58,9 +58,23 @@ export default function NewDealForm() {
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-6">
+      <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-6 text-slate-700">
+        <p className="font-semibold text-slate-950">
+          Important: core deal terms are locked after creation.
+        </p>
+        <p className="mt-1">
+          Business Name, Purchase Price, and Down Payment cannot be changed after
+          the deal is created. Please confirm these values before clicking Create
+          Deal.
+        </p>
+      </div>
+
       <div>
         <label className="mb-2 block text-sm font-medium text-slate-700">
-          Business Name
+          Business Name{" "}
+          <span className="text-xs font-normal text-amber-700">
+            Locked after creation
+          </span>
         </label>
         <input
           type="text"
@@ -75,7 +89,10 @@ export default function NewDealForm() {
       <div className="grid gap-6 md:grid-cols-2">
         <div>
           <label className="mb-2 block text-sm font-medium text-slate-700">
-            Purchase Price
+            Purchase Price{" "}
+            <span className="text-xs font-normal text-amber-700">
+              Locked after creation
+            </span>
           </label>
           <input
             type="number"
@@ -90,7 +107,10 @@ export default function NewDealForm() {
 
         <div>
           <label className="mb-2 block text-sm font-medium text-slate-700">
-            Down Payment
+            Down Payment{" "}
+            <span className="text-xs font-normal text-amber-700">
+              Locked after creation
+            </span>
           </label>
           <input
             type="number"

@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server-client";
+import {
+  canEditDealIdentityFields,
+  getUserAccessProfile,
+} from "@/lib/access-control";
 
 type RouteContext = {
   params: Promise<{
@@ -94,9 +98,22 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     error: userError,
   } = await supabase.auth.getUser();
 
-  if (userError || !user) {
+    if (userError || !user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const accessProfile = await getUserAccessProfile({ supabase, user });
+
+  if (!accessProfile.isPaid) {
+    return NextResponse.json(
+      { error: "Paid access required." },
+      { status: 403 }
+    );
+  }
+
+  const canEditDealIdentity = canEditDealIdentityFields(
+    accessProfile.planType
+  );
 
   let body: Record<string, unknown> = {};
 
@@ -127,23 +144,50 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     normalizedPromissoryTermMonths
   );
 
+  // Deal identity fields are editable only for Broker, Attorney, and Admin plans.
+  // Single Deal Package users may regenerate documents for the same deal,
+  // but cannot reuse one paid deal as a different business transaction.
   const updatePayload = {
-    business_name:
-      typeof body.business_name === "string"
-        ? body.business_name.trim() || null
-        : undefined,
-    purchase_price:
-      body.purchase_price === null
-        ? null
-        : body.purchase_price !== undefined
-        ? normalizeNumber(body.purchase_price)
-        : undefined,
-    down_payment:
-      body.down_payment === null
-        ? null
-        : body.down_payment !== undefined
-        ? normalizeNumber(body.down_payment)
-        : undefined,
+    ...(canEditDealIdentity
+      ? {
+          business_name:
+            typeof body.business_name === "string"
+              ? body.business_name.trim() || null
+              : undefined,
+
+          business_location:
+            body.business_location === null
+              ? null
+              : body.business_location !== undefined
+              ? normalizeString(body.business_location)
+              : undefined,
+
+          purchase_price:
+            body.purchase_price === null
+              ? null
+              : body.purchase_price !== undefined
+              ? normalizeNumber(body.purchase_price)
+              : undefined,
+
+          down_payment:
+            body.down_payment === null
+              ? null
+              : body.down_payment !== undefined
+              ? normalizeNumber(body.down_payment)
+              : undefined,
+
+          seller_name:
+            body.seller_name !== undefined
+              ? normalizeString(body.seller_name)
+              : undefined,
+
+          buyer_name:
+            body.buyer_name !== undefined
+              ? normalizeString(body.buyer_name)
+              : undefined,
+        }
+      : {}),
+
     seller_financing:
       typeof body.seller_financing === "boolean"
         ? body.seller_financing
@@ -184,13 +228,6 @@ export async function PATCH(request: Request, { params }: RouteContext) {
         ? normalizeString(body.seller_ein)
         : undefined,
 
-    business_location:
-      body.business_location === null
-        ? null
-        : body.business_location !== undefined
-        ? normalizeString(body.business_location)
-        : undefined,
-
     closing_method:
       body.closing_method === null
         ? null
@@ -198,14 +235,11 @@ export async function PATCH(request: Request, { params }: RouteContext) {
         ? normalizeString(body.closing_method)
         : undefined,
 
-    seller_name:
-      body.seller_name !== undefined ? normalizeString(body.seller_name) : undefined,
     seller_address:
       body.seller_address !== undefined
         ? normalizeString(body.seller_address)
         : undefined,
-    buyer_name:
-      body.buyer_name !== undefined ? normalizeString(body.buyer_name) : undefined,
+    
     buyer_address:
       body.buyer_address !== undefined
         ? normalizeString(body.buyer_address)
