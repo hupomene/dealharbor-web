@@ -38,6 +38,7 @@ type HistoryBatch = {
 
 type Props = {
   dealId: string;
+  isSingleDealExpired?: boolean;
 };
 
 type TemplateOption = {
@@ -179,7 +180,10 @@ function ReviewRow({
   );
 }
 
-export default function DocumentGeneratorPanel({ dealId }: Props) {
+export default function DocumentGeneratorPanel({
+  dealId,
+  isSingleDealExpired = false,
+}: Props) {
   const [documents, setDocuments] = useState<DocumentRow[]>([]);
   const [history, setHistory] = useState<HistoryBatch[]>([]);
   const [readiness, setReadiness] = useState<TemplateReadiness[]>([]);
@@ -413,17 +417,20 @@ export default function DocumentGeneratorPanel({ dealId }: Props) {
   const hasBlockingMissing = blockingReadiness.length > 0;
 
   const canGenerate =
-    !generating &&
-    !readinessLoading &&
-    !reviewLoading &&
-    selectedTemplates.length > 0 &&
-    !hasBlockingMissing &&
-    reviewAccepted;
+  !isSingleDealExpired &&
+  !generating &&
+  !readinessLoading &&
+  !reviewLoading &&
+  selectedTemplates.length > 0 &&
+  !hasBlockingMissing &&
+  reviewAccepted;
 
   const handleGenerate = async () => {
     if (!canGenerate) {
       setError(
-        hasBlockingMissing
+        isSingleDealExpired
+          ? "This Single Deal Package access period has expired. Upgrade to Broker Launch Plan to continue generating documents."
+          : hasBlockingMissing
           ? `Please complete required fields first: ${blockingReadiness
               .map(
                 (item) =>
@@ -713,6 +720,18 @@ export default function DocumentGeneratorPanel({ dealId }: Props) {
 
   return (
     <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      {isSingleDealExpired && (
+        <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm leading-6 text-red-800">
+          <p className="font-semibold">Document generation access expired</p>
+          <p className="mt-1">
+            This Single Deal Package is now view-only. Existing generated
+            documents remain available, but new document generation is disabled.
+            Upgrade to Broker Launch Plan to continue editing or generating
+            documents.
+          </p>
+        </div>
+      )}
+
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-xl font-semibold text-slate-900">
@@ -730,7 +749,11 @@ export default function DocumentGeneratorPanel({ dealId }: Props) {
           aria-disabled={!canGenerate}
           className="rounded-xl bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {generating ? "Generating..." : "Generate Contract"}
+          {generating
+            ? "Generating..."
+            : isSingleDealExpired
+            ? "Access Expired"
+            : "Generate Contract"}
         </button>
       </div>
 
@@ -904,10 +927,12 @@ export default function DocumentGeneratorPanel({ dealId }: Props) {
                 type="checkbox"
                 checked={reviewAccepted}
                 onChange={(e) => setReviewAccepted(e.target.checked)}
-                disabled={hasBlockingMissing}
+                disabled={hasBlockingMissing || isSingleDealExpired}
                 className="h-4 w-4 rounded border-slate-300"
               />
-              I reviewed the key values above and want to generate the selected documents.
+              {isSingleDealExpired
+                ? "Document generation is disabled because this Single Deal Package access period has expired."
+                : "I reviewed the key values above and want to generate the selected documents."}
             </label>
           </>
         )}

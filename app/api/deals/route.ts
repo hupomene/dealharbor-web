@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 import { createServerSupabaseClient } from "@/lib/supabase/server-client";
+import {
+  canCreateMultipleDeals,
+  getUserAccessProfile,
+} from "@/lib/access-control";
 
 function normalizeNumber(value: unknown): number | null {
   if (value === null || value === undefined || value === "") return null;
@@ -16,6 +20,10 @@ function normalizeText(value: unknown): string | null {
   if (value === null || value === undefined) return null;
   const text = String(value).trim();
   return text === "" ? null : text;
+}
+
+function getSingleDealAccessExpiresAt() {
+  return new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
 }
 
 export async function GET() {
@@ -54,14 +62,54 @@ export async function POST(request: Request) {
     error: userError,
   } = await supabase.auth.getUser();
 
-  if (userError || !user) {
+    if (userError || !user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  const accessProfile = await getUserAccessProfile({ supabase, user });
+
+  if (!accessProfile.isPaid) {
+    return NextResponse.json(
+      { error: "Paid access required." },
+      { status: 403 }
+    );
+  }
+
+  if (!canCreateMultipleDeals(accessProfile.planType)) {
+    const { count, error: countError } = await supabase
+      .from("deals")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", user.id);
+
+    if (countError) {
+      console.error("Count deals error:", countError);
+      return NextResponse.json(
+        { error: "Failed to verify deal access." },
+        { status: 500 }
+      );
+    }
+
+    if ((count ?? 0) >= 1) {
+      return NextResponse.json(
+        {
+          error:
+            "Your Single Deal Package allows one deal. Upgrade to Broker Launch Plan to create additional deals.",
+        },
+        { status: 403 }
+      );
+    }
+  }
+
+  const accessExpiresAt =
+    accessProfile.planType === "single_deal"
+      ? getSingleDealAccessExpiresAt()
+      : null;
 
   const body = await request.json();
 
   const insertPayload = {
     user_id: user.id,
+    access_expires_at: accessExpiresAt,
 
     business_name: normalizeText(body.business_name),
     business_type: normalizeText(body.business_type),

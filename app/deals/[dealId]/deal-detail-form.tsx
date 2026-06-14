@@ -13,6 +13,7 @@ type DealFormData = {
   down_payment: number | null;
   seller_financing: boolean | null;
   created_at: string | null;
+  access_expires_at?: string | null;
 
   business_type?: string | null;
   business_location?: string | null;
@@ -127,6 +128,17 @@ function formatDate(value: string | null) {
   }).format(new Date(value));
 }
 
+function getDaysRemaining(expiresAt?: string | null) {
+  if (!expiresAt) return null;
+
+  const expires = new Date(expiresAt).getTime();
+  const now = Date.now();
+
+  const diff = expires - now;
+
+  return Math.ceil(diff / (1000 * 60 * 60 * 24));
+}
+
 function normalizeDate(value?: string | null) {
   if (!value) return "";
   return value.slice(0, 10);
@@ -195,10 +207,21 @@ export default function DealDetailForm({
 }) {
   const router = useRouter();
 
+  const isSingleDealPlan = planType === "single_deal";
+
+  const accessDaysRemaining = getDaysRemaining(deal.access_expires_at);
+
+  const isSingleDealExpired =
+    isSingleDealPlan &&
+    accessDaysRemaining !== null &&
+    accessDaysRemaining <= 0;
+
   const canEditDealIdentity =
     planType === "broker_launch" ||
     planType === "attorney_workflow" ||
     planType === "admin";
+
+  const canSaveDealDetails = !isSingleDealExpired;
 
   const editableFieldClassName =
     "w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-slate-500";
@@ -556,11 +579,18 @@ export default function DealDetailForm({
   }
 
   const canSave = useMemo(() => {
-    return !saving;
-  }, [saving]);
+    return !saving && canSaveDealDetails;
+  }, [saving, canSaveDealDetails]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
+    if (isSingleDealExpired) {
+      setError(
+        "This Single Deal Package access period has expired. Upgrade to Broker Launch Plan to continue editing or regenerating documents."
+      );
+      return;
+    }
 
     setSaving(true);
     setError("");
@@ -816,6 +846,33 @@ export default function DealDetailForm({
           className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
         >
           <div className="grid gap-8">
+            {isSingleDealPlan && (
+              <div
+                className={
+                  isSingleDealExpired
+                    ? "rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm leading-6 text-red-800"
+                    : "rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-6 text-slate-700"
+                }
+              >
+                <p className="font-semibold">
+                  {isSingleDealExpired
+                    ? "Single Deal access expired"
+                    : "Single Deal access"}
+                </p>
+
+                <p className="mt-1">
+                  {isSingleDealExpired
+                    ? "This deal is now view-only. Upgrade to Broker Launch Plan to continue editing or regenerate documents."
+                    : `You have ${accessDaysRemaining ?? 30} day(s) remaining to edit and regenerate documents for this deal.`}
+                </p>
+
+                {deal.access_expires_at && (
+                  <p className="mt-1 text-xs">
+                    Access expires on {formatDate(deal.access_expires_at)}.
+                  </p>
+                )}
+              </div>
+            )}
             <section className="grid gap-5">
               <div>
                 <h2 className="text-lg font-semibold text-slate-900">Core Deal Info</h2>
@@ -1723,7 +1780,11 @@ Vendor invoices`}
                 disabled={!canSave}
                 className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {saving ? "Saving..." : "Save Changes"}
+                {saving
+                  ? "Saving..."
+                  : isSingleDealExpired
+                  ? "Access Expired"
+                  : "Save Changes"}
               </button>
 
               <Link
@@ -1736,7 +1797,10 @@ Vendor invoices`}
           </div>
         </form>
 
-        <DocumentGeneratorPanel dealId={deal.id} />
+        <DocumentGeneratorPanel
+          dealId={deal.id}
+          isSingleDealExpired={isSingleDealExpired}
+        />
       </div>
     </main>
   );

@@ -70,12 +70,13 @@ export default function NewDealForm({ planType }: { planType: PlanType }) {
             {isSingleDealPlan && (
               <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-6 text-slate-700">
                 <p className="font-semibold text-slate-950">
-                  Important: core deal terms are locked after creation.
+                  Important: Single Deal access starts after creation.
                 </p>
                 <p className="mt-1">
-                  For Single Deal Package users, Business Name, Purchase Price, and
-                  Down Payment cannot be changed after the deal is created. Please
-                  confirm these values before clicking Create Deal.
+                  For Single Deal Package users, this workspace is available for 30 days
+                  from deal creation. Business Name, Purchase Price, and Down Payment are
+                  locked after creation. Please confirm these values before clicking
+                  Create Deal.
                 </p>
               </div>
             )}

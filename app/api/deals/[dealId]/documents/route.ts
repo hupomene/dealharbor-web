@@ -2,6 +2,7 @@ import JSZip from "jszip";
 import { NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { createServerSupabaseClient } from "@/lib/supabase/server-client";
+import { getUserAccessProfile } from "@/lib/access-control";
 
 type RouteContext = {
   params: Promise<{ dealId: string }>;
@@ -40,6 +41,11 @@ function inferDocumentTypeFromTemplate(templateKey: string) {
     default:
       return templateKey;
   }
+}
+
+function isPastDate(value?: string | null) {
+  if (!value) return false;
+  return new Date(value).getTime() <= Date.now();
 }
 
 export async function GET(_request: Request, { params }: RouteContext) {
@@ -97,6 +103,15 @@ export async function POST(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const accessProfile = await getUserAccessProfile({ supabase, user });
+
+  if (!accessProfile.isPaid) {
+    return NextResponse.json(
+      { error: "Paid access required." },
+      { status: 403 }
+    );
+  }
+
   const body = await request.json();
 
   const templates: string[] = Array.isArray(body.templates)
@@ -116,6 +131,20 @@ export async function POST(request: Request, { params }: RouteContext) {
 
   if (dealError || !deal) {
     return NextResponse.json({ error: "Deal not found." }, { status: 404 });
+  }
+
+  const isSingleDealExpired =
+  accessProfile.planType === "single_deal" &&
+  isPastDate(deal.access_expires_at);
+
+  if (isSingleDealExpired) {
+    return NextResponse.json(
+      {
+        error:
+          "This Single Deal Package access period has expired. Upgrade to Broker Launch Plan to continue generating documents.",
+      },
+      { status: 403 }
+    );
   }
 
   const documentEngineUrl = process.env.DOCUMENT_ENGINE_URL;
