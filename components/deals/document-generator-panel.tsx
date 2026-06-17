@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState, type FormEvent } from "react";
 
+
 type DocumentRow = {
   id: string;
   deal_id: string;
@@ -200,6 +201,7 @@ export default function DocumentGeneratorPanel({
 
   const [generating, setGenerating] = useState(false);
   const [reviewAccepted, setReviewAccepted] = useState(false);
+  const [confirmGenerateOpen, setConfirmGenerateOpen] = useState(false);
 
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([
     "asset_purchase_agreement",
@@ -425,7 +427,7 @@ export default function DocumentGeneratorPanel({
   !hasBlockingMissing &&
   reviewAccepted;
 
-  const handleGenerate = async () => {
+  const confirmAndGenerate = async () => {
     if (!canGenerate) {
       setError(
         isSingleDealExpired
@@ -446,6 +448,7 @@ export default function DocumentGeneratorPanel({
       return;
     }
 
+    setConfirmGenerateOpen(false);
     setGenerating(true);
     setError(null);
     setSuccessMessage(null);
@@ -490,6 +493,31 @@ export default function DocumentGeneratorPanel({
     } finally {
       setGenerating(false);
     }
+  };
+
+  const handleGenerate = () => {
+    if (!canGenerate) {
+      setError(
+        isSingleDealExpired
+          ? "This Single Deal Package access period has expired. Upgrade to Broker Launch Plan to continue generating documents."
+          : hasBlockingMissing
+          ? `Please complete required fields first: ${blockingReadiness
+              .map(
+                (item) =>
+                  `${item.document_name} (${item.missing_fields
+                    .map((f) => f.label)
+                    .join(", ")})`
+              )
+              .join(" | ")}`
+          : !reviewAccepted
+          ? "Please review the summary and check the confirmation box before generating."
+          : "Document generation is not available yet."
+      );
+      return;
+    }
+
+    setError(null);
+    setConfirmGenerateOpen(true);
   };
 
   const handleCompare = async () => {
@@ -1328,6 +1356,141 @@ export default function DocumentGeneratorPanel({
           </tbody>
         </table>
       )}
+
+      {confirmGenerateOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4 py-6">
+          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Confirm document generation
+                </h3>
+                <p className="mt-1 text-sm text-slate-600">
+                  Review the selected documents and key transaction values before
+                  generating the contract package.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setConfirmGenerateOpen(false)}
+                disabled={generating}
+                className="rounded-lg border border-slate-300 px-3 py-1 text-sm text-slate-600 hover:bg-slate-100 disabled:opacity-50"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="grid gap-4">
+              <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p className="text-sm font-semibold text-slate-900">
+                  Selected documents
+                </p>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {selectedTemplates.map((templateKey) => (
+                    <span
+                      key={templateKey}
+                      className="rounded-full bg-white px-3 py-1 text-xs font-medium text-slate-700 ring-1 ring-slate-200"
+                    >
+                      {templateLabel(templateKey)}
+                    </span>
+                  ))}
+                </div>
+
+                <p className="mt-3 text-xs text-slate-500">
+                  Output format: {outputFormat.toUpperCase()}
+                </p>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 bg-white p-4">
+                <p className="text-sm font-semibold text-slate-900">
+                  Key values to confirm
+                </p>
+
+                {reviewSummary ? (
+                  <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                    <ReviewRow
+                      label="Business Name"
+                      value={reviewSummary.business_name}
+                    />
+                    <ReviewRow label="Seller" value={reviewSummary.seller_name} />
+                    <ReviewRow label="Buyer" value={reviewSummary.buyer_name} />
+                    <ReviewRow label="State" value={reviewSummary.state} />
+                    <ReviewRow
+                      label="Agreement Date"
+                      value={reviewSummary.agreement_date}
+                    />
+                    <ReviewRow
+                      label="Closing Date"
+                      value={reviewSummary.closing_date}
+                    />
+                    <ReviewRow
+                      label="Purchase Price"
+                      value={reviewSummary.purchase_price}
+                    />
+                    <ReviewRow
+                      label="Deposit Amount"
+                      value={reviewSummary.deposit_amount}
+                    />
+                    <ReviewRow
+                      label="Cash at Closing"
+                      value={reviewSummary.cash_at_closing}
+                    />
+                    <ReviewRow
+                      label="Seller Financing"
+                      value={reviewSummary.seller_financing_amount}
+                    />
+                    <ReviewRow
+                      label="Non-Compete Years"
+                      value={reviewSummary.non_compete_years}
+                    />
+                    <ReviewRow
+                      label="Non-Compete Miles"
+                      value={reviewSummary.non_compete_miles}
+                    />
+                  </div>
+                ) : (
+                  <p className="mt-3 text-sm text-slate-500">
+                    Review summary is not available.
+                  </p>
+                )}
+              </div>
+
+              <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
+                <p className="font-semibold">Before you generate</p>
+                <p className="mt-1">
+                  Make sure all key deal values are correct. Generated documents are
+                  draft transaction documents and should be reviewed by an attorney
+                  before signing.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={() => setConfirmGenerateOpen(false)}
+                disabled={generating}
+                className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+
+              <button
+                type="button"
+                onClick={confirmAndGenerate}
+                disabled={generating}
+                className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-semibold text-white hover:bg-slate-800 disabled:opacity-50"
+              >
+                {generating ? "Generating..." : "Confirm and Generate"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+
       {supportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4 py-6">
           <div className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">

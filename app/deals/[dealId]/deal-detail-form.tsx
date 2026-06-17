@@ -209,6 +209,11 @@ export default function DealDetailForm({
 
   const isSingleDealPlan = planType === "single_deal";
 
+  const isBrokerLikePlan =
+    planType === "broker_launch" ||
+    planType === "attorney_workflow" ||
+    planType === "admin";
+
   const accessDaysRemaining = getDaysRemaining(deal.access_expires_at);
 
   const isSingleDealExpired =
@@ -216,7 +221,7 @@ export default function DealDetailForm({
     accessDaysRemaining !== null &&
     accessDaysRemaining <= 0;
 
-  const canEditDealIdentity =
+  const canEditLockedCreationFields =
     planType === "broker_launch" ||
     planType === "attorney_workflow" ||
     planType === "admin";
@@ -230,7 +235,7 @@ export default function DealDetailForm({
     "w-full cursor-not-allowed rounded-lg border border-slate-200 bg-slate-100 px-3 py-2 text-sm text-slate-500 outline-none";
 
   const lockedFieldHelpText =
-    "Locked for Single Deal Package users to preserve the original deal identity.";
+     "Locked for Single Deal Package users. Business Name, Purchase Price, and Down Payment are set at deal creation.";
 
   const [businessName, setBusinessName] = useState(deal.business_name ?? "");
   const [purchasePrice, setPurchasePrice] = useState(numberToInput(deal.purchase_price));
@@ -348,6 +353,7 @@ export default function DealDetailForm({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [lastSavedSnapshot, setLastSavedSnapshot] = useState<string | null>(null);  
 
   const [escrowAgentName, setEscrowAgentName] = useState(
     deal.escrow_agent_name ?? ""
@@ -565,6 +571,147 @@ export default function DealDetailForm({
       ? "bg-amber-500"
       : "bg-red-500";
 
+  const currentFormSnapshot = useMemo(
+    () =>
+      JSON.stringify({
+        business_name: canEditLockedCreationFields ? businessName.trim() : null,
+        purchase_price: canEditLockedCreationFields ? purchasePrice : null,
+        down_payment: canEditLockedCreationFields ? downPayment : null,
+
+        business_type: businessType.trim(),
+        business_location: businessLocation.trim(),
+        closing_method: closingMethod.trim(),
+        seller_financing: sellerFinancing,
+
+        seller_name: sellerName.trim(),
+        seller_address: sellerAddress.trim(),
+        seller_state_of_organization: sellerStateOfOrganization.trim(),
+        seller_ein: sellerEin.trim(),
+
+        buyer_name: buyerName.trim(),
+        buyer_address: buyerAddress.trim(),
+        buyer_state_of_organization: buyerStateOfOrganization.trim(),
+
+        agreement_date: agreementDate,
+        closing_date: closingDate,
+
+        included_assets_text: includedAssetsText.trim(),
+        excluded_assets_text: excludedAssetsText.trim(),
+        deposit_amount: depositAmount,
+        cash_at_closing: cashAtClosing,
+        seller_financing_amount: sellerFinancingAmount,
+        seller_financing_clause: sellerFinancingClause.trim(),
+
+        allocated_inventory: allocatedInventory,
+        allocated_ffe: allocatedFfe,
+        allocated_leasehold: allocatedLeasehold,
+        allocated_customer_contracts: allocatedCustomerContracts,
+        allocated_trade_name: allocatedTradeName,
+        allocated_non_compete: allocatedNonCompete,
+        allocated_goodwill: allocatedGoodwill,
+
+        state: stateValue.trim(),
+        non_compete_years: nonCompeteYears,
+        non_compete_miles: nonCompeteMiles,
+
+        equipment_items_text: equipmentItemsText.trim(),
+        closing_checklist_text: closingChecklistText.trim(),
+        assumed_liabilities_text: assumedLiabilitiesText.trim(),
+        excluded_liabilities_text: excludedLiabilitiesText.trim(),
+
+        promissory_interest_rate: promissoryInterestRate,
+        promissory_term_months: promissoryTermMonths,
+        promissory_first_payment_date: promissoryFirstPaymentDate,
+        promissory_maturity_date: promissoryMaturityDate,
+
+        non_compete_restricted_business: nonCompeteRestrictedBusiness.trim(),
+        non_compete_territory: nonCompeteTerritory.trim(),
+
+        escrow_agent_name: escrowAgentName.trim(),
+        escrow_agent_address: escrowAgentAddress.trim(),
+        escrow_deposit_amount: escrowDepositAmount,
+        escrow_release_condition: escrowReleaseCondition.trim(),
+
+        lease_assignment_required: leaseAssignmentRequired,
+        landlord_consent_required: landlordConsentRequired,
+        lease_assignment_condition: leaseAssignmentCondition.trim(),
+
+        due_diligence_period_days: dueDiligencePeriodDays,
+        due_diligence_items_text: dueDiligenceItemsText.trim(),
+        due_diligence_condition: dueDiligenceCondition.trim(),
+      }),
+    [
+      canEditLockedCreationFields,
+      businessName,
+      purchasePrice,
+      downPayment,
+      businessType,
+      businessLocation,
+      closingMethod,
+      sellerFinancing,
+      sellerName,
+      sellerAddress,
+      sellerStateOfOrganization,
+      sellerEin,
+      buyerName,
+      buyerAddress,
+      buyerStateOfOrganization,
+      agreementDate,
+      closingDate,
+      includedAssetsText,
+      excludedAssetsText,
+      depositAmount,
+      cashAtClosing,
+      sellerFinancingAmount,
+      sellerFinancingClause,
+      allocatedInventory,
+      allocatedFfe,
+      allocatedLeasehold,
+      allocatedCustomerContracts,
+      allocatedTradeName,
+      allocatedNonCompete,
+      allocatedGoodwill,
+      stateValue,
+      nonCompeteYears,
+      nonCompeteMiles,
+      equipmentItemsText,
+      closingChecklistText,
+      assumedLiabilitiesText,
+      excludedLiabilitiesText,
+      promissoryInterestRate,
+      promissoryTermMonths,
+      promissoryFirstPaymentDate,
+      promissoryMaturityDate,
+      nonCompeteRestrictedBusiness,
+      nonCompeteTerritory,
+      escrowAgentName,
+      escrowAgentAddress,
+      escrowDepositAmount,
+      escrowReleaseCondition,
+      leaseAssignmentRequired,
+      landlordConsentRequired,
+      leaseAssignmentCondition,
+      dueDiligencePeriodDays,
+      dueDiligenceItemsText,
+      dueDiligenceCondition,
+    ]
+  );
+
+  useEffect(() => {
+    if (lastSavedSnapshot === null) {
+      setLastSavedSnapshot(currentFormSnapshot);
+    }
+  }, [currentFormSnapshot, lastSavedSnapshot]);
+
+  const hasUnsavedChanges =
+  lastSavedSnapshot !== null && currentFormSnapshot !== lastSavedSnapshot;
+
+  useEffect(() => {
+    if (hasUnsavedChanges && successMessage) {
+      setSuccessMessage("");
+    }
+  }, [hasUnsavedChanges, successMessage]);
+
   function handleAutoBalanceAllocation() {
     const pp = parseNumberOrZero(purchasePrice);
     const inv = parseNumberOrZero(allocatedInventory);
@@ -579,8 +726,8 @@ export default function DealDetailForm({
   }
 
   const canSave = useMemo(() => {
-    return !saving && canSaveDealDetails;
-  }, [saving, canSaveDealDetails]);
+    return !saving && canSaveDealDetails && hasUnsavedChanges;
+  }, [saving, canSaveDealDetails, hasUnsavedChanges]);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -597,30 +744,32 @@ export default function DealDetailForm({
     setSuccessMessage("");
 
     const submitBody = {
-      ...(canEditDealIdentity
+      ...(canEditLockedCreationFields
         ? {
             business_name: businessName.trim(),
-            business_location:
-              businessLocation.trim() !== "" ? businessLocation.trim() : null,
             purchase_price: purchasePrice !== "" ? Number(purchasePrice) : null,
             down_payment: downPayment !== "" ? Number(downPayment) : null,
-            seller_name: sellerName.trim() !== "" ? sellerName.trim() : null,
-            buyer_name: buyerName.trim() !== "" ? buyerName.trim() : null,
           }
         : {}),
 
       business_type: businessType.trim() !== "" ? businessType.trim() : null,
+      business_location:
+        businessLocation.trim() !== "" ? businessLocation.trim() : null,
       closing_method: closingMethod.trim() !== "" ? closingMethod.trim() : null,
       seller_financing: sellerFinancing,
 
+      seller_name: sellerName.trim() !== "" ? sellerName.trim() : null,
       seller_address: sellerAddress.trim() !== "" ? sellerAddress.trim() : null,
+
       seller_state_of_organization:
         sellerStateOfOrganization.trim() !== ""
           ? sellerStateOfOrganization.trim()
           : null,
       seller_ein: sellerEin.trim() !== "" ? sellerEin.trim() : null,
 
+      buyer_name: buyerName.trim() !== "" ? buyerName.trim() : null,
       buyer_address: buyerAddress.trim() !== "" ? buyerAddress.trim() : null,
+
       buyer_state_of_organization:
         buyerStateOfOrganization.trim() !== ""
           ? buyerStateOfOrganization.trim()
@@ -713,8 +862,6 @@ export default function DealDetailForm({
 
       };
 
-    console.log("SUBMIT BODY:", submitBody);
-
     try {
       const response = await fetch(`/api/deals/${deal.id}`, {
         method: "PATCH",
@@ -733,7 +880,8 @@ export default function DealDetailForm({
         );
       }
 
-      setSuccessMessage("Deal updated successfully.");
+      setLastSavedSnapshot(currentFormSnapshot);
+      setSuccessMessage("Saved just now.");
 
       window.dispatchEvent(
         new CustomEvent("deal-updated", {
@@ -854,16 +1002,30 @@ export default function DealDetailForm({
                     : "rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-6 text-slate-700"
                 }
               >
-                <p className="font-semibold">
+                <p className="text-base font-semibold">
                   {isSingleDealExpired
-                    ? "Single Deal access expired"
-                    : "Single Deal access"}
+                    ? "Single Deal Package — access expired"
+                    : "Single Deal Package"}
                 </p>
 
-                <p className="mt-1">
+                <p className="mt-2">
+                  This workspace is for one specific business sale transaction. Business
+                  Name, Purchase Price, and Down Payment are locked because they were set
+                  at deal creation.
+                </p>
+
+                <p className="mt-2">
+                  You can continue completing buyer/seller details, assets, payment terms,
+                  non-compete terms, allocation fields, and regenerate documents during the
+                  access period.
+                </p>
+
+                <p className="mt-2 font-medium">
                   {isSingleDealExpired
-                    ? "This deal is now view-only. Upgrade to Broker Launch Plan to continue editing or regenerate documents."
-                    : `You have ${accessDaysRemaining ?? 30} day(s) remaining to edit and regenerate documents for this deal.`}
+                    ? "This deal is now view-only. Upgrade to Broker Launch Plan to continue editing or regenerating documents."
+                    : deal.access_expires_at
+                    ? `Days remaining: ${accessDaysRemaining ?? 0}`
+                    : "Access is active. This older deal does not yet have a 30-day expiration date assigned."}
                 </p>
 
                 {deal.access_expires_at && (
@@ -873,13 +1035,42 @@ export default function DealDetailForm({
                 )}
               </div>
             )}
+            {isBrokerLikePlan && (
+              <div className="rounded-2xl border border-blue-200 bg-blue-50 px-5 py-4 text-sm leading-6 text-slate-700">
+                <p className="text-base font-semibold text-slate-900">
+                  {planType === "broker_launch"
+                    ? "Broker Launch Plan"
+                    : planType === "attorney_workflow"
+                    ? "Attorney Workflow Plan"
+                    : "Admin Workspace"}
+                </p>
+
+                <p className="mt-2">
+                  You can create and manage multiple business sale deals. Business Name,
+                  Purchase Price, and Down Payment remain editable for your workflow.
+                </p>
+              </div>
+            )}
+
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-sm leading-6 text-slate-700">
+              <p className="text-base font-semibold text-slate-900">Next steps</p>
+
+              <ol className="mt-2 list-decimal space-y-1 pl-5">
+                <li>Complete buyer and seller information.</li>
+                <li>Add included assets, excluded assets, and equipment details.</li>
+                <li>Review payment terms and seller financing terms.</li>
+                <li>Complete non-compete, allocation, escrow, lease, and due diligence details.</li>
+                <li>Save changes, then generate your document package.</li>
+              </ol>
+            </div>
+
             <section className="grid gap-5">
               <div>
                 <h2 className="text-lg font-semibold text-slate-900">Core Deal Info</h2>
-                {!canEditDealIdentity && (
+                {!canEditLockedCreationFields && (
                   <p className="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm leading-6 text-slate-700">
-                    Single Deal Package users can regenerate documents for this same deal,
-                    but core deal identity fields are locked after creation.
+                    Business Name, Purchase Price, and Down Payment are locked for Single Deal
+                    Package users. Continue completing the remaining intake fields below.
                   </p>
                 )}
               </div>
@@ -892,15 +1083,15 @@ export default function DealDetailForm({
                   type="text"
                   value={businessName}
                   onChange={(e) => setBusinessName(e.target.value)}
-                  readOnly={!canEditDealIdentity}
-                  aria-readonly={!canEditDealIdentity}
+                  readOnly={!canEditLockedCreationFields}
+                  aria-readonly={!canEditLockedCreationFields}
                   className={
-                    canEditDealIdentity ? editableFieldClassName : lockedFieldClassName
+                    canEditLockedCreationFields ? editableFieldClassName : lockedFieldClassName
                   }
                   placeholder="Business name"
-                  required={canEditDealIdentity}
+                  required={canEditLockedCreationFields}
                 />
-                {!canEditDealIdentity && (
+                {!canEditLockedCreationFields && (
                   <p className="mt-1 text-xs text-slate-500">{lockedFieldHelpText}</p>
                 )}
               </div>
@@ -927,16 +1118,9 @@ export default function DealDetailForm({
                   type="text"
                   value={businessLocation}
                   onChange={(e) => setBusinessLocation(e.target.value)}
-                  readOnly={!canEditDealIdentity}
-                  aria-readonly={!canEditDealIdentity}
-                  className={
-                    canEditDealIdentity ? editableFieldClassName : lockedFieldClassName
-                  }
-                  placeholder="1450 Greenville Avenue, Dallas, TX 75206"
+                  className={editableFieldClassName}
+                  placeholder="Example: 1450 Greenville Avenue, Dallas, TX 75206"
                 />
-                {!canEditDealIdentity && (
-                  <p className="mt-1 text-xs text-slate-500">{lockedFieldHelpText}</p>
-                )}
               </div>
 
               <div>
@@ -964,14 +1148,14 @@ export default function DealDetailForm({
                     step="1"
                     value={purchasePrice}
                     onChange={(e) => setPurchasePrice(e.target.value)}
-                    readOnly={!canEditDealIdentity}
-                    aria-readonly={!canEditDealIdentity}
+                    readOnly={!canEditLockedCreationFields}
+                    aria-readonly={!canEditLockedCreationFields}
                     className={
-                      canEditDealIdentity ? editableFieldClassName : lockedFieldClassName
+                      canEditLockedCreationFields ? editableFieldClassName : lockedFieldClassName
                     }
                     placeholder="750000"
                   />
-                  {!canEditDealIdentity && (
+                  {!canEditLockedCreationFields && (
                     <p className="mt-1 text-xs text-slate-500">{lockedFieldHelpText}</p>
                   )}
                 </div>
@@ -986,14 +1170,14 @@ export default function DealDetailForm({
                     step="1"
                     value={downPayment}
                     onChange={(e) => setDownPayment(e.target.value)}
-                    readOnly={!canEditDealIdentity}
-                    aria-readonly={!canEditDealIdentity}
+                    readOnly={!canEditLockedCreationFields}
+                    aria-readonly={!canEditLockedCreationFields}
                     className={
-                      canEditDealIdentity ? editableFieldClassName : lockedFieldClassName
+                      canEditLockedCreationFields ? editableFieldClassName : lockedFieldClassName
                     }
                     placeholder="150000"
                   />
-                  {!canEditDealIdentity && (
+                  {!canEditLockedCreationFields && (
                     <p className="mt-1 text-xs text-slate-500">{lockedFieldHelpText}</p>
                   )}
                 </div>
@@ -1038,16 +1222,9 @@ export default function DealDetailForm({
                     type="text"
                     value={sellerName}
                     onChange={(e) => setSellerName(e.target.value)}
-                    readOnly={!canEditDealIdentity}
-                    aria-readonly={!canEditDealIdentity}
-                    className={
-                      canEditDealIdentity ? editableFieldClassName : lockedFieldClassName
-                    }
+                    className={editableFieldClassName}
                     placeholder="Seller legal name"
                   />
-                  {!canEditDealIdentity && (
-                    <p className="mt-1 text-xs text-slate-500">{lockedFieldHelpText}</p>
-                  )}
                 </div>
 
                 <div>
@@ -1058,16 +1235,9 @@ export default function DealDetailForm({
                     type="text"
                     value={buyerName}
                     onChange={(e) => setBuyerName(e.target.value)}
-                    readOnly={!canEditDealIdentity}
-                    aria-readonly={!canEditDealIdentity}
-                    className={
-                      canEditDealIdentity ? editableFieldClassName : lockedFieldClassName
-                    }
+                    className={editableFieldClassName}
                     placeholder="Buyer legal name"
                   />
-                  {!canEditDealIdentity && (
-                    <p className="mt-1 text-xs text-slate-500">{lockedFieldHelpText}</p>
-                  )}
                 </div>
               </div>
 
@@ -1768,11 +1938,23 @@ Vendor invoices`}
               </div>
             ) : null}
 
-            {successMessage ? (
-              <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-                {successMessage}
-              </div>
-            ) : null}
+            <div
+              className={
+                hasUnsavedChanges
+                  ? "rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800"
+                  : "rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600"
+              }
+            >
+              {saving
+                ? "Saving changes..."
+                : isSingleDealExpired
+                ? "This deal is view-only because the Single Deal access period has expired."
+                : hasUnsavedChanges
+                ? "Unsaved changes. Save before generating documents."
+                : successMessage
+                ? successMessage
+                : "All changes are saved."}
+            </div>
 
             <div className="flex gap-3">
               <button
@@ -1784,7 +1966,9 @@ Vendor invoices`}
                   ? "Saving..."
                   : isSingleDealExpired
                   ? "Access Expired"
-                  : "Save Changes"}
+                  : hasUnsavedChanges
+                  ? "Save Changes"
+                  : "Saved"}
               </button>
 
               <Link

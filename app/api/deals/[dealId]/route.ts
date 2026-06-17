@@ -61,6 +61,11 @@ function getAutoMaturityDate(
   return toIsoDate(maturityBase);
 }
 
+function isPastDate(value?: string | null) {
+  if (!value) return false;
+  return new Date(value).getTime() <= Date.now();
+}
+
 export async function GET(_request: Request, { params }: RouteContext) {
   const { dealId } = await params;
   const supabase = await createServerSupabaseClient();
@@ -111,9 +116,34 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     );
   }
 
-  const canEditDealIdentity = canEditDealIdentityFields(
+  const canEditLockedCreationFields = canEditDealIdentityFields(
     accessProfile.planType
   );
+
+  const { data: existingDeal, error: existingDealError } = await supabase
+    .from("deals")
+    .select("id, access_expires_at")
+    .eq("id", dealId)
+    .eq("user_id", user.id)
+    .single();
+
+  if (existingDealError || !existingDeal) {
+    return NextResponse.json({ error: "Deal not found." }, { status: 404 });
+  }
+
+  const isSingleDealExpired =
+    accessProfile.planType === "single_deal" &&
+    isPastDate(existingDeal.access_expires_at);
+
+  if (isSingleDealExpired) {
+    return NextResponse.json(
+      {
+        error:
+          "This Single Deal Package access period has expired. Upgrade to Broker Launch Plan to continue editing.",
+      },
+      { status: 403 }
+    );
+  }
 
   let body: Record<string, unknown> = {};
 
@@ -148,18 +178,11 @@ export async function PATCH(request: Request, { params }: RouteContext) {
   // Single Deal Package users may regenerate documents for the same deal,
   // but cannot reuse one paid deal as a different business transaction.
   const updatePayload = {
-    ...(canEditDealIdentity
+    ...(canEditLockedCreationFields
       ? {
           business_name:
             typeof body.business_name === "string"
               ? body.business_name.trim() || null
-              : undefined,
-
-          business_location:
-            body.business_location === null
-              ? null
-              : body.business_location !== undefined
-              ? normalizeString(body.business_location)
               : undefined,
 
           purchase_price:
@@ -174,16 +197,6 @@ export async function PATCH(request: Request, { params }: RouteContext) {
               ? null
               : body.down_payment !== undefined
               ? normalizeNumber(body.down_payment)
-              : undefined,
-
-          seller_name:
-            body.seller_name !== undefined
-              ? normalizeString(body.seller_name)
-              : undefined,
-
-          buyer_name:
-            body.buyer_name !== undefined
-              ? normalizeString(body.buyer_name)
               : undefined,
         }
       : {}),
@@ -207,6 +220,14 @@ export async function PATCH(request: Request, { params }: RouteContext) {
         ? normalizeString(body.business_type)
         : undefined,
 
+    business_location:
+      body.business_location === null
+        ? null
+        : body.business_location !== undefined
+        ? normalizeString(body.business_location)
+        : undefined,    
+
+
     buyer_state_of_organization:
       body.buyer_state_of_organization === null
         ? null
@@ -228,6 +249,11 @@ export async function PATCH(request: Request, { params }: RouteContext) {
         ? normalizeString(body.seller_ein)
         : undefined,
 
+    seller_name:
+      body.seller_name !== undefined
+        ? normalizeString(body.seller_name)
+        : undefined,
+
     closing_method:
       body.closing_method === null
         ? null
@@ -238,6 +264,11 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     seller_address:
       body.seller_address !== undefined
         ? normalizeString(body.seller_address)
+        : undefined,
+
+    buyer_name:
+      body.buyer_name !== undefined
+        ? normalizeString(body.buyer_name)
         : undefined,
     
     buyer_address:
