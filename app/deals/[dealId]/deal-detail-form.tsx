@@ -1984,6 +1984,7 @@ Vendor invoices`}
         <DocumentGeneratorPanel
           dealId={deal.id}
           isSingleDealExpired={isSingleDealExpired}
+          planType={planType}
         />
       </div>
     </main>

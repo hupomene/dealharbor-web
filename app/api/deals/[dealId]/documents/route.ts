@@ -119,8 +119,15 @@ export async function POST(request: Request, { params }: RouteContext) {
     : ["asset_purchase_agreement"];
 
   const requestedOutputFormat = String(
-    body.outputFormat ?? body.output_format ?? "docx"
+    body.outputFormat ?? body.output_format ?? "pdf"
   ).toLowerCase() as "docx" | "pdf" | "zip";
+
+  if (!["docx", "pdf", "zip"].includes(requestedOutputFormat)) {
+    return NextResponse.json(
+      { error: "Invalid output format." },
+      { status: 400 }
+    );
+  }
 
   const { data: deal, error: dealError } = await supabase
     .from("deals")
@@ -134,14 +141,27 @@ export async function POST(request: Request, { params }: RouteContext) {
   }
 
   const isSingleDealExpired =
-  accessProfile.planType === "single_deal" &&
-  isPastDate(deal.access_expires_at);
+    accessProfile.planType === "single_deal" &&
+    isPastDate(deal.access_expires_at);
 
   if (isSingleDealExpired) {
     return NextResponse.json(
       {
         error:
           "This Single Deal Package access period has expired. Upgrade to Broker Launch Plan to continue generating documents.",
+      },
+      { status: 403 }
+    );
+  }
+
+  if (
+    accessProfile.planType === "single_deal" &&
+    requestedOutputFormat !== "pdf"
+  ) {
+    return NextResponse.json(
+      {
+        error:
+          "Single Deal Package includes PDF output only. DOCX and ZIP exports are available with Broker Launch Plan.",
       },
       { status: 403 }
     );
@@ -225,140 +245,89 @@ export async function POST(request: Request, { params }: RouteContext) {
   }
 
   if (requestedOutputFormat === "zip") {
-  const zip = new JSZip();
+    const zip = new JSZip();
 
-  const docxResponse = await fetch(`${documentEngineUrl}/generate`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      payloads,
-      output_format: "docx",
-    }),
-    cache: "no-store",
-  });
-
-  if (!docxResponse.ok) {
-    return NextResponse.json(
-      { error: "Document engine failed to generate DOCX files for ZIP package." },
-      { status: 500 }
-    );
-  }
-
-  const docxData = await docxResponse.json();
-  const docxFiles = Array.isArray(docxData.files) ? docxData.files : [];
-
-  for (const artifact of files) {
-    const buffer = Buffer.from(artifact.content_base64, "base64");
-    zip.file(`pdf/${artifact.file_name}`, buffer);
-  }
-
-  for (const artifact of docxFiles) {
-    const buffer = Buffer.from(artifact.content_base64, "base64");
-    zip.file(`docx/${artifact.file_name}`, buffer);
-  }
-
-  const zipBuffer = await zip.generateAsync({ type: "nodebuffer" });
-
-  const safeBusinessName = String(deal.business_name || "deal")
-    .replace(/[^a-z0-9_-]+/gi, "_")
-    .replace(/^_+|_+$/g, "");
-
-  const zipFileName = `${safeBusinessName}_closing_package.zip`;
-  const storagePath = `${user.id}/${dealId}/${randomUUID()}-${zipFileName}`;
-
-  const { error: uploadError } = await supabase.storage
-    .from(STORAGE_BUCKET)
-    .upload(storagePath, zipBuffer, {
-      contentType: "application/zip",
-      upsert: false,
+    const docxResponse = await fetch(`${documentEngineUrl}/generate`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        payloads,
+        output_format: "docx",
+      }),
+      cache: "no-store",
     });
 
-  if (uploadError) {
-    return NextResponse.json(
-      { error: `Storage upload failed: ${uploadError.message}` },
-      { status: 500 }
-    );
-  }
+    if (!docxResponse.ok) {
+      return NextResponse.json(
+        {
+          error:
+            "Document engine failed to generate DOCX files for ZIP package.",
+        },
+        { status: 500 }
+      );
+    }
 
-  const { data: inserted, error: insertError } = await supabase
-    .from("documents")
-    .insert({
-      user_id: user.id,
-      deal_id: dealId,
-      document_type: "closing_package",
-      file_name: zipFileName,
-      file_type: "zip",
-      file_url: storagePath,
-    })
-    .select("*")
-    .single();
+    const docxData = await docxResponse.json();
+    const docxFiles = Array.isArray(docxData.files) ? docxData.files : [];
 
-  if (insertError) {
-    return NextResponse.json(
-      { error: `Document insert failed: ${insertError.message}` },
-      { status: 500 }
-    );
-  }
+    for (const artifact of files) {
+      const buffer = Buffer.from(artifact.content_base64, "base64");
+      zip.file(`pdf/${artifact.file_name}`, buffer);
+    }
 
-  return NextResponse.json({
-    success: true,
-    documents: [inserted],
-  });
-}
+    for (const artifact of docxFiles) {
+      const buffer = Buffer.from(artifact.content_base64, "base64");
+      zip.file(`docx/${artifact.file_name}`, buffer);
+    }
 
-  const insertedDocs: any[] = [];
+    const zipBuffer = await zip.generateAsync({ type: "nodebuffer" });
 
-  for (let index = 0; index < files.length; index += 1) {
-    const artifact = files[index];
-    const buffer = Buffer.from(artifact.content_base64, "base64");
-    const storagePath = `${user.id}/${dealId}/${randomUUID()}-${artifact.file_name}`;
+    const safeBusinessName = String(deal.business_name || "deal")
+      .replace(/[^a-z0-9_-]+/gi, "_")
+      .replace(/^_+|_+$/g, "");
+
+    const zipFileName = `${safeBusinessName}_closing_package.zip`;
+    const storagePath = `${user.id}/${dealId}/${randomUUID()}-${zipFileName}`;
 
     const { error: uploadError } = await supabase.storage
       .from(STORAGE_BUCKET)
-      .upload(storagePath, buffer, {
-        contentType: mimeTypeFor(artifact.file_type),
+      .upload(storagePath, zipBuffer, {
+        contentType: "application/zip",
         upsert: false,
       });
 
     if (uploadError) {
-      console.error("[deal-documents][POST] storage upload error:", uploadError);
       return NextResponse.json(
         { error: `Storage upload failed: ${uploadError.message}` },
         { status: 500 }
       );
     }
 
-    const templateKey = templates[Math.min(index, templates.length - 1)];
-    const documentType = inferDocumentTypeFromTemplate(templateKey);
-
     const { data: inserted, error: insertError } = await supabase
       .from("documents")
       .insert({
         user_id: user.id,
         deal_id: dealId,
-        document_type: documentType,
-        file_name: artifact.file_name,
-        file_type: artifact.file_type,
+        document_type: "closing_package",
+        file_name: zipFileName,
+        file_type: "zip",
         file_url: storagePath,
       })
       .select("*")
       .single();
 
     if (insertError) {
-      console.error("[deal-documents][POST] document insert error:", insertError);
       return NextResponse.json(
         { error: `Document insert failed: ${insertError.message}` },
         { status: 500 }
       );
     }
 
-    insertedDocs.push(inserted);
+    return NextResponse.json({
+      success: true,
+      documents: [inserted],
+    });
   }
-
-  return NextResponse.json({
-    success: true,
-    documents: insertedDocs,
-  });
 }

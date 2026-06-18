@@ -13,10 +13,17 @@ type DocumentRow = {
   batch_id?: string | null;
 };
 
+type PlanType =
+  | "single_deal"
+  | "broker_launch"
+  | "attorney_workflow"
+  | "admin"
+  | null;
 
 type Props = {
   dealId: string;
   isSingleDealExpired?: boolean;
+  planType?: PlanType;
 };
 
 type TemplateOption = {
@@ -124,7 +131,10 @@ function ReviewRow({
 export default function DocumentGeneratorPanel({
   dealId,
   isSingleDealExpired = false,
+  planType = null,
 }: Props) {
+
+  const isSingleDealPlan = planType === "single_deal";
   const [documents, setDocuments] = useState<DocumentRow[]>([]);
   const [readiness, setReadiness] = useState<TemplateReadiness[]>([]);
   const [reviewSummary, setReviewSummary] = useState<ReviewSummary | null>(null);
@@ -147,6 +157,11 @@ export default function DocumentGeneratorPanel({
     "docx"
   );
 
+  useEffect(() => {
+    if (isSingleDealPlan && outputFormat !== "pdf") {
+      setOutputFormat("pdf");
+    }
+  }, [isSingleDealPlan, outputFormat]);
 
   const [supportModal, setSupportModal] = useState<SupportModalType>(null);
   const [supportSubmitting, setSupportSubmitting] = useState(false);
@@ -342,10 +357,10 @@ export default function DocumentGeneratorPanel({
         },
         body: JSON.stringify({
           templates: selectedTemplates,
-          output_format: outputFormat,
+          output_format: isSingleDealPlan ? "pdf" : outputFormat,
           batch_name: "",
           batch_notes: "",
-          batch_tags: [], 
+          batch_tags: [],
         }),
       });
 
@@ -722,14 +737,23 @@ export default function DocumentGeneratorPanel({
             onChange={(e) =>
               setOutputFormat(e.target.value as "docx" | "pdf" | "zip")
             }
-            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-slate-500"
+            disabled={isSingleDealPlan}
+            className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-slate-500 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500"
           >
-            <option value="docx">DOCX</option>
-            <option value="pdf">PDF</option>
-            <option value="zip">ZIP (DOCX + PDF package)</option>
+            {isSingleDealPlan ? (
+              <option value="pdf">PDF</option>
+            ) : (
+              <>
+                <option value="docx">DOCX</option>
+                <option value="pdf">PDF</option>
+                <option value="zip">ZIP (DOCX + PDF package)</option>
+              </>
+            )}
           </select>
           <p className="mt-2 text-xs text-slate-500">
-            ZIP packages the selected templates as both DOCX and PDF files.
+            {isSingleDealPlan
+              ? "Single Deal Package includes PDF draft output only. DOCX and ZIP exports are available with Broker Launch Plan."
+              : "ZIP packages the selected templates as both DOCX and PDF files."}
           </p>
 
           {hasBlockingMissing ? (
@@ -972,7 +996,7 @@ export default function DocumentGeneratorPanel({
                 </div>
 
                 <p className="mt-3 text-xs text-slate-500">
-                  Output format: {outputFormat.toUpperCase()}
+                  Output format: {(isSingleDealPlan ? "pdf" : outputFormat).toUpperCase()}
                 </p>
               </div>
 

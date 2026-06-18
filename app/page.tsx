@@ -20,8 +20,8 @@ const valueCards = [
     icon: "⛓",
   },
   {
-    title: "Closing-Ready Package",
-    text: "Generate organized DOCX, PDF, and ZIP draft packages for attorney review and closing preparation.",
+    title: "Attorney-Review-Ready Drafts",
+    text: "Generate organized PDF draft packages for Single Deal users, with DOCX and ZIP exports available in Broker Launch Plan.",
     icon: "✓",
   },
 ];
@@ -30,8 +30,8 @@ const workflow = [
   ["1", "Enter Deal Data", "Input buyer, seller, assets, purchase price, financing, liabilities, and closing terms."],
   ["2", "Sync Documents", "PactAnchor aligns APA, BOS, PN, NC, and IRS allocation details from one source of truth."],
   ["3", "Review Readiness", "Validate required fields, allocation balance, risk warnings, and closing deliverables."],
-  ["4", "Generate Documents", "Produce structured, consistent transaction documents in DOCX and PDF formats."],
-  ["5", "Export Package", "Download a closing-ready ZIP package for review, handoff, and recordkeeping."],
+  ["4", "Generate Documents", "Produce structured, consistent draft documents for attorney review."],
+  ["5", "Export Package", "Download PDF drafts with Single Deal Package, or DOCX/PDF/ZIP exports with Broker Launch Plan."],
 ];
 
 const features = [
@@ -63,7 +63,8 @@ const pricing = [
       "Promissory Note",
       "Non-Compete Agreement",
       "IRS Form 8594 Allocation Summary",
-      "DOCX/PDF/ZIP document output",
+      "PDF draft output only",
+      "DOCX and ZIP exports available with Broker Launch Plan",
       "Attorney-review-ready draft package",
       "Report Issue support",
     ],
@@ -80,6 +81,7 @@ const pricing = [
     items: [
       "Multiple business sale deal packages",
       "Editable core deal terms",
+      "DOCX / PDF / ZIP exports",
       "Repeated broker workflow support",
       "Ongoing workspace access",
       "Synchronized APA/BOS/PN/NC documents",
@@ -592,7 +594,7 @@ export default function HomePage() {
                 "Non-Compete Agreement",
                 "Promissory Note",
                 "IRS 8594 Allocation Summary",
-                "ZIP Package",
+                "PDF Draft Package",
               ].map((doc) => (
                 <div
                   key={doc}
@@ -606,7 +608,7 @@ export default function HomePage() {
               ))}
             </div>
             <button className="mt-6 w-full rounded-lg bg-[#061d3a] py-4 font-bold text-white">
-              Download All ZIP
+              Download PDF Drafts
             </button>
           </div>
         </div>
@@ -724,7 +726,9 @@ export default function HomePage() {
           After checkout, please sign in or create your PactAnchor account using the
           same email address used for Stripe payment. Single Deal Package access is
           for one specific transaction and begins when the deal workspace is created.
-          During launch, access may be activated after payment verification.
+          Single Deal includes PDF draft output only; DOCX and ZIP exports are available
+          with Broker Launch Plan. During launch, access may be activated after payment
+          verification.
         </p>
         <div className="mx-auto mt-10 max-w-4xl rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm leading-7 text-slate-700">
           <p className="font-semibold text-slate-900">
@@ -735,7 +739,9 @@ export default function HomePage() {
             attorney-review-ready draft transaction documents. PactAnchor is not a law
             firm and does not provide legal, tax, or financial advice. Generated
             documents should be reviewed by a qualified attorney, CPA, or other
-            professional advisor before signing or use in a real transaction.
+            professional advisor before signing or use in a real transaction. Single Deal
+            Package is limited to PDF draft output; editable DOCX and ZIP exports are
+            reserved for Broker Launch Plan and higher workflows.
           </p>
         </div>
       </section>
