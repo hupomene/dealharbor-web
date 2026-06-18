@@ -20,6 +20,33 @@ function formatCurrency(value: number | null) {
   }).format(value);
 }
 
+function formatDate(value?: string | null) {
+  if (!value) return "Not assigned";
+
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  }).format(new Date(value));
+}
+
+function getDaysRemaining(value?: string | null) {
+  if (!value) return null;
+
+  const expires = new Date(value).getTime();
+  const now = Date.now();
+
+  return Math.ceil((expires - now) / (1000 * 60 * 60 * 24));
+}
+
+function getDealStatus(deal: DealRecord) {
+  if (deal.business_name || deal.seller_name || deal.buyer_name) {
+    return "Intake in progress";
+  }
+
+  return "Started";
+}
+
 function getAdminEmails() {
   return (process.env.ADMIN_EMAILS ?? "")
     .split(",")
@@ -214,6 +241,15 @@ export default async function DashboardPage() {
 
   const accessStatus = isAdmin ? "admin" : profile?.access_status ?? "free";
 
+  const planType = isAdmin ? "admin" : profile?.plan_type ?? null;
+
+  const isSingleDealPlan = planType === "single_deal";
+
+  const isBrokerLikePlan =
+    planType === "broker_launch" ||
+    planType === "attorney_workflow" ||
+    planType === "admin";
+
   if (accessStatus === "blocked") {
     return <AccessBlockedScreen userEmail={user.email ?? null} />;
   }
@@ -234,6 +270,13 @@ export default async function DashboardPage() {
 
   const safeDeals = (deals ?? []) as DealRecord[];
   const totalDeals = safeDeals.length;
+
+  const currentDeal = safeDeals[0] ?? null;
+
+  const currentDealDaysRemaining = currentDeal
+    ? getDaysRemaining((currentDeal as DealRecord & { access_expires_at?: string | null }).access_expires_at)
+    : null;
+
   const totalPurchaseValue = safeDeals.reduce(
     (sum, deal) => sum + (deal.purchase_price ?? 0),
     0
@@ -252,7 +295,7 @@ export default async function DashboardPage() {
               Dashboard
             </h1>
             <p className="mt-4 text-lg text-slate-600">
-              View saved deal activity and metrics for the currently signed-in user.
+              Continue your current deal, review recent activity, and generate your business sale document package.
             </p>
           </div>
 
@@ -302,16 +345,123 @@ export default async function DashboardPage() {
           </section>
         </div>
 
+        {isSingleDealPlan && currentDeal && (
+          <section className="mt-8 rounded-3xl border border-amber-200 bg-amber-50 p-7 shadow-sm">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-700">
+                  Continue Current Deal
+                </p>
+
+                <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">
+                  {currentDeal.business_name || "Untitled Deal"}
+                </h2>
+
+                <div className="mt-4 grid gap-2 text-sm leading-6 text-slate-700 md:grid-cols-2">
+                  <p>
+                    <span className="font-semibold text-slate-900">Status:</span>{" "}
+                    {getDealStatus(currentDeal)}
+                  </p>
+
+                  <p>
+                    <span className="font-semibold text-slate-900">
+                      Purchase Price:
+                    </span>{" "}
+                    {formatCurrency(currentDeal.purchase_price ?? 0)}
+                  </p>
+
+                  <p>
+                    <span className="font-semibold text-slate-900">
+                      Access remaining:
+                    </span>{" "}
+                    {currentDealDaysRemaining === null
+                      ? "Not assigned"
+                      : currentDealDaysRemaining <= 0
+                      ? "Expired"
+                      : `${currentDealDaysRemaining} day(s)`}
+                  </p>
+
+                  <p>
+                    <span className="font-semibold text-slate-900">Next step:</span>{" "}
+                    Complete intake fields and generate documents.
+                  </p>
+                </div>
+
+                <p className="mt-4 text-sm leading-6 text-slate-600">
+                  Single Deal Package users can continue working on this specific
+                  transaction during the access period.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+                <Link
+                  href={`/deals/${currentDeal.id}`}
+                  className="rounded-xl bg-slate-900 px-5 py-3 text-center text-sm font-semibold text-white hover:bg-slate-800"
+                >
+                  Continue Deal
+                </Link>
+
+                <Link
+                  href="/dashboard/guide"
+                  className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-center text-sm font-semibold text-slate-800 hover:bg-slate-50"
+                >
+                  View Guide
+                </Link>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {isSingleDealPlan && !currentDeal && (
+          <section className="mt-8 rounded-3xl border border-slate-200 bg-white p-7 shadow-sm">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Start Your Deal
+            </p>
+
+            <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">
+              Create your Single Deal workspace
+            </h2>
+
+            <p className="mt-3 max-w-3xl text-base leading-7 text-slate-600">
+              Your Single Deal Package is designed for one specific business sale
+              transaction. After creation, Business Name, Purchase Price, and Down
+              Payment will be locked for that deal.
+            </p>
+
+            <Link
+              href="/deals/new"
+              className="mt-6 inline-flex rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800"
+            >
+              Create New Deal
+            </Link>
+          </section>
+        )}
+
         <section className="mt-8 rounded-2xl border border-slate-200 bg-white shadow-sm">
           <div className="border-b border-slate-200 px-6 py-5">
-            <h2 className="text-3xl font-semibold text-slate-900">Recent Deals</h2>
+            <h2 className="text-3xl font-semibold text-slate-900">
+              {isSingleDealPlan ? "Your Deal" : "Recent Deals"}
+            </h2>
           </div>
 
           <div className="px-6 py-8">
             {safeDeals.length === 0 ? (
-              <p className="text-lg text-slate-500">
-                No deals have been saved yet. Create your first deal to get started.
-              </p>
+              <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6">
+                <p className="text-lg font-semibold text-slate-900">
+                  No deals have been saved yet.
+                </p>
+
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Create your first deal to begin the guided intake and document generation workflow.
+                </p>
+
+                <Link
+                  href="/deals/new"
+                  className="mt-5 inline-flex rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white hover:bg-slate-800"
+                >
+                  Create New Deal
+                </Link>
+              </div>
             ) : (
               <div className="grid gap-4">
                 {safeDeals.slice(0, 5).map((deal) => (
@@ -325,11 +475,14 @@ export default async function DashboardPage() {
                         <p className="text-lg font-medium text-slate-900">
                           {deal.business_name || "Untitled Deal"}
                         </p>
-                        <p className="mt-1 text-sm text-slate-500">
-                          Purchase Price: {formatCurrency(deal.purchase_price ?? 0)}
-                        </p>
+                        <div className="mt-1 grid gap-1 text-sm text-slate-500 md:grid-cols-2">
+                          <p>Purchase Price: {formatCurrency(deal.purchase_price ?? 0)}</p>
+                          <p>Status: {getDealStatus(deal)}</p>
+                        </div>
                       </div>
-                      <span className="text-sm text-slate-500">Open</span>
+                      <span className="shrink-0 rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-600">
+                        Continue
+                      </span>
                     </div>
                   </Link>
                 ))}

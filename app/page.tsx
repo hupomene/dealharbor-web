@@ -50,35 +50,42 @@ const pricing = [
     period: "one-time",
     badge: "Launch Price",
     description:
-      "Generate one synchronized small business sale transaction document package.",
+      "For one specific small business sale transaction. Includes 30-day workspace access from deal creation and document regeneration during the access period.",
     paymentLink: "https://buy.stripe.com/7sYbJ28Om2BEdKdeKhfUQ02",
     buttonText: "Buy Single Deal Package",
     items: [
-      "One business sale deal package",
+      "One specific business sale transaction",
+      "30-day workspace access from deal creation",
+      "Document regeneration during the access period",
+      "Business Name, Purchase Price, and Down Payment locked after creation",
       "Asset Purchase Agreement",
       "Bill of Sale",
       "Promissory Note",
       "Non-Compete Agreement",
       "IRS Form 8594 Allocation Summary",
-      "DOCX/PDF document output",
+      "DOCX/PDF/ZIP document output",
+      "Attorney-review-ready draft package",
       "Report Issue support",
     ],
   },
-    {
+  {
     name: "Broker Launch Plan",
     price: "$149",
     period: "/month",
     badge: "Best for Brokers",
     description:
-      "Monthly launch access for brokers and advisors preparing small business sale document packages.",
+      "Monthly launch access for brokers and advisors preparing repeated small business sale document packages.",
     paymentLink: "https://buy.stripe.com/5kQ14oaWu902ay18lTfUQ03",
     buttonText: "Start Broker Launch Plan",
     items: [
-      "Multiple deal packages",
-      "Broker-focused workflow",
+      "Multiple business sale deal packages",
+      "Editable core deal terms",
+      "Repeated broker workflow support",
+      "Ongoing workspace access",
       "Synchronized APA/BOS/PN/NC documents",
       "IRS Form 8594 Allocation Summary",
       "Closing package document generation",
+      "Better for brokers and advisors handling multiple transactions",
       "Report Issue channel",
       "Request Feature channel",
       "Priority feedback review",
@@ -90,7 +97,7 @@ const pricing = [
     period: "",
     badge: "For Attorneys",
     description:
-      "For transaction attorneys and small law firms preparing repeatable business sale draft packages.",
+      "Coming soon for transaction attorneys and small law firms that want structured intake, repeatable draft packages, and review-centered workflows.",
     paymentLink:
       "mailto:info@pactanchor.com?subject=Attorney%20Workflow%20Plan%20Early%20Access",
     buttonText: "Contact for Early Access",
@@ -713,10 +720,11 @@ export default function HomePage() {
             </div>
           ))}
         </div>
-        <p className="mx-auto mt-6 max-w-3xl text-center text-sm leading-6 text-slate-500">
-          After checkout, please sign in or create your PactAnchor account using
-          the same email address used for Stripe payment. During launch, access
-          may be activated after payment verification.
+        <p className="mx-auto mt-6 max-w-4xl text-center text-sm leading-6 text-slate-500">
+          After checkout, please sign in or create your PactAnchor account using the
+          same email address used for Stripe payment. Single Deal Package access is
+          for one specific transaction and begins when the deal workspace is created.
+          During launch, access may be activated after payment verification.
         </p>
         <div className="mx-auto mt-10 max-w-4xl rounded-2xl border border-amber-200 bg-amber-50 p-6 text-sm leading-7 text-slate-700">
           <p className="font-semibold text-slate-900">
@@ -725,9 +733,9 @@ export default function HomePage() {
           <p className="mt-2">
             PactAnchor is a document automation platform designed to help prepare
             attorney-review-ready draft transaction documents. PactAnchor is not a law
-            firm and does not provide legal advice. Users should consult a qualified
-            attorney, CPA, or other professional advisor before using any document in a
-            real transaction.
+            firm and does not provide legal, tax, or financial advice. Generated
+            documents should be reviewed by a qualified attorney, CPA, or other
+            professional advisor before signing or use in a real transaction.
           </p>
         </div>
       </section>

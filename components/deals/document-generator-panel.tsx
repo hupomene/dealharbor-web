@@ -478,7 +478,7 @@ export default function DocumentGeneratorPanel({
         );
       }
 
-      setSuccessMessage("Contract package generated successfully.");
+      setSuccessMessage("Draft package generated successfully and ready for attorney review.");
       setReviewAccepted(false);
       setBatchName("");
       setBatchNotes("");
@@ -969,7 +969,9 @@ export default function DocumentGeneratorPanel({
       <div className="mb-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
         <h3 className="text-sm font-semibold text-slate-900">Generation History</h3>
         <p className="mt-1 text-xs text-slate-500">
-          Each generation run is saved as a batch with its template set, output format, review snapshot, and optional notes.
+          Each generation run is saved as a batch with its template set, output
+          format, review snapshot, and optional notes. Generated documents are drafts
+          intended for attorney review before signing.
         </p>
 
         {historyError ? (
@@ -1256,8 +1258,34 @@ export default function DocumentGeneratorPanel({
       )}
 
       {successMessage && (
-        <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">
-          {successMessage}
+        <div className="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 p-5 text-sm leading-6 text-emerald-900">
+          <p className="text-base font-semibold text-emerald-950">
+            {successMessage}
+          </p>
+
+          <p className="mt-2">
+            Your generated files are draft transaction documents. Before signing or
+            using them in a real transaction, review the package with a qualified
+            attorney or other appropriate professional advisor.
+          </p>
+
+          <div className="mt-4 rounded-lg border border-emerald-200 bg-white/70 p-4">
+            <p className="font-semibold text-slate-900">
+              Recommended next steps
+            </p>
+
+            <ol className="mt-2 list-decimal space-y-1 pl-5 text-slate-700">
+              <li>Download the generated document package.</li>
+              <li>Review the key deal terms for accuracy.</li>
+              <li>Send the drafts to your attorney or transaction advisor.</li>
+              <li>Do not sign until the documents have been reviewed.</li>
+            </ol>
+          </div>
+
+          <p className="mt-3 text-xs leading-5 text-emerald-800">
+            PactAnchor is not a law firm and does not provide legal, tax, or
+            financial advice.
+          </p>
         </div>
       )}
 
@@ -1324,6 +1352,13 @@ export default function DocumentGeneratorPanel({
           </div>
         </div>
       </div>
+
+      {!emptyState && (
+        <div className="mb-4 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-xs leading-5 text-slate-600">
+          Generated documents are draft transaction documents. Download and review
+          them with your attorney before signing.
+        </div>
+      )}
 
       {emptyState ? (
         <div className="text-sm text-slate-500">{emptyState}</div>
@@ -1460,9 +1495,9 @@ export default function DocumentGeneratorPanel({
               <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm leading-6 text-amber-900">
                 <p className="font-semibold">Before you generate</p>
                 <p className="mt-1">
-                  Make sure all key deal values are correct. Generated documents are
-                  draft transaction documents and should be reviewed by an attorney
-                  before signing.
+                  Make sure all key deal values are correct. Generated documents are draft
+                  transaction documents and should be reviewed by a qualified attorney or
+                  appropriate professional advisor before signing or use in a real transaction.
                 </p>
               </div>
             </div>
