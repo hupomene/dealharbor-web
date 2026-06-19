@@ -11,6 +11,9 @@ const SINGLE_DEAL_PAYMENT_LINK =
 const BROKER_PLAN_PAYMENT_LINK =
   "https://buy.stripe.com/5kQ14oaWu902ay18lTfUQ03";
 
+const ATTORNEY_PLAN_CONTACT_LINK =
+  "mailto:info@pactanchor.com?subject=Attorney%20Network%20%26%20Workflow%20Plan%20Early%20Access";
+
 function formatCurrency(value: number | null) {
   if (value == null) return "$0";
   return new Intl.NumberFormat("en-US", {
@@ -87,15 +90,31 @@ function AccessPendingScreen({ userEmail }: { userEmail: string | null }) {
           </p>
         </div>
 
-        <div className="mt-8 grid gap-5 md:grid-cols-2">
+        <div className="mt-8 grid gap-5 md:grid-cols-3">
           <div className="rounded-2xl border border-slate-200 bg-white p-6">
             <p className="text-sm font-semibold text-amber-700">
               Single Deal Package
             </p>
-            <p className="mt-2 text-3xl font-bold">$49</p>
-            <p className="mt-2 text-sm leading-6 text-slate-600">
-              Generate one synchronized small business sale document package.
+
+            <p className="mt-2 text-3xl font-bold">
+              $49 <span className="text-sm font-medium text-slate-500">one-time</span>
             </p>
+
+            <p className="mt-2 text-sm leading-6 text-slate-600">
+              For one specific small business sale transaction. Includes 30-day
+              workspace access, PDF draft output, and document regeneration during the
+              access period.
+            </p>
+
+            <ul className="mt-4 space-y-2 text-sm leading-6 text-slate-600">
+              <li>✓ One specific business sale transaction</li>
+              <li>✓ 30-day workspace access from deal creation</li>
+              <li>✓ PDF draft output only</li>
+              <li>✓ Document regeneration during the access period</li>
+              <li>✓ Core deal terms locked after creation</li>
+              <li>✓ Upgrade to Broker Launch for DOCX and ZIP exports</li>
+            </ul>
+
             <a
               href={SINGLE_DEAL_PAYMENT_LINK}
               className="mt-5 inline-flex w-full justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800"
@@ -108,11 +127,25 @@ function AccessPendingScreen({ userEmail }: { userEmail: string | null }) {
             <p className="text-sm font-semibold text-amber-800">
               Broker Launch Plan
             </p>
-            <p className="mt-2 text-3xl font-bold">$149/month</p>
-            <p className="mt-2 text-sm leading-6 text-slate-700">
-              Monthly launch access for brokers and advisors preparing small
-              business sale document packages.
+
+            <p className="mt-2 text-3xl font-bold">
+              $149<span className="text-sm font-medium text-slate-600">/month</span>
             </p>
+
+            <p className="mt-2 text-sm leading-6 text-slate-700">
+              For brokers and advisors managing repeated small business sale
+              transactions.
+            </p>
+
+            <ul className="mt-4 space-y-2 text-sm leading-6 text-slate-700">
+              <li>✓ Multiple business sale deal packages</li>
+              <li>✓ Editable core deal terms</li>
+              <li>✓ DOCX / PDF / ZIP exports</li>
+              <li>✓ Repeated broker workflow support</li>
+              <li>✓ Ongoing workspace access</li>
+              <li>✓ Priority feedback review</li>
+            </ul>
+
             <a
               href={BROKER_PLAN_PAYMENT_LINK}
               className="mt-5 inline-flex w-full justify-center rounded-xl bg-amber-500 px-4 py-3 text-sm font-semibold text-slate-950 hover:bg-amber-400"
@@ -120,11 +153,50 @@ function AccessPendingScreen({ userEmail }: { userEmail: string | null }) {
               Get Broker Launch Access
             </a>
           </div>
+
+          <div className="rounded-2xl border border-slate-200 bg-white p-6">
+            <p className="text-sm font-semibold text-amber-700">
+              Attorney Network & Workflow Plan
+            </p>
+
+            <p className="mt-2 text-3xl font-bold">
+              $299<span className="text-sm font-medium text-slate-500">/month</span>
+            </p>
+
+            <p className="mt-2 inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
+              Coming Soon
+            </p>
+
+            <p className="mt-3 text-sm leading-6 text-slate-600">
+              Grow your transaction practice with structured client intake and
+              pre-synced draft packages ready for final review.
+            </p>
+
+            <ul className="mt-4 space-y-2 text-sm leading-6 text-slate-600">
+              <li>✓ State-specific client lead network</li>
+              <li>✓ Vetted deal intake with pre-synced drafts</li>
+              <li>✓ Attorney dashboard for PactAnchor user deals</li>
+              <li>✓ DOCX / PDF / ZIP exports for attorney workflow</li>
+              <li>✓ Flat-fee software subscription, no fee-splitting</li>
+              <li>✓ Not a substitute for attorney judgment</li>
+            </ul>
+
+            <a
+              href={ATTORNEY_PLAN_CONTACT_LINK}
+              className="mt-5 inline-flex w-full justify-center rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50"
+            >
+              Contact for Early Access
+            </a>
+          </div>
+
         </div>
 
         <p className="mt-8 text-xs leading-6 text-slate-500">
-          PactAnchor prepares attorney-review-ready draft transaction documents.
-          PactAnchor is not a law firm and does not provide legal advice.
+          PactAnchor prepares attorney-review-ready draft transaction documents and
+          supports document automation workflows. PactAnchor is not a law firm and
+          does not provide legal, tax, or financial advice. Attorney access is
+          structured as a flat-fee software subscription; PactAnchor does not share
+          legal fees.
         </p>
       </div>
     </main>
@@ -208,8 +280,8 @@ function QuickStartGuideCard() {
             <li>1. Create a new deal</li>
             <li>2. Complete the guided intake</li>
             <li>3. Review buyer, seller, asset, and payment terms</li>
-            <li>4. Generate the document package</li>
-            <li>5. Send drafts for attorney review</li>
+            <li>4. Generate the attorney-review-ready draft package</li>
+            <li>5. Download PDF drafts or export DOCX/ZIP if your plan allows</li>
           </ol>
         </div>
       </div>
@@ -389,7 +461,8 @@ export default async function DashboardPage() {
 
                 <p className="mt-4 text-sm leading-6 text-slate-600">
                   Single Deal Package users can continue working on this specific
-                  transaction during the access period.
+                  transaction during the access period and regenerate PDF draft documents.
+                  DOCX and ZIP exports are available with Broker Launch Plan.
                 </p>
               </div>
 
@@ -425,7 +498,8 @@ export default async function DashboardPage() {
             <p className="mt-3 max-w-3xl text-base leading-7 text-slate-600">
               Your Single Deal Package is designed for one specific business sale
               transaction. After creation, Business Name, Purchase Price, and Down
-              Payment will be locked for that deal.
+              Payment will be locked for that deal. Single Deal includes PDF draft output
+              only during the access period.
             </p>
 
             <Link

@@ -50,21 +50,17 @@ const pricing = [
     period: "one-time",
     badge: "Launch Price",
     description:
-      "For one specific small business sale transaction. Includes 30-day workspace access from deal creation and document regeneration during the access period.",
+      "For one specific small business sale transaction. Includes 30-day workspace access, PDF draft output, and document regeneration during the access period.",
     paymentLink: "https://buy.stripe.com/7sYbJ28Om2BEdKdeKhfUQ02",
     buttonText: "Buy Single Deal Package",
     items: [
       "One specific business sale transaction",
       "30-day workspace access from deal creation",
+      "PDF draft output only",
       "Document regeneration during the access period",
       "Business Name, Purchase Price, and Down Payment locked after creation",
-      "Asset Purchase Agreement",
-      "Bill of Sale",
-      "Promissory Note",
-      "Non-Compete Agreement",
-      "IRS Form 8594 Allocation Summary",
-      "PDF draft output only",
-      "DOCX and ZIP exports available with Broker Launch Plan",
+      "APA, Bill of Sale, Promissory Note, Non-Compete, and IRS 8594 drafts",
+      "Upgrade to Broker Launch for DOCX and ZIP exports",
       "Attorney-review-ready draft package",
       "Report Issue support",
     ],
@@ -75,7 +71,7 @@ const pricing = [
     period: "/month",
     badge: "Best for Brokers",
     description:
-      "Monthly launch access for brokers and advisors preparing repeated small business sale document packages.",
+      "For brokers and advisors managing repeated small business sale transactions.",
     paymentLink: "https://buy.stripe.com/5kQ14oaWu902ay18lTfUQ03",
     buttonText: "Start Broker Launch Plan",
     items: [
@@ -86,7 +82,6 @@ const pricing = [
       "Ongoing workspace access",
       "Synchronized APA/BOS/PN/NC documents",
       "IRS Form 8594 Allocation Summary",
-      "Closing package document generation",
       "Better for brokers and advisors handling multiple transactions",
       "Report Issue channel",
       "Request Feature channel",
@@ -94,22 +89,23 @@ const pricing = [
     ],
   },
   {
-    name: "Attorney Workflow Plan",
-    price: "Coming Soon",
-    period: "",
+    name: "Attorney Network & Workflow Plan",
+    price: "$299",
+    period: "/month",
     badge: "For Attorneys",
     description:
-      "Coming soon for transaction attorneys and small law firms that want structured intake, repeatable draft packages, and review-centered workflows.",
+      "Grow your transaction practice with vetted client leads and pre-synced draft packages ready for final review.",
     paymentLink:
-      "mailto:info@pactanchor.com?subject=Attorney%20Workflow%20Plan%20Early%20Access",
+      "mailto:info@pactanchor.com?subject=Attorney%20Network%20%26%20Workflow%20Plan%20Early%20Access",
     buttonText: "Contact for Early Access",
     items: [
-      "Structured client deal intake",
-      "Attorney-review-ready draft package",
-      "Cross-document consistency checks",
-      "Matter-based workflow direction",
-      "Law firm review support",
-      "Designed to reduce repetitive first-draft work",
+      "State-specific client lead network",
+      "Vetted deal intake with pre-synced drafts",
+      "Attorney dashboard for PactAnchor user deals",
+      "DOCX / PDF / ZIP exports for attorney workflow",
+      "Flat-fee software subscription (No fee-splitting)",
+      "Matter-based workflow & consistency checks",
+      "Designed to eliminate repetitive first-draft work",
       "Not a substitute for attorney judgment",
     ],
   },
@@ -665,7 +661,7 @@ export default function HomePage() {
           </p>
 
           <h2 className="mt-3 text-4xl font-extrabold">
-            Start generating closing-ready documents today.
+            Generate attorney-review-ready deal packages today.
           </h2>
 
           <p className="mt-5 text-lg leading-8 text-slate-600">
@@ -695,17 +691,15 @@ export default function HomePage() {
               </p>
 
               <p className="mt-6">
-                <span
-                  className={
-                    plan.price === "Coming Soon"
-                      ? "text-3xl font-extrabold"
-                      : "text-5xl font-extrabold"
-                  }
-                >
-                  {plan.price}
-                </span>
+                <span className="text-5xl font-extrabold">{plan.price}</span>
                 <span className="text-slate-500"> {plan.period}</span>
               </p>
+
+              {plan.name === "Attorney Network & Workflow Plan" && (
+                <p className="mt-2 inline-flex rounded-full bg-amber-100 px-3 py-1 text-sm font-semibold text-amber-800">
+                  Coming Soon
+                </p>
+              )}
 
               <ul className="mt-8 flex-1 space-y-3 text-base">
                 {plan.items.map((item) => (
@@ -736,12 +730,12 @@ export default function HomePage() {
           </p>
           <p className="mt-2">
             PactAnchor is a document automation platform designed to help prepare
-            attorney-review-ready draft transaction documents. PactAnchor is not a law
-            firm and does not provide legal, tax, or financial advice. Generated
-            documents should be reviewed by a qualified attorney, CPA, or other
-            professional advisor before signing or use in a real transaction. Single Deal
-            Package is limited to PDF draft output; editable DOCX and ZIP exports are
-            reserved for Broker Launch Plan and higher workflows.
+            attorney-review-ready draft transaction documents and support attorney review
+            workflows. PactAnchor is not a law firm and does not provide legal, tax, or
+            financial advice. Attorneys remain responsible for client engagement,
+            conflict checks, legal judgment, and final document approval. PactAnchor does
+            not share legal fees; attorney access is structured as a flat-fee software
+            subscription.
           </p>
         </div>
       </section>
