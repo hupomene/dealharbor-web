@@ -10,10 +10,19 @@ type PlanType =
   | "admin"
   | null;
 
-export default function NewDealForm({ planType }: { planType: PlanType }) {
+type NewDealFormProps = {
+  planType: PlanType;
+  isSandboxMode?: boolean;
+};
+
+export default function NewDealForm({
+  planType,
+  isSandboxMode = false,
+}: NewDealFormProps) {
   const router = useRouter();
 
   const isSingleDealPlan = planType === "single_deal";
+  const isLockedCreationFieldsPlan = isSingleDealPlan || isSandboxMode;
 
   const [businessName, setBusinessName] = useState("");
   const [purchasePrice, setPurchasePrice] = useState("");
@@ -40,7 +49,10 @@ export default function NewDealForm({ planType }: { planType: PlanType }) {
             purchasePrice.trim() === "" ? null : Number(purchasePrice),
           down_payment: downPayment.trim() === "" ? null : Number(downPayment),
           seller_financing: sellerFinancing,
-        }),
+          is_sandbox: isSandboxMode,
+          paywall_unlocked: false,
+          readiness_score: 0,
+      }),
       });
 
       const body = await response.json();
@@ -67,26 +79,27 @@ export default function NewDealForm({ planType }: { planType: PlanType }) {
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-6">
-            {isSingleDealPlan && (
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-6 text-slate-700">
-                <p className="font-semibold text-slate-950">
-                  Important: Single Deal access starts after creation.
-                </p>
-                <p className="mt-1">
-                  For Single Deal Package users, this workspace is available for 30 days
-                  from deal creation. Business Name, Purchase Price, and Down Payment are
-                  locked after creation. Please confirm these values before clicking
-                  Create Deal.
-                </p>
-              </div>
-            )}
+      {isLockedCreationFieldsPlan && (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-6 text-slate-700">
+          <p className="font-semibold text-slate-950">
+            {isSandboxMode
+              ? "Free Workspace starts with one sandbox deal."
+              : "Important: Single Deal access starts after creation."}
+          </p>
+          <p className="mt-1">
+            {isSandboxMode
+              ? "Use this sandbox workspace to enter deal information and see Document Readiness before upgrading to download the final draft package. Business Name, Purchase Price, and Down Payment should be confirmed before creation."
+              : "For Single Deal Package users, this workspace is available for 30 days from deal creation. Business Name, Purchase Price, and Down Payment are locked after creation. Please confirm these values before clicking Create Deal."}
+          </p>
+        </div>
+      )}
 
       <div>
         <label className="mb-2 block text-sm font-medium text-slate-700">
           Business Name{" "}
-          {isSingleDealPlan && (
+          {isLockedCreationFieldsPlan && (
             <span className="text-xs font-normal text-amber-700">
-              Locked after creation
+              {isSandboxMode ? "Core deal term" : "Locked after creation"}
             </span>
           )}
         </label>
@@ -104,9 +117,9 @@ export default function NewDealForm({ planType }: { planType: PlanType }) {
         <div>
           <label className="mb-2 block text-sm font-medium text-slate-700">
             Purchase Price{" "}
-            {isSingleDealPlan && (
+            {isLockedCreationFieldsPlan && (
               <span className="text-xs font-normal text-amber-700">
-                Locked after creation
+                {isSandboxMode ? "Core deal term" : "Locked after creation"}
               </span>
             )}
           </label>
@@ -124,9 +137,9 @@ export default function NewDealForm({ planType }: { planType: PlanType }) {
         <div>
           <label className="mb-2 block text-sm font-medium text-slate-700">
             Down Payment{" "}
-            {isSingleDealPlan && (
+            {isLockedCreationFieldsPlan && (
               <span className="text-xs font-normal text-amber-700">
-                Locked after creation
+                {isSandboxMode ? "Core deal term" : "Locked after creation"}
               </span>
             )}
           </label>
@@ -161,7 +174,7 @@ export default function NewDealForm({ planType }: { planType: PlanType }) {
       <div className="flex items-center justify-end gap-3">
         <button
           type="button"
-          onClick={() => router.push("/deals")}
+          onClick={() => router.push(isSandboxMode ? "/dashboard" : "/deals")}
           className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
         >
           Cancel
@@ -172,7 +185,11 @@ export default function NewDealForm({ planType }: { planType: PlanType }) {
           disabled={submitting}
           className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {submitting ? "Creating..." : "Create Deal"}
+          {submitting
+            ? "Creating..."
+            : isSandboxMode
+              ? "Create Free Workspace"
+              : "Create Deal"}
         </button>
       </div>
     </form>

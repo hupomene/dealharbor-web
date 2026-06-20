@@ -24,6 +24,8 @@ type Props = {
   dealId: string;
   isSingleDealExpired?: boolean;
   planType?: PlanType;
+  isSandboxDeal?: boolean;
+  canExportDocuments?: boolean;
 };
 
 type TemplateOption = {
@@ -132,9 +134,13 @@ export default function DocumentGeneratorPanel({
   dealId,
   isSingleDealExpired = false,
   planType = null,
+  isSandboxDeal = false,
+  canExportDocuments = true,
 }: Props) {
 
   const isSingleDealPlan = planType === "single_deal";
+  const isExportLocked = !canExportDocuments;
+
   const [documents, setDocuments] = useState<DocumentRow[]>([]);
   const [readiness, setReadiness] = useState<TemplateReadiness[]>([]);
   const [reviewSummary, setReviewSummary] = useState<ReviewSummary | null>(null);
@@ -149,6 +155,7 @@ export default function DocumentGeneratorPanel({
   const [generating, setGenerating] = useState(false);
   const [reviewAccepted, setReviewAccepted] = useState(false);
   const [confirmGenerateOpen, setConfirmGenerateOpen] = useState(false);
+  const [paywallOpen, setPaywallOpen] = useState(false);
 
   const [selectedTemplates, setSelectedTemplates] = useState<string[]>([
     "asset_purchase_agreement",
@@ -324,6 +331,12 @@ export default function DocumentGeneratorPanel({
   reviewAccepted;
 
   const confirmAndGenerate = async () => {
+    if (isExportLocked) {
+      setConfirmGenerateOpen(false);
+      setPaywallOpen(true);
+      return;
+    }
+
     if (!canGenerate) {
       setError(
         isSingleDealExpired
@@ -410,6 +423,12 @@ export default function DocumentGeneratorPanel({
     }
 
     setError(null);
+
+    if (isExportLocked) {
+      setPaywallOpen(true);
+      return;
+    }
+
     setConfirmGenerateOpen(true);
   };
 
@@ -753,6 +772,8 @@ export default function DocumentGeneratorPanel({
           <p className="mt-2 text-xs text-slate-500">
             {isSingleDealPlan
               ? "Single Deal Package includes PDF draft output only. DOCX and ZIP exports are available with Broker Launch Plan."
+              : isExportLocked
+              ? "Free Workspace lets you review readiness and package summary. Upgrade to download final PDF, DOCX, or ZIP exports."
               : "ZIP packages the selected templates as both DOCX and PDF files."}
           </p>
 
@@ -783,8 +804,9 @@ export default function DocumentGeneratorPanel({
           </p>
 
           <p className="mt-1 text-xs leading-5 text-slate-500">
-            After reviewing the summary and selecting documents, generate the draft
-            package for attorney review.
+            {isExportLocked
+              ? "Your Free Workspace can prepare the package summary. Upgrade when you are ready to generate and download the final draft package."
+              : "After reviewing the summary and selecting documents, generate the draft package for attorney review."}
           </p>
         </div>
 
@@ -799,6 +821,8 @@ export default function DocumentGeneratorPanel({
             ? "Generating..."
             : isSingleDealExpired
             ? "Access Expired"
+            : isExportLocked
+            ? "Unlock Draft Package"
             : "Generate Contract"}
         </button>
       </div>
@@ -941,12 +965,22 @@ export default function DocumentGeneratorPanel({
                 <td className="py-2">{doc.file_type}</td>
                 <td className="py-2">{formatDate(doc.created_at)}</td>
                 <td className="py-2">
-                  <a
-                    href={`/api/documents/${doc.id}/download`}
-                    className="text-blue-600 underline"
-                  >
-                    Download
-                  </a>
+                  {isExportLocked ? (
+                    <button
+                      type="button"
+                      onClick={() => setPaywallOpen(true)}
+                      className="text-blue-600 underline"
+                    >
+                      Unlock Download
+                    </button>
+                  ) : (
+                    <a
+                      href={`/api/documents/${doc.id}/download`}
+                      className="text-blue-600 underline"
+                    >
+                      Download
+                    </a>
+                  )}
                 </td>
               </tr>
             ))}
@@ -1087,6 +1121,108 @@ export default function DocumentGeneratorPanel({
         </div>
       )}
 
+      {paywallOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4 py-6">
+          <div className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-600">
+                  Export Locked
+                </p>
+
+                <h3 className="mt-2 text-2xl font-semibold text-slate-900">
+                  Your draft package is ready to unlock.
+                </h3>
+
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Free Workspace lets you enter deal information, review readiness,
+                  and prepare your package summary. Upgrade to generate and download
+                  the final attorney-review-ready draft documents.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setPaywallOpen(false)}
+                className="rounded-lg border border-slate-300 px-3 py-1 text-sm text-slate-600 hover:bg-slate-100"
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="rounded-2xl border border-slate-200 bg-white p-5">
+                <p className="text-sm font-semibold text-amber-700">
+                  Single Deal Package
+                </p>
+
+                <p className="mt-2 text-3xl font-bold">
+                  $49{" "}
+                  <span className="text-sm font-medium text-slate-500">
+                    one-time
+                  </span>
+                </p>
+
+                <p className="mt-2 text-sm leading-6 text-slate-600">
+                  Unlock PDF draft output for one specific small business sale
+                  transaction.
+                </p>
+
+                <ul className="mt-4 space-y-2 text-sm leading-6 text-slate-600">
+                  <li>✓ One specific transaction</li>
+                  <li>✓ PDF draft output</li>
+                  <li>✓ 30-day workspace access</li>
+                  <li>✓ Best for one-time deals</li>
+                </ul>
+
+                <a
+                  href="https://buy.stripe.com/7sYbJ28Om2BEdKdeKhfUQ02"
+                  className="mt-5 inline-flex w-full justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800"
+                >
+                  Unlock One Deal
+                </a>
+              </div>
+
+              <div className="rounded-2xl border border-amber-300 bg-amber-50 p-5">
+                <p className="text-sm font-semibold text-amber-800">
+                  Broker Launch Plan
+                </p>
+
+                <p className="mt-2 text-3xl font-bold">
+                  $149
+                  <span className="text-sm font-medium text-slate-600">
+                    /month
+                  </span>
+                </p>
+
+                <p className="mt-2 text-sm leading-6 text-slate-700">
+                  Unlock DOCX, PDF, and ZIP exports for repeated small business sale
+                  transactions.
+                </p>
+
+                <ul className="mt-4 space-y-2 text-sm leading-6 text-slate-700">
+                  <li>✓ Multiple deal packages</li>
+                  <li>✓ DOCX / PDF / ZIP exports</li>
+                  <li>✓ Editable core deal terms</li>
+                  <li>✓ Best for brokers and advisors</li>
+                </ul>
+
+                <a
+                  href="https://buy.stripe.com/5kQ14oaWu902ay18lTfUQ03"
+                  className="mt-5 inline-flex w-full justify-center rounded-xl bg-amber-500 px-4 py-3 text-sm font-semibold text-slate-950 hover:bg-amber-400"
+                >
+                  Start Broker Launch Plan
+                </a>
+              </div>
+            </div>
+
+            <p className="mt-5 text-xs leading-5 text-slate-500">
+              Use the same email address you used for your PactAnchor account during
+              checkout so your workspace can be matched after payment verification.
+            </p>
+          </div>
+        </div>
+      )}
 
       {supportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 px-4 py-6">

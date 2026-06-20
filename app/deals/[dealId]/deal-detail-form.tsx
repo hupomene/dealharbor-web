@@ -14,6 +14,9 @@ type DealFormData = {
   seller_financing: boolean | null;
   created_at: string | null;
   access_expires_at?: string | null;
+  is_sandbox?: boolean | null;
+  paywall_unlocked?: boolean | null;
+  readiness_score?: number | null;
 
   business_type?: string | null;
   business_location?: string | null;
@@ -214,9 +217,15 @@ export default function DealDetailForm({
     planType === "attorney_workflow" ||
     planType === "admin";
 
+  const isSandboxDeal = deal.is_sandbox === true;
+
+  const canExportDocuments =
+    deal.paywall_unlocked === true || isBrokerLikePlan || !isSandboxDeal;
+
   const accessDaysRemaining = getDaysRemaining(deal.access_expires_at);
 
   const isSingleDealExpired =
+    !isSandboxDeal &&
     isSingleDealPlan &&
     accessDaysRemaining !== null &&
     accessDaysRemaining <= 0;
@@ -994,6 +1003,19 @@ export default function DealDetailForm({
           className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
         >
           <div className="grid gap-8">
+            {isSandboxDeal && !canExportDocuments && (
+              <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm leading-6 text-slate-700">
+                <p className="font-semibold text-slate-950">
+                  Free Workspace mode
+                </p>
+                <p className="mt-1">
+                  You can enter deal information, save changes, and review Document
+                  Readiness for free. Final document generation and download require a
+                  Single Deal Package or Broker Launch Plan.
+                </p>
+              </div>
+            )}
+
             {isSingleDealPlan && (
               <div
                 className={
@@ -1972,7 +1994,7 @@ Vendor invoices`}
               </button>
 
               <Link
-                href="/deals"
+                href={isSandboxDeal ? "/dashboard" : "/deals"}
                 className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100"
               >
                 Cancel
@@ -1985,6 +2007,8 @@ Vendor invoices`}
           dealId={deal.id}
           isSingleDealExpired={isSingleDealExpired}
           planType={planType}
+          isSandboxDeal={isSandboxDeal}
+          canExportDocuments={canExportDocuments}
         />
       </div>
     </main>

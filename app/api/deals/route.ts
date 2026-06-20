@@ -62,24 +62,69 @@ export async function POST(request: Request) {
     error: userError,
   } = await supabase.auth.getUser();
 
-    if (userError || !user) {
+  if (userError || !user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const body = await request.json();
+
   const accessProfile = await getUserAccessProfile({ supabase, user });
 
-  if (!accessProfile.isPaid) {
+  const accessStatus = accessProfile.accessStatus;
+  const isPaidOrAdmin = accessStatus === "paid" || accessStatus === "admin";
+  const requestedSandbox = Boolean(body.is_sandbox ?? false);
+  const isSandboxDeal = requestedSandbox && !isPaidOrAdmin;
+
+  if (accessStatus === "blocked") {
     return NextResponse.json(
-      { error: "Paid access required." },
+      { error: "Your account is blocked." },
       { status: 403 }
     );
   }
 
-  if (!canCreateMultipleDeals(accessProfile.planType)) {
+  if (!isPaidOrAdmin && !requestedSandbox) {
+    return NextResponse.json(
+      { error: "Paid access required to create a regular deal." },
+      { status: 403 }
+    );
+  }
+
+  if (!isPaidOrAdmin && requestedSandbox) {
+    const { data: existingSandboxDeal, error: sandboxLookupError } =
+      await supabase
+        .from("deals")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("is_sandbox", true)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+    if (sandboxLookupError) {
+      console.error("Sandbox deal lookup error:", sandboxLookupError);
+      return NextResponse.json(
+        { error: "Failed to verify Free Workspace access." },
+        { status: 500 }
+      );
+    }
+
+    if (existingSandboxDeal?.id) {
+      return NextResponse.json(
+        {
+          error: "You already have a Free Workspace.",
+          existingDealId: existingSandboxDeal.id,
+        },
+        { status: 409 }
+      );
+    }
+  }
+
+  if (isPaidOrAdmin && !canCreateMultipleDeals(accessProfile.planType)) {
     const { count, error: countError } = await supabase
       .from("deals")
       .select("id", { count: "exact", head: true })
-      .eq("user_id", user.id);
+      .eq("user_id", user.id)
+      .or("is_sandbox.is.null,is_sandbox.eq.false");
 
     if (countError) {
       console.error("Count deals error:", countError);
@@ -93,7 +138,7 @@ export async function POST(request: Request) {
       return NextResponse.json(
         {
           error:
-            "Your Single Deal Package allows one deal. Upgrade to Broker Launch Plan to create additional deals.",
+            "Your Single Deal Package allows one paid deal. Upgrade to Broker Launch Plan to create additional deals.",
         },
         { status: 403 }
       );
@@ -101,15 +146,17 @@ export async function POST(request: Request) {
   }
 
   const accessExpiresAt =
-    accessProfile.planType === "single_deal"
+    accessProfile.planType === "single_deal" && !isSandboxDeal
       ? getSingleDealAccessExpiresAt()
       : null;
-
-  const body = await request.json();
 
   const insertPayload = {
     user_id: user.id,
     access_expires_at: accessExpiresAt,
+
+    is_sandbox: isSandboxDeal,
+    paywall_unlocked: !isSandboxDeal,
+    readiness_score: normalizeNumber(body.readiness_score) ?? 0,
 
     business_name: normalizeText(body.business_name),
     business_type: normalizeText(body.business_type),
@@ -122,12 +169,16 @@ export async function POST(request: Request) {
 
     seller_name: normalizeText(body.seller_name),
     seller_address: normalizeText(body.seller_address),
-    seller_state_of_organization: normalizeText(body.seller_state_of_organization),
+    seller_state_of_organization: normalizeText(
+      body.seller_state_of_organization
+    ),
     seller_ein: normalizeText(body.seller_ein),
 
     buyer_name: normalizeText(body.buyer_name),
     buyer_address: normalizeText(body.buyer_address),
-    buyer_state_of_organization: normalizeText(body.buyer_state_of_organization),
+    buyer_state_of_organization: normalizeText(
+      body.buyer_state_of_organization
+    ),
 
     agreement_date: normalizeText(body.agreement_date),
     closing_date: normalizeText(body.closing_date),
@@ -144,13 +195,17 @@ export async function POST(request: Request) {
 
     promissory_interest_rate: normalizeNumber(body.promissory_interest_rate),
     promissory_term_months: normalizeNumber(body.promissory_term_months),
-    promissory_first_payment_date: normalizeText(body.promissory_first_payment_date),
+    promissory_first_payment_date: normalizeText(
+      body.promissory_first_payment_date
+    ),
     promissory_maturity_date: normalizeText(body.promissory_maturity_date),
 
     allocated_inventory: normalizeNumber(body.allocated_inventory),
     allocated_ffe: normalizeNumber(body.allocated_ffe),
     allocated_leasehold: normalizeNumber(body.allocated_leasehold),
-    allocated_customer_contracts: normalizeNumber(body.allocated_customer_contracts),
+    allocated_customer_contracts: normalizeNumber(
+      body.allocated_customer_contracts
+    ),
     allocated_trade_name: normalizeNumber(body.allocated_trade_name),
     allocated_non_compete: normalizeNumber(body.allocated_non_compete),
     allocated_goodwill: normalizeNumber(body.allocated_goodwill),
@@ -160,7 +215,9 @@ export async function POST(request: Request) {
 
     non_compete_years: normalizeNumber(body.non_compete_years),
     non_compete_miles: normalizeNumber(body.non_compete_miles),
-    non_compete_restricted_business: normalizeText(body.non_compete_restricted_business),
+    non_compete_restricted_business: normalizeText(
+      body.non_compete_restricted_business
+    ),
     non_compete_territory: normalizeText(body.non_compete_territory),
 
     equipment_items_text: normalizeText(body.equipment_items_text),

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createServerSupabaseClient } from "@/lib/supabase/server-client";
 import DealDetailForm from "./deal-detail-form";
-import { requirePaidAccessProfile } from "@/lib/access-control";
+import { getUserAccessProfile } from "@/lib/access-control";
 
 type PageProps = {
   params: Promise<{
@@ -50,8 +50,8 @@ export default async function DealDetailPage({ params }: PageProps) {
     redirect(`/login?next=/deals/${dealId}`);
   }
 
-    const accessProfile = await requirePaidAccessProfile({ supabase, user });
-  
+  const accessProfile = await getUserAccessProfile({ supabase, user });
+
   const { data, error } = await supabase
     .from("deals")
     .select("*")
@@ -59,34 +59,46 @@ export default async function DealDetailPage({ params }: PageProps) {
     .eq("user_id", user.id)
     .single();
 
-  if (error || !data) {
-    return (
-      <main className="min-h-screen bg-slate-50">
-        <div className="mx-auto max-w-3xl px-6 py-8">
-          <div className="rounded-2xl border border-red-200 bg-white p-6 shadow-sm">
-            <p className="text-sm text-red-700">
-              {error?.message ?? "Deal not found."}
-            </p>
-            <div className="mt-4 flex gap-4 text-sm font-medium">
-              <Link
-                href="/dashboard"
-                className="text-slate-900 underline underline-offset-2"
-              >
-                Back to Dashboard
-              </Link>
+    if (error || !data) {
+      return (
+        <main className="min-h-screen bg-slate-50">
+          <div className="mx-auto max-w-3xl px-6 py-8">
+            <div className="rounded-2xl border border-red-200 bg-white p-6 shadow-sm">
+              <p className="text-sm text-red-700">
+                {error?.message ?? "Deal not found."}
+              </p>
+              <div className="mt-4 flex gap-4 text-sm font-medium">
+                <Link
+                  href="/dashboard"
+                  className="text-slate-900 underline underline-offset-2"
+                >
+                  Back to Dashboard
+                </Link>
 
-              <Link
-                href="/deals"
-                className="text-slate-900 underline underline-offset-2"
-              >
-                Back to Deals
-              </Link>
+                <Link
+                  href="/deals"
+                  className="text-slate-900 underline underline-offset-2"
+                >
+                  Back to Deals
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
-      </main>
-    );
-  }
+        </main>
+      );
+    }
+
+    const accessStatus = accessProfile.accessStatus;
+    const isPaidOrAdmin = accessStatus === "paid" || accessStatus === "admin";
+    const isSandboxDeal = data.is_sandbox === true;
+
+    if (accessStatus === "blocked") {
+      redirect("/dashboard");
+    }
+
+    if (!isPaidOrAdmin && !isSandboxDeal) {
+      redirect("/dashboard");
+    }
 
     return <DealDetailForm deal={data} planType={accessProfile.planType} />;
 }

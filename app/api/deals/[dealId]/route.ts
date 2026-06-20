@@ -109,20 +109,9 @@ export async function PATCH(request: Request, { params }: RouteContext) {
 
   const accessProfile = await getUserAccessProfile({ supabase, user });
 
-  if (!accessProfile.isPaid) {
-    return NextResponse.json(
-      { error: "Paid access required." },
-      { status: 403 }
-    );
-  }
-
-  const canEditLockedCreationFields = canEditDealIdentityFields(
-    accessProfile.planType
-  );
-
   const { data: existingDeal, error: existingDealError } = await supabase
     .from("deals")
-    .select("id, access_expires_at")
+    .select("id, access_expires_at, is_sandbox, paywall_unlocked")
     .eq("id", dealId)
     .eq("user_id", user.id)
     .single();
@@ -131,7 +120,29 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Deal not found." }, { status: 404 });
   }
 
+  const accessStatus = accessProfile.accessStatus;
+  const isPaidOrAdmin = accessStatus === "paid" || accessStatus === "admin";
+  const isSandboxDeal = existingDeal.is_sandbox === true;
+
+  if (accessStatus === "blocked") {
+    return NextResponse.json(
+      { error: "Your account is blocked." },
+      { status: 403 }
+    );
+  }
+
+  if (!isPaidOrAdmin && !isSandboxDeal) {
+    return NextResponse.json(
+      { error: "Paid access required to edit this deal." },
+      { status: 403 }
+    );
+  }
+
+  const canEditLockedCreationFields =
+    !isSandboxDeal && canEditDealIdentityFields(accessProfile.planType);
+
   const isSingleDealExpired =
+    !isSandboxDeal &&
     accessProfile.planType === "single_deal" &&
     isPastDate(existingDeal.access_expires_at);
 
@@ -204,6 +215,13 @@ export async function PATCH(request: Request, { params }: RouteContext) {
     seller_financing:
       typeof body.seller_financing === "boolean"
         ? body.seller_financing
+        : undefined,
+
+    readiness_score:
+      body.readiness_score === null
+        ? null
+        : body.readiness_score !== undefined
+        ? normalizeNumber(body.readiness_score)
         : undefined,
 
     deal_name:

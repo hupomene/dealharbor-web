@@ -5,6 +5,12 @@ import type { DealRecord } from "@/types/persistence";
 import LogoutButton from "@/components/auth/logout-button";
 import WorkspaceNav from "@/components/auth/workspace-nav";
 
+type SandboxDealRecord = DealRecord & {
+  is_sandbox?: boolean | null;
+  paywall_unlocked?: boolean | null;
+  readiness_score?: number | null;
+};
+
 const SINGLE_DEAL_PAYMENT_LINK =
   "https://buy.stripe.com/7sYbJ28Om2BEdKdeKhfUQ02";
 
@@ -57,28 +63,38 @@ function getAdminEmails() {
     .filter(Boolean);
 }
 
-function AccessPendingScreen({ userEmail }: { userEmail: string | null }) {
+function AccessPendingScreen({
+  userEmail,
+  sandboxDeal,
+}: {
+  userEmail: string | null;
+  sandboxDeal: SandboxDealRecord | null;
+}) {
+  const freeWorkspaceHref = sandboxDeal
+    ? `/deals/${sandboxDeal.id}`
+    : "/deals/new?mode=sandbox";
+
   return (
     <main className="min-h-screen bg-slate-50 px-6 py-12 text-slate-900">
-      <div className="mx-auto max-w-4xl rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
+      <div className="mx-auto max-w-6xl rounded-3xl border border-slate-200 bg-white p-8 shadow-sm">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-600">
-              PactAnchor Access
+              Free Workspace
             </p>
 
             <h1 className="mt-3 text-3xl font-bold">
-              Your PactAnchor access is pending.
+              Try PactAnchor before you pay.
             </h1>
           </div>
 
           <LogoutButton />
         </div>
 
-        <p className="mt-4 text-base leading-7 text-slate-600">
-          This account does not currently have paid access enabled. If you
-          already completed payment, please make sure you are signed in with the
-          same email address used at checkout.
+        <p className="mt-4 max-w-4xl text-base leading-7 text-slate-600">
+          Create one free sandbox workspace, enter deal information, see
+          Document Readiness improve, and review your draft package summary
+          before upgrading to download final PDF, DOCX, or ZIP exports.
         </p>
 
         <div className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5">
@@ -90,20 +106,78 @@ function AccessPendingScreen({ userEmail }: { userEmail: string | null }) {
           </p>
         </div>
 
-        <div className="mt-8 grid gap-5 md:grid-cols-3">
+        <section className="mt-8 rounded-3xl border border-amber-300 bg-amber-50 p-7">
+          <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-amber-800">
+                Free Sandbox Deal
+              </p>
+
+              <h2 className="mt-3 text-3xl font-bold tracking-tight text-slate-950">
+                {sandboxDeal
+                  ? "Continue your Free Workspace"
+                  : "Start your Free Workspace"}
+              </h2>
+
+              <p className="mt-3 text-sm leading-6 text-slate-700">
+                Use one sandbox deal to experience the PactAnchor workflow.
+                Enter seller, buyer, price, asset, financing, and non-compete
+                terms, then watch your Document Readiness score improve before
+                upgrading to download the final draft package.
+              </p>
+
+              <ul className="mt-4 space-y-2 text-sm leading-6 text-slate-700">
+                <li>✓ One free sandbox workspace</li>
+                <li>✓ Guided small business sale deal intake</li>
+                <li>✓ Document Readiness and missing field feedback</li>
+                <li>✓ Review summary before export</li>
+                <li>✓ Upgrade only when you are ready to download</li>
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border border-amber-200 bg-white p-5">
+              <p className="text-sm font-semibold text-slate-900">
+                Free Workspace Status
+              </p>
+
+              <p className="mt-3 text-sm leading-6 text-slate-600">
+                {sandboxDeal
+                  ? "You already have a sandbox deal. Continue editing it and upgrade when you are ready to export."
+                  : "No sandbox deal has been created yet. Start one free workspace now."}
+              </p>
+
+              {sandboxDeal?.readiness_score != null && (
+                <p className="mt-3 rounded-xl bg-slate-50 px-4 py-3 text-sm font-semibold text-slate-800">
+                  Document Readiness: {sandboxDeal.readiness_score}%
+                </p>
+              )}
+
+              <Link
+                href={freeWorkspaceHref}
+                className="mt-5 inline-flex w-full justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800"
+              >
+                {sandboxDeal ? "Continue Free Workspace" : "Create Free Workspace"}
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <div className="mt-8 grid gap-5 lg:grid-cols-3">
           <div className="rounded-2xl border border-slate-200 bg-white p-6">
             <p className="text-sm font-semibold text-amber-700">
               Single Deal Package
             </p>
 
             <p className="mt-2 text-3xl font-bold">
-              $49 <span className="text-sm font-medium text-slate-500">one-time</span>
+              $49{" "}
+              <span className="text-sm font-medium text-slate-500">
+                one-time
+              </span>
             </p>
 
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              For one specific small business sale transaction. Includes 30-day
-              workspace access, PDF draft output, and document regeneration during the
-              access period.
+              Unlock PDF draft output for one specific small business sale
+              transaction.
             </p>
 
             <ul className="mt-4 space-y-2 text-sm leading-6 text-slate-600">
@@ -111,15 +185,14 @@ function AccessPendingScreen({ userEmail }: { userEmail: string | null }) {
               <li>✓ 30-day workspace access from deal creation</li>
               <li>✓ PDF draft output only</li>
               <li>✓ Document regeneration during the access period</li>
-              <li>✓ Core deal terms locked after creation</li>
-              <li>✓ Upgrade to Broker Launch for DOCX and ZIP exports</li>
+              <li>✓ Best for one-time deals</li>
             </ul>
 
             <a
               href={SINGLE_DEAL_PAYMENT_LINK}
               className="mt-5 inline-flex w-full justify-center rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800"
             >
-              Start with One Deal
+              Unlock One Deal
             </a>
           </div>
 
@@ -129,12 +202,15 @@ function AccessPendingScreen({ userEmail }: { userEmail: string | null }) {
             </p>
 
             <p className="mt-2 text-3xl font-bold">
-              $149<span className="text-sm font-medium text-slate-600">/month</span>
+              $149
+              <span className="text-sm font-medium text-slate-600">
+                /month
+              </span>
             </p>
 
             <p className="mt-2 text-sm leading-6 text-slate-700">
-              For brokers and advisors managing repeated small business sale
-              transactions.
+              Unlock DOCX, PDF, and ZIP exports for repeated small business
+              sale transactions.
             </p>
 
             <ul className="mt-4 space-y-2 text-sm leading-6 text-slate-700">
@@ -143,14 +219,14 @@ function AccessPendingScreen({ userEmail }: { userEmail: string | null }) {
               <li>✓ DOCX / PDF / ZIP exports</li>
               <li>✓ Repeated broker workflow support</li>
               <li>✓ Ongoing workspace access</li>
-              <li>✓ Priority feedback review</li>
+              <li>✓ Best for brokers and advisors</li>
             </ul>
 
             <a
               href={BROKER_PLAN_PAYMENT_LINK}
               className="mt-5 inline-flex w-full justify-center rounded-xl bg-amber-500 px-4 py-3 text-sm font-semibold text-slate-950 hover:bg-amber-400"
             >
-              Get Broker Launch Access
+              Start Broker Launch Plan
             </a>
           </div>
 
@@ -160,7 +236,10 @@ function AccessPendingScreen({ userEmail }: { userEmail: string | null }) {
             </p>
 
             <p className="mt-2 text-3xl font-bold">
-              $299<span className="text-sm font-medium text-slate-500">/month</span>
+              $299
+              <span className="text-sm font-medium text-slate-500">
+                /month
+              </span>
             </p>
 
             <p className="mt-2 inline-flex rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
@@ -168,8 +247,8 @@ function AccessPendingScreen({ userEmail }: { userEmail: string | null }) {
             </p>
 
             <p className="mt-3 text-sm leading-6 text-slate-600">
-              Grow your transaction practice with structured client intake and
-              pre-synced draft packages ready for final review.
+              Structured client intake and pre-synced draft packages for
+              transaction attorney review workflows.
             </p>
 
             <ul className="mt-4 space-y-2 text-sm leading-6 text-slate-600">
@@ -178,7 +257,6 @@ function AccessPendingScreen({ userEmail }: { userEmail: string | null }) {
               <li>✓ Attorney dashboard for PactAnchor user deals</li>
               <li>✓ DOCX / PDF / ZIP exports for attorney workflow</li>
               <li>✓ Flat-fee software subscription, no fee-splitting</li>
-              <li>✓ Not a substitute for attorney judgment</li>
             </ul>
 
             <a
@@ -188,15 +266,14 @@ function AccessPendingScreen({ userEmail }: { userEmail: string | null }) {
               Contact for Early Access
             </a>
           </div>
-
         </div>
 
         <p className="mt-8 text-xs leading-6 text-slate-500">
-          PactAnchor prepares attorney-review-ready draft transaction documents and
-          supports document automation workflows. PactAnchor is not a law firm and
-          does not provide legal, tax, or financial advice. Attorney access is
-          structured as a flat-fee software subscription; PactAnchor does not share
-          legal fees.
+          Free Workspace allows intake, readiness review, and package summary
+          preview. Final document export and download require a paid plan.
+          PactAnchor prepares attorney-review-ready draft transaction documents
+          and is not a law firm. PactAnchor does not provide legal, tax, or
+          financial advice.
         </p>
       </div>
     </main>
@@ -266,7 +343,7 @@ function QuickStartGuideCard() {
               href="/deals/new"
               className="rounded-xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-800 hover:bg-slate-50"
             >
-              Create New Deal
+              Create Deal Workspace
             </Link>
           </div>
         </div>
@@ -326,8 +403,22 @@ export default async function DashboardPage() {
     return <AccessBlockedScreen userEmail={user.email ?? null} />;
   }
 
+  const { data: sandboxDeal } = await supabase
+    .from("deals")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("is_sandbox", true)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
   if (accessStatus !== "paid" && accessStatus !== "admin") {
-    return <AccessPendingScreen userEmail={user.email ?? null} />;
+    return (
+      <AccessPendingScreen
+        userEmail={user.email ?? null}
+        sandboxDeal={(sandboxDeal ?? null) as SandboxDealRecord | null}
+      />
+    );
   }
 
   const { data: deals, error } = await supabase
