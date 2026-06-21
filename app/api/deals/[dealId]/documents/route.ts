@@ -105,12 +105,6 @@ export async function POST(request: Request, { params }: RouteContext) {
 
   const accessProfile = await getUserAccessProfile({ supabase, user });
 
-  if (!accessProfile.isPaid) {
-    return NextResponse.json(
-      { error: "Paid access required." },
-      { status: 403 }
-    );
-  }
 
   const body = await request.json();
 
@@ -140,7 +134,37 @@ export async function POST(request: Request, { params }: RouteContext) {
     return NextResponse.json({ error: "Deal not found." }, { status: 404 });
   }
 
+  const accessStatus = accessProfile.accessStatus;
+  const isPaidOrAdmin = accessStatus === "paid" || accessStatus === "admin";
+  const isSandboxDeal = deal.is_sandbox === true;
+  const isPaywallUnlocked = deal.paywall_unlocked === true;
+
+  if (accessStatus === "blocked") {
+    return NextResponse.json(
+      { error: "Your account is blocked." },
+      { status: 403 }
+    );
+  }
+
+  if (!isPaidOrAdmin && !isSandboxDeal) {
+    return NextResponse.json(
+      { error: "Paid access required to generate documents." },
+      { status: 403 }
+    );
+  }
+
+  if (isSandboxDeal && !isPaywallUnlocked && !isPaidOrAdmin) {
+    return NextResponse.json(
+      {
+        error: "Upgrade required to export final documents.",
+        paywallRequired: true,
+      },
+      { status: 402 }
+    );
+  }
+
   const isSingleDealExpired =
+    !isSandboxDeal &&
     accessProfile.planType === "single_deal" &&
     isPastDate(deal.access_expires_at);
 
@@ -330,4 +354,55 @@ export async function POST(request: Request, { params }: RouteContext) {
       documents: [inserted],
     });
   }
+
+  const insertedDocuments = [];
+
+  for (let index = 0; index < files.length; index += 1) {
+    const artifact = files[index];
+    const templateKey = templates[index] ?? templates[0] ?? "document";
+
+    const buffer = Buffer.from(artifact.content_base64, "base64");
+    const storagePath = `${user.id}/${dealId}/${randomUUID()}-${artifact.file_name}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from(STORAGE_BUCKET)
+      .upload(storagePath, buffer, {
+        contentType: mimeTypeFor(artifact.file_type),
+        upsert: false,
+      });
+
+    if (uploadError) {
+      return NextResponse.json(
+        { error: `Storage upload failed: ${uploadError.message}` },
+        { status: 500 }
+      );
+    }
+
+    const { data: inserted, error: insertError } = await supabase
+      .from("documents")
+      .insert({
+        user_id: user.id,
+        deal_id: dealId,
+        document_type: inferDocumentTypeFromTemplate(templateKey),
+        file_name: artifact.file_name,
+        file_type: artifact.file_type,
+        file_url: storagePath,
+      })
+      .select("*")
+      .single();
+
+    if (insertError) {
+      return NextResponse.json(
+        { error: `Document insert failed: ${insertError.message}` },
+        { status: 500 }
+      );
+    }
+
+    insertedDocuments.push(inserted);
+  }
+
+  return NextResponse.json({
+    success: true,
+    documents: insertedDocuments,
+  });
 }
