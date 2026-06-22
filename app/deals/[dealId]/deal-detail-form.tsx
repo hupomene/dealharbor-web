@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import DocumentGeneratorPanel from "@/components/deals/document-generator-panel";
+import LiveDocumentPreviewPanel from "@/components/deals/live-document-preview-panel";
 import WorkspaceNav from "@/components/auth/workspace-nav";
 
 type DealFormData = {
@@ -231,6 +232,7 @@ export default function DealDetailForm({
     accessDaysRemaining <= 0;
 
   const canEditLockedCreationFields =
+    isSandboxDeal ||
     planType === "broker_launch" ||
     planType === "attorney_workflow" ||
     planType === "admin";
@@ -363,6 +365,7 @@ export default function DealDetailForm({
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [lastSavedSnapshot, setLastSavedSnapshot] = useState<string | null>(null);  
+  const [previewRefreshKey, setPreviewRefreshKey] = useState(0);
 
   const [escrowAgentName, setEscrowAgentName] = useState(
     deal.escrow_agent_name ?? ""
@@ -891,6 +894,7 @@ export default function DealDetailForm({
 
       setLastSavedSnapshot(currentFormSnapshot);
       setSuccessMessage("Saved just now.");
+      setPreviewRefreshKey((value) => value + 1);
 
       window.dispatchEvent(
         new CustomEvent("deal-updated", {
@@ -1009,9 +1013,13 @@ export default function DealDetailForm({
                   Free Workspace mode
                 </p>
                 <p className="mt-1">
-                  You can enter deal information, save changes, and review Document
-                  Readiness for free. Final document generation and download require a
-                  Single Deal Package or Broker Launch Plan.
+                  You can enter deal information, save changes, review Document Readiness,
+                  and preview how your saved terms appear in the APA for free.
+                </p>
+
+                <p className="mt-2">
+                  Final document generation and download require a Single Deal Package or
+                  Broker Launch Plan.
                 </p>
               </div>
             )}
@@ -2002,6 +2010,13 @@ Vendor invoices`}
             </div>
           </div>
         </form>
+
+        <LiveDocumentPreviewPanel
+          dealId={deal.id}
+          refreshKey={previewRefreshKey}
+          isSandboxDeal={isSandboxDeal}
+          canExportDocuments={canExportDocuments}
+        />
 
         <DocumentGeneratorPanel
           dealId={deal.id}
