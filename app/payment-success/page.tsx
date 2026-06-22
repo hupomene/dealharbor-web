@@ -3,19 +3,19 @@ import Link from "next/link";
 export default function PaymentSuccessPage() {
   return (
     <main className="min-h-screen bg-slate-950 text-white">
-      <section className="mx-auto flex min-h-screen max-w-4xl flex-col items-center justify-center px-6 py-20 text-center">
+      <section className="mx-auto flex min-h-screen max-w-5xl flex-col items-center justify-center px-6 py-20 text-center">
         <div className="mb-6 rounded-full border border-emerald-400/30 bg-emerald-400/10 px-4 py-2 text-sm font-medium text-emerald-300">
           Payment received
         </div>
 
         <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-          Thank you for joining PactAnchor.
+          Your PactAnchor workspace is being unlocked.
         </h1>
 
         <p className="mt-6 max-w-3xl text-lg leading-8 text-slate-300">
-          Your payment has been received. To activate your PactAnchor access,
-          please sign in or create an account using the same email address used
-          during Stripe checkout.
+          Thank you for your purchase. If you used the same email address as
+          your PactAnchor account during checkout, your workspace should update
+          shortly and unlock document generation and download access.
         </p>
 
         <div className="mt-10 grid w-full gap-5 md:grid-cols-3">
@@ -23,12 +23,14 @@ export default function PaymentSuccessPage() {
             <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-400/10 text-sm font-bold text-emerald-300">
               1
             </div>
+
             <h2 className="text-lg font-semibold text-white">
-              Use the same email
+              Payment confirmed
             </h2>
+
             <p className="mt-3 text-sm leading-6 text-slate-400">
-              Please use the same email address you used for Stripe payment when
-              signing in or creating your PactAnchor account.
+              Stripe has received your payment. PactAnchor uses your checkout
+              email to match the payment to your workspace.
             </p>
           </div>
 
@@ -36,13 +38,14 @@ export default function PaymentSuccessPage() {
             <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-400/10 text-sm font-bold text-emerald-300">
               2
             </div>
+
             <h2 className="text-lg font-semibold text-white">
-              Access is reviewed
+              Workspace unlocks automatically
             </h2>
+
             <p className="mt-3 text-sm leading-6 text-slate-400">
-              During launch, paid access may be activated after payment
-              verification. This helps us keep the system stable while we
-              onboard early users.
+              Your account access and eligible deal workspace are updated after
+              payment verification. This usually happens shortly after checkout.
             </p>
           </div>
 
@@ -50,20 +53,29 @@ export default function PaymentSuccessPage() {
             <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-full bg-emerald-400/10 text-sm font-bold text-emerald-300">
               3
             </div>
+
             <h2 className="text-lg font-semibold text-white">
-              Start your deal
+              Generate your draft package
             </h2>
+
             <p className="mt-3 text-sm leading-6 text-slate-400">
-              Once access is active, you can create a deal, enter transaction
-              details once, and generate a synchronized document package.
+              Return to your dashboard, open your deal, and generate the
+              attorney-review-ready draft document package for your transaction.
             </p>
           </div>
         </div>
 
         <div className="mt-10 flex flex-col gap-3 sm:flex-row">
           <Link
-            href="/login"
+            href="/dashboard"
             className="rounded-xl bg-white px-6 py-3 text-sm font-semibold text-slate-950 transition hover:bg-slate-200"
+          >
+            Go to Dashboard
+          </Link>
+
+          <Link
+            href="/login"
+            className="rounded-xl border border-slate-700 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-900"
           >
             Sign In
           </Link>
@@ -74,23 +86,18 @@ export default function PaymentSuccessPage() {
           >
             Create Account
           </Link>
-
-          <Link
-            href="/dashboard"
-            className="rounded-xl border border-slate-700 px-6 py-3 text-sm font-semibold text-white transition hover:bg-slate-900"
-          >
-            Go to Dashboard
-          </Link>
         </div>
 
         <div className="mt-10 max-w-3xl rounded-2xl border border-amber-400/20 bg-amber-400/10 p-5 text-left">
           <h2 className="text-sm font-semibold text-amber-200">
             Access note
           </h2>
+
           <p className="mt-2 text-sm leading-6 text-amber-100/90">
-            If you completed payment but still see an access pending message,
-            make sure you are signed in with the same email used at checkout. If
-            access is not activated shortly, please contact at info@pactanchor.com with your payment email.
+            If your workspace still appears locked, make sure you are signed in
+            with the same email address used during Stripe checkout. If access
+            does not update shortly, contact us at info@pactanchor.com and
+            include your checkout email.
           </p>
         </div>
 
