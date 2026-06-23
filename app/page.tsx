@@ -7,6 +7,7 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import DocumentPreviewRotator from "@/components/marketing/document-preview-rotator";
+import HowItWorksSection from "@/components/landing/how-it-works-section";
 
 const valueCards = [
   {
@@ -534,6 +535,8 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      <HowItWorksSection />
 
       <section id="product" className="mx-auto max-w-7xl px-8 py-16">
         <div className="grid gap-8 lg:grid-cols-3">
