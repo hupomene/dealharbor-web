@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/admin/growth/analysis-jobs/cron",
+      "schedule": "0 5 * * *"
+    }
+  ]
+}

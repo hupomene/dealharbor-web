@@ -1,0 +1,24 @@
+import { NextResponse } from "next/server";
+import {
+  resetStaleAnalysisJobs,
+  runNextAnalysisJob,
+} from "@/lib/growth/analysis-job-runner";
+
+export async function POST(request: Request) {
+  try {
+    const origin = new URL(request.url).origin;
+
+    await resetStaleAnalysisJobs();
+
+    const result = await runNextAnalysisJob({
+      origin,
+    });
+
+    return NextResponse.json(result);
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to process analysis job";
+
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
