@@ -417,14 +417,13 @@ export default function HomePage() {
       <section className="overflow-hidden bg-[#061d3a] text-white">
         <header className="mx-auto flex max-w-7xl items-center justify-between px-8 py-6">
           <Link href="/" className="flex items-center">
-            <Image
-              src="/brand/pactanchor-logo.png"
-              alt="PactAnchor"
-              width={320}
-              height={90}
-              priority
-              className="h-12 w-auto rounded-md bg-white px-3 py-2 shadow-sm sm:h-14"
-            />
+            <span className="flex h-14 w-[210px] items-center overflow-hidden rounded-lg bg-white shadow-sm sm:h-16 sm:w-[250px]">
+              <img
+                src="/brand/pactanchor-logo.png"
+                alt="PactAnchor"
+                className="h-full w-full object-cover object-center"
+              />
+            </span>
           </Link>
 
           <nav className="hidden items-center gap-8 text-sm text-slate-200 md:flex">
