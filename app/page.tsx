@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import DocumentPreviewRotator from "@/components/marketing/document-preview-rotator";
 import HowItWorksSection from "@/components/landing/how-it-works-section";
+import WhyPactAnchorSection from "@/components/landing/why-pactanchor-section";
 
 const valueCards = [
   {
@@ -427,13 +428,13 @@ export default function HomePage() {
             />
           </Link>
 
-          <nav className="hidden items-center gap-8 text-sm text-slate-200 md:flex">
+          <nav className="hidden items-center gap-6 text-sm text-slate-200 md:flex">
             <a href="#product">Product</a>
             <a href="#workflow">Workflow</a>
+            <a href="#why-pactanchor">Why PactAnchor</a>
             <a href="#attorneys">For Attorneys</a>
             <a href="#document-sync">Document Sync</a>
             <a href="#pricing">Pricing</a>
-            <a href="#features">Features</a>
           </nav>
 
           <div className="flex items-center gap-4">
@@ -536,6 +537,8 @@ export default function HomePage() {
       </section>
 
       <HowItWorksSection />
+
+      <WhyPactAnchorSection />
 
       <section id="product" className="mx-auto max-w-7xl px-8 py-16">
         <div className="grid gap-8 lg:grid-cols-3">
