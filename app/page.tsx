@@ -418,7 +418,7 @@ export default function HomePage() {
         <header className="mx-auto flex max-w-7xl items-center justify-between px-8 py-6">
           <Link href="/" className="flex items-center">
             <Image
-              src="/brand/pactanchor-logo.png"
+              src="/brand/pactanchor-logo-dark-header-transparent.png"
               alt="PactAnchor"
               width={260}
               height={90}
