@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdminClient } from "@/lib/growth/growth-db";
 import type { GrowthCategory } from "@/types/growth";
+import { requireGrowthAdmin } from "@/lib/growth/growth-auth";
 
 const VALID_CATEGORIES: GrowthCategory[] = [
   "business_broker",
@@ -33,6 +34,12 @@ function buildCampaignName(keyword: string, location: string) {
 }
 
 export async function POST(request: Request) {
+  const auth = await requireGrowthAdmin(request);
+
+  if (!auth.ok) {
+    return auth.response;
+  }
+
   try {
     const body = await request.json();
 

@@ -174,3 +174,13 @@ export type GrowthAnalysisJobDashboardRow = {
   created_at: string;
   updated_at: string;
 };
+
+export type GrowthOutreachEventDashboardRow = {
+  id: string;
+  lead_id: string;
+  event_type: string;
+  channel: string | null;
+  event_notes: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+};

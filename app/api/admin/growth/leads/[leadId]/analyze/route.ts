@@ -3,6 +3,7 @@ import { getSupabaseAdminClient } from "@/lib/growth/growth-db";
 import { analyzeWebsite } from "@/lib/growth/website-analyzer";
 import { normalizeDomain } from "@/lib/growth/domain-normalizer";
 import { analyzeLeadForGrowth } from "@/lib/growth/lead-ai-analyzer";
+import { requireGrowthAdmin } from "@/lib/growth/growth-auth";
 
 type LeadForAnalysis = {
   id: string;
@@ -67,9 +68,16 @@ function getMessageStatusFromChannel(channel: string) {
 }
 
 export async function POST(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ leadId: string }> }
 ) {
+
+  const auth = await requireGrowthAdmin(request);
+
+  if (!auth.ok) {
+    return auth.response;
+  }
+
   const { leadId } = await context.params;
 
   if (!leadId) {

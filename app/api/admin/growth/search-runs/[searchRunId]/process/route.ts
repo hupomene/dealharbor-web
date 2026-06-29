@@ -7,6 +7,7 @@ import {
   shouldSkipDomain,
 } from "@/lib/growth/domain-normalizer";
 import { searchWithSerpApi } from "@/lib/growth/search-provider";
+import { requireGrowthAdmin } from "@/lib/growth/growth-auth";
 
 type SearchRunRow = {
   id: string;
@@ -113,9 +114,15 @@ function parseLocation(location: string | null) {
 }
 
 export async function POST(
-  _request: Request,
+  request: Request,
   context: { params: Promise<{ searchRunId: string }> }
 ) {
+  const auth = await requireGrowthAdmin(request);
+
+  if (!auth.ok) {
+    return auth.response;
+  }
+
   const { searchRunId } = await context.params;
 
   if (!searchRunId) {

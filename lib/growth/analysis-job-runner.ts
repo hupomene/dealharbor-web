@@ -117,14 +117,22 @@ export async function runNextAnalysisJob(params: {
   }
 
   try {
+    const internalSecret =
+      process.env.GROWTH_INTERNAL_API_SECRET ?? process.env.CRON_SECRET;
+
     const analyzeResponse = await fetch(
-      `${params.origin}/api/admin/growth/leads/${currentJob.lead_id}/analyze`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
+        `${params.origin}/api/admin/growth/leads/${currentJob.lead_id}/analyze`,
+        {
+            method: "POST",
+            headers: {
+            "Content-Type": "application/json",
+            ...(internalSecret
+                ? {
+                    "x-growth-internal-secret": internalSecret,
+                }
+                : {}),
+            },
+        }
     );
 
     const analyzeResult = await analyzeResponse.json().catch(() => ({}));

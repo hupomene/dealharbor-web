@@ -5,6 +5,7 @@ import {
   sleep,
 } from "@/lib/growth/analysis-job-runner";
 import { getSupabaseAdminClient } from "@/lib/growth/growth-db";
+import { requireGrowthAdmin } from "@/lib/growth/growth-auth";
 
 type ProcessBatchBody = {
   limit?: number;
@@ -47,6 +48,12 @@ async function getRecentJobs() {
 }
 
 export async function POST(request: Request) {
+  const auth = await requireGrowthAdmin(request);
+
+  if (!auth.ok) {
+    return auth.response;
+  }
+
   try {
     let body: ProcessBatchBody = {};
 

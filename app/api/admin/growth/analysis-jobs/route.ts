@@ -1,11 +1,18 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdminClient } from "@/lib/growth/growth-db";
+import { requireGrowthAdmin } from "@/lib/growth/growth-auth";
 
 type QueueRequestBody = {
   leadIds?: string[];
 };
 
-export async function GET() {
+export async function GET(request: Request) {
+  const auth = await requireGrowthAdmin(request);
+
+  if (!auth.ok) {
+    return auth.response;
+  }
+
   const supabase = getSupabaseAdminClient();
 
   const { data, error } = await supabase
@@ -44,6 +51,12 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const auth = await requireGrowthAdmin(request);
+
+  if (!auth.ok) {
+    return auth.response;
+  }
+
   const supabase = getSupabaseAdminClient();
 
   let body: QueueRequestBody;
